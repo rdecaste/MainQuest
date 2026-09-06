@@ -53,6 +53,7 @@
       width: min(185px, 58vw);
       display: grid;
       gap: 4px;
+      z-index: 2;
     }
 
     .row {
@@ -131,11 +132,17 @@
 </head>
 <body>
   <main class="screen">
-    <img
+    <video
       class="hero"
-      src="https://res.cloudinary.com/a3xk0plk/image/upload/v1788696083/8177ba3e-8184-4b5f-ac9c-e0ebbc0b2d2b.png"
-      alt="Goku"
-    />
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="auto"
+      poster="https://res.cloudinary.com/a3xk0plk/image/upload/v1788696083/8177ba3e-8184-4b5f-ac9c-e0ebbc0b2d2b.png"
+    >
+      <source src="https://res.cloudinary.com/a3xk0plk/video/upload/v1788698711/Quest-Progress/3d124147-f877-81d1-a87b-fe82ea613420.mp4" type="video/mp4" />
+    </video>
 
     <section class="metrics">
       <div class="row">
