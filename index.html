@@ -10,29 +10,34 @@
 
   <style>
     :root {
-      --text: #fff;
-      --muted: rgba(255,255,255,0.72);
-      --accent1: #ff9f1c;
-      --accent2: #ffd54a;
+      --bg: #05070b;
+      --text: #ffffff;
+      --muted: rgba(255,255,255,.72);
+      --accent-a: #ff9f1c;
+      --accent-b: #ffd54a;
+      --fade-ms: 500ms;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
     }
 
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
       user-select: none;
     }
 
-    html, body {
+    html,
+    body {
       margin: 0;
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #05070b;
+      background: var(--bg);
       color: var(--text);
-      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont,
-        "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       overscroll-behavior: none;
       touch-action: none;
     }
@@ -44,342 +49,292 @@
       height: 100dvh;
     }
 
-    .screen {
+    .app {
       position: fixed;
       inset: 0;
-      width: 100vw;
-      height: 100vh;
-      height: 100svh;
-      height: 100dvh;
       overflow: hidden;
-      background: #05070b;
+      background: var(--bg);
     }
 
-    .video-stage {
+    .media {
       position: absolute;
       inset: 0;
+      background: var(--bg);
       overflow: hidden;
-      background: #05070b;
     }
 
-    .hero {
+    .media video {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      object-position: 50% 50%;
-      display: block;
+      object-position: center;
+      background: var(--bg);
       opacity: 0;
-      transition: opacity 450ms linear;
-      background: #05070b;
+      transition: opacity var(--fade-ms) linear;
+      pointer-events: none;
     }
 
-    .hero.active {
+    .media video.visible {
       opacity: 1;
-      z-index: 1;
-    }
-
-    .hero.standby {
-      opacity: 0;
-      z-index: 0;
     }
 
     .hud-top {
       position: absolute;
-      top: calc(10px + var(--safe-top));
-      left: 10px;
-      right: 10px;
+      top: calc(12px + var(--safe-top));
+      left: calc(12px + var(--safe-left));
+      right: calc(12px + var(--safe-right));
+      z-index: 5;
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      z-index: 3;
       pointer-events: none;
     }
 
     .metric {
-      background: transparent;
-      border: 0;
-      box-shadow: none;
-      padding: 2px 4px;
+      min-width: 72px;
     }
 
-    .metric-left { text-align: left; }
-    .metric-right { text-align: right; }
+    .metric.right {
+      text-align: right;
+    }
 
     .label {
       font-size: 8px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
+      line-height: 1.1;
+      font-weight: 800;
+      letter-spacing: .14em;
       text-transform: uppercase;
       color: var(--muted);
-      text-shadow: 0 1px 4px rgba(0,0,0,0.75);
+      text-shadow: 0 1px 4px rgba(0,0,0,.85);
     }
 
     .value {
-      font-size: clamp(20px, 6vw, 28px);
+      margin-top: 3px;
+      font-size: clamp(23px, 6.5vw, 31px);
       line-height: 1;
       font-weight: 850;
-      letter-spacing: -0.035em;
-      color: #fff;
-      text-shadow: 0 1px 5px rgba(0,0,0,0.82);
+      letter-spacing: -.04em;
+      color: var(--text);
+      text-shadow: 0 1px 6px rgba(0,0,0,.9);
     }
 
     .hud-bottom {
       position: absolute;
-      left: 10px;
-      right: 10px;
-      bottom: calc(10px + var(--safe-bottom));
-      z-index: 3;
+      left: calc(12px + var(--safe-left));
+      right: calc(12px + var(--safe-right));
+      bottom: calc(14px + var(--safe-bottom));
+      z-index: 5;
       pointer-events: none;
-    }
-
-    .progress {
-      background: transparent;
-      border: 0;
-      box-shadow: none;
-      padding: 2px 0;
     }
 
     .progress-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
     }
 
-    .progress-percent {
-      font-size: 9px;
-      font-weight: 750;
-      color: rgba(255,255,255,0.78);
-      text-shadow: 0 1px 4px rgba(0,0,0,0.75);
+    .progress-value {
+      font-size: 10px;
+      line-height: 1;
+      font-weight: 800;
+      color: rgba(255,255,255,.82);
+      text-shadow: 0 1px 4px rgba(0,0,0,.85);
     }
 
-    .bar {
-      height: 6px;
-      border-radius: 999px;
+    .progress-track {
+      width: 100%;
+      height: 7px;
       overflow: hidden;
-      background: rgba(255,255,255,0.18);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+      border-radius: 999px;
+      background: rgba(255,255,255,.18);
+      box-shadow: 0 1px 5px rgba(0,0,0,.4);
     }
 
-    .fill {
-      width: 10%;
+    .progress-fill {
+      width: 0%;
       height: 100%;
       border-radius: inherit;
-      background: linear-gradient(90deg, var(--accent1), var(--accent2));
-      box-shadow: 0 0 8px rgba(255,196,54,0.24);
+      background: linear-gradient(90deg, var(--accent-a), var(--accent-b));
+      box-shadow: 0 0 10px rgba(255,196,54,.28);
       transition: width 350ms ease;
     }
   </style>
 </head>
 
 <body>
-  <main class="screen">
-    <div class="video-stage">
-      <video
-        id="videoA"
-        class="hero active"
-        autoplay
-        muted
-        playsinline
-        preload="auto"
-      ></video>
-
-      <video
-        id="videoB"
-        class="hero standby"
-        autoplay
-        muted
-        playsinline
-        preload="auto"
-      ></video>
+  <main class="app">
+    <div class="media">
+      <video id="video1" muted playsinline preload="auto"></video>
+      <video id="video2" muted playsinline preload="auto"></video>
     </div>
 
-    <section class="hud-top">
-      <article class="metric metric-left">
+    <div class="hud-top">
+      <div class="metric">
         <div class="label">XP</div>
-        <div class="value" id="xp">-</div>
-      </article>
+        <div class="value" id="xp">—</div>
+      </div>
 
-      <article class="metric metric-right">
+      <div class="metric right">
         <div class="label">Level</div>
-        <div class="value" id="level">-</div>
-      </article>
-    </section>
+        <div class="value" id="level">—</div>
+      </div>
+    </div>
 
-    <section class="hud-bottom">
-      <article class="progress" id="progressCard" aria-label="Progress 0 percent">
-        <div class="progress-head">
-          <div class="label">Progress</div>
-          <div class="progress-percent" id="progressPercent">0%</div>
-        </div>
-        <div class="bar">
-          <div class="fill" id="progressFill" style="width:0%"></div>
-        </div>
-      </article>
-    </section>
+    <div class="hud-bottom">
+      <div class="progress-head">
+        <div class="label">Progress</div>
+        <div class="progress-value" id="progressText">0%</div>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
   </main>
 
   <script>
     const STATE_URL = "https://res.cloudinary.com/a3xk0plk/raw/upload/MainQuest/data.json";
+    const REFRESH_MS = 60000;
+    const FADE_SECONDS = 0.5;
 
-    const videoA = document.getElementById("videoA");
-    const videoB = document.getElementById("videoB");
+    const xpEl = document.getElementById("xp");
+    const levelEl = document.getElementById("level");
+    const progressTextEl = document.getElementById("progressText");
+    const progressFillEl = document.getElementById("progressFill");
 
-    let activeVideo = videoA;
-    let standbyVideo = videoB;
-    let currentVideoUrl = null;
-    let currentPosterUrl = null;
+    const video1 = document.getElementById("video1");
+    const video2 = document.getElementById("video2");
 
-    const FADE_MS = 450;
-    const LOOP_CHECK_MS = 80;
-    let isCrossfading = false;
-    let loopWatcher = null;
+    let front = video1;
+    let back = video2;
+    let currentVideoUrl = "";
+    let currentPosterUrl = "";
+    let crossfading = false;
 
-    function applyVideoSource(video, src, poster) {
-      if (!src) return;
+    function decodeState(raw) {
+      const text = raw.trim();
+      const prefix = "data:application/json;base64,";
 
-      if (video.dataset.src !== src) {
-        video.src = src;
-        video.dataset.src = src;
+      if (text.startsWith(prefix)) {
+        const base64 = text.slice(prefix.length);
+        const binary = atob(base64);
+        const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
+        return JSON.parse(new TextDecoder().decode(bytes));
       }
 
-      if (poster) {
-        video.poster = poster;
-      } else {
-        video.removeAttribute("poster");
-      }
+      return JSON.parse(text);
+    }
 
+    function setMetrics(state) {
+      xpEl.textContent = state.xp ?? "—";
+      levelEl.textContent = state.level ?? "—";
+
+      const raw = Number(state.progress ?? 0);
+      const progress = Number.isFinite(raw) ? Math.max(0, Math.min(100, raw)) : 0;
+
+      progressTextEl.textContent = `${progress}%`;
+      progressFillEl.style.width = `${progress}%`;
+    }
+
+    function configureVideo(video, url, poster) {
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+
+      if (poster) video.poster = poster;
+      else video.removeAttribute("poster");
+
+      video.src = url;
+      video.preload = "auto";
+      video.muted = true;
+      video.playsInline = true;
       video.load();
     }
 
-    async function safePlay(video) {
-      if (!video.src) return;
-
+    async function play(video) {
       try {
         await video.play();
-      } catch (e) {
-        console.error("Video play failed", e);
+      } catch (error) {
+        console.error("Video autoplay failed", error);
       }
     }
 
-    function swapVideos() {
-      const oldActive = activeVideo;
-      activeVideo = standbyVideo;
-      standbyVideo = oldActive;
+    async function loadVideo(url, poster) {
+      if (!url) return;
+      if (url === currentVideoUrl && poster === currentPosterUrl) return;
 
-      activeVideo.classList.remove("standby");
-      activeVideo.classList.add("active");
+      currentVideoUrl = url;
+      currentPosterUrl = poster || "";
+      crossfading = false;
 
-      standbyVideo.classList.remove("active");
-      standbyVideo.classList.add("standby");
+      configureVideo(front, url, poster);
+      configureVideo(back, url, poster);
+
+      front.currentTime = 0;
+      back.currentTime = 0;
+      front.classList.add("visible");
+      back.classList.remove("visible");
+
+      await play(front);
     }
 
     async function crossfadeLoop() {
-      if (isCrossfading || !currentVideoUrl) return;
-      isCrossfading = true;
+      if (crossfading || !currentVideoUrl) return;
+      crossfading = true;
 
-      standbyVideo.currentTime = 0;
-      await safePlay(standbyVideo);
+      back.currentTime = 0;
+      await play(back);
 
-      standbyVideo.classList.remove("standby");
-      standbyVideo.classList.add("active");
+      back.classList.add("visible");
+      front.classList.remove("visible");
 
-      activeVideo.classList.remove("active");
-      activeVideo.classList.add("standby");
+      window.setTimeout(() => {
+        const oldFront = front;
+        front = back;
+        back = oldFront;
 
-      setTimeout(() => {
-        activeVideo.pause();
-        swapVideos();
-        isCrossfading = false;
-      }, FADE_MS);
+        back.pause();
+        back.currentTime = 0;
+        crossfading = false;
+      }, FADE_SECONDS * 1000);
     }
 
-    function startLoopWatcher() {
-      if (loopWatcher) clearInterval(loopWatcher);
+    function watchLoop() {
+      if (!front.duration || crossfading) return;
 
-      loopWatcher = setInterval(() => {
-        if (!currentVideoUrl || !activeVideo || !activeVideo.duration || isCrossfading) return;
-
-        const remaining = activeVideo.duration - activeVideo.currentTime;
-        if (remaining <= FADE_MS / 1000) {
-          crossfadeLoop();
-        }
-      }, LOOP_CHECK_MS);
-    }
-
-    async function initVideos(src, poster) {
-      if (!src) return;
-
-      currentVideoUrl = src;
-      currentPosterUrl = poster || null;
-
-      applyVideoSource(videoA, currentVideoUrl, currentPosterUrl);
-      applyVideoSource(videoB, currentVideoUrl, currentPosterUrl);
-
-      videoA.currentTime = 0;
-      videoB.currentTime = 0;
-
-      activeVideo = videoA;
-      standbyVideo = videoB;
-
-      videoA.classList.add("active");
-      videoA.classList.remove("standby");
-
-      videoB.classList.add("standby");
-      videoB.classList.remove("active");
-
-      await safePlay(videoA);
-      startLoopWatcher();
-    }
-
-    function updateMetrics(data) {
-      document.getElementById("level").textContent = data.level ?? "-";
-      document.getElementById("xp").textContent = data.xp ?? "-";
-
-      const progress = Number(data.progress ?? 0);
-      const clamped = Math.max(0, Math.min(100, progress));
-
-      document.getElementById("progressPercent").textContent = `${clamped}%`;
-      document.getElementById("progressFill").style.width = `${clamped}%`;
-      document.getElementById("progressCard").setAttribute("aria-label", `Progress ${clamped} percent`);
-    }
-
-    function parseStatePayload(raw) {
-      const value = raw.trim();
-      const prefix = "data:application/json;base64,";
-
-      if (value.startsWith(prefix)) {
-        const decoded = atob(value.slice(prefix.length));
-        return JSON.parse(decoded);
+      const remaining = front.duration - front.currentTime;
+      if (remaining <= FADE_SECONDS) {
+        crossfadeLoop();
       }
-
-      return JSON.parse(value);
     }
+
+    video1.addEventListener("timeupdate", watchLoop);
+    video2.addEventListener("timeupdate", watchLoop);
 
     async function loadState() {
       try {
-        const response = await fetch(`${STATE_URL}?t=${Date.now()}`, { cache: "no-store" });
-        if (!response.ok) throw new Error(`State request failed: ${response.status}`);
+        const response = await fetch(`${STATE_URL}?t=${Date.now()}`, {
+          cache: "no-store"
+        });
 
-        const rawState = await response.text();
-        const data = parseStatePayload(rawState);
-        updateMetrics(data);
-
-        const nextPoster = data.image_url || null;
-        const nextVideo = data.video_url || null;
-
-        if (nextVideo && (nextVideo !== currentVideoUrl || nextPoster !== currentPosterUrl)) {
-          await initVideos(nextVideo, nextPoster);
+        if (!response.ok) {
+          throw new Error(`State request failed: ${response.status}`);
         }
+
+        const raw = await response.text();
+        const state = decodeState(raw);
+
+        setMetrics(state);
+        await loadVideo(state.video_url || "", state.image_url || "");
       } catch (error) {
         console.error("Could not load Main Quest state", error);
       }
     }
 
     loadState();
-    setInterval(loadState, 60000);
+    window.setInterval(loadState, REFRESH_MS);
   </script>
 </body>
 </html>
