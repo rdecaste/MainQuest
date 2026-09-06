@@ -133,6 +133,7 @@
 <body>
   <main class="screen">
     <video
+      id="heroVideo"
       class="hero"
       autoplay
       muted
@@ -141,32 +142,70 @@
       preload="auto"
       poster="https://res.cloudinary.com/a3xk0plk/image/upload/v1788696083/8177ba3e-8184-4b5f-ac9c-e0ebbc0b2d2b.png"
     >
-      <source src="https://res.cloudinary.com/a3xk0plk/video/upload/v1788698711/Quest-Progress/3d124147-f877-81d1-a87b-fe82ea613420.mp4" type="video/mp4" />
+      <source id="heroSource" src="https://res.cloudinary.com/a3xk0plk/video/upload/v1788698711/Quest-Progress/3d124147-f877-81d1-a87b-fe82ea613420.mp4" type="video/mp4" />
     </video>
 
     <section class="metrics">
       <div class="row">
         <article class="card metric">
           <div class="label">Level</div>
-          <div class="value">1</div>
+          <div class="value" id="level">1</div>
         </article>
 
         <article class="card metric">
           <div class="label">XP</div>
-          <div class="value">12</div>
+          <div class="value" id="xp">12</div>
         </article>
       </div>
 
-      <article class="card progress" aria-label="Progress 10 percent">
+      <article class="card progress" id="progressCard" aria-label="Progress 10 percent">
         <div class="progress-head">
           <div class="label">Progress</div>
-          <div class="progress-percent">10%</div>
+          <div class="progress-percent" id="progressPercent">10%</div>
         </div>
         <div class="bar">
-          <div class="fill"></div>
+          <div class="fill" id="progressFill"></div>
         </div>
       </article>
     </section>
   </main>
+
+  <script>
+    const STATE_URL = "https://res.cloudinary.com/a3xk0plk/raw/upload/MainQuest/data.json";
+
+    async function loadState() {
+      try {
+        const response = await fetch(`${STATE_URL}?t=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`State request failed: ${response.status}`);
+        const data = await response.json();
+
+        document.getElementById("level").textContent = data.level ?? "-";
+        document.getElementById("xp").textContent = data.xp ?? "-";
+
+        const progress = Number(data.progress ?? 0);
+        document.getElementById("progressPercent").textContent = `${progress}%`;
+        document.getElementById("progressFill").style.width = `${Math.max(0, Math.min(100, progress))}%`;
+        document.getElementById("progressCard").setAttribute("aria-label", `Progress ${progress} percent`);
+
+        const video = document.getElementById("heroVideo");
+        const source = document.getElementById("heroSource");
+
+        if (data.image_url && video.poster !== data.image_url) {
+          video.poster = data.image_url;
+        }
+
+        if (data.video_url && source.getAttribute("src") !== data.video_url) {
+          source.setAttribute("src", data.video_url);
+          video.load();
+          video.play().catch(() => {});
+        }
+      } catch (error) {
+        console.error("Could not load Main Quest state", error);
+      }
+    }
+
+    loadState();
+    setInterval(loadState, 60000);
+  </script>
 </body>
 </html>
