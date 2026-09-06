@@ -1,7 +1,6 @@
 {
-  "level": 1,
-  "xp": 12,
+  "level": 3,
+  "xp": 300,
   "progress": 10,
-  "image_url": "https://res.cloudinary.com/a3xk0plk/image/upload/v1788696083/8177ba3e-8184-4b5f-ac9c-e0ebbc0b2d2b.png",
-  "video_url": "https://res.cloudinary.com/a3xk0plk/video/upload/v1788698711/Quest-Progress/3d124147-f877-81d1-a87b-fe82ea613420.mp4"
+  "visual_level": 3
 }
