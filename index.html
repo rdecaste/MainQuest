@@ -7,10 +7,8 @@
   <title>Main Quest</title>
   <style>
     :root {
-      --glass: rgba(7, 10, 16, 0.18);
-      --line: rgba(255,255,255,0.06);
       --text: #fff;
-      --muted: rgba(255,255,255,0.52);
+      --muted: rgba(255,255,255,0.72);
       --accent1: #ff9f1c;
       --accent2: #ffd54a;
       --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -48,89 +46,78 @@
       display: block;
     }
 
-    .shade {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        to bottom,
-        rgba(0,0,0,0.00) 0%,
-        rgba(0,0,0,0.00) 70%,
-        rgba(0,0,0,0.10) 84%,
-        rgba(0,0,0,0.28) 100%
-      );
-      pointer-events: none;
-    }
-
     .metrics {
       position: absolute;
-      left: 10px;
-      bottom: calc(10px + var(--safe-bottom));
-      width: min(230px, 72vw);
+      left: 8px;
+      bottom: calc(8px + var(--safe-bottom));
+      width: min(185px, 58vw);
       display: grid;
-      gap: 6px;
+      gap: 4px;
     }
 
     .row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 6px;
+      gap: 4px;
     }
 
     .card {
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: var(--glass);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      box-shadow: 0 5px 14px rgba(0,0,0,0.10);
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
 
     .metric {
-      min-height: 54px;
-      padding: 8px 9px;
+      min-height: 42px;
+      padding: 4px 5px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
 
     .label {
-      font-size: 8px;
+      font-size: 7px;
       font-weight: 700;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--muted);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.75);
     }
 
     .value {
-      font-size: clamp(22px, 7vw, 29px);
+      font-size: clamp(18px, 5.5vw, 24px);
       line-height: 1;
       font-weight: 850;
       letter-spacing: -0.035em;
+      text-shadow: 0 1px 5px rgba(0,0,0,0.82);
     }
 
     .progress {
-      padding: 8px 9px 9px;
+      padding: 4px 5px 5px;
     }
 
     .progress-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .progress-percent {
-      font-size: 9px;
+      font-size: 8px;
       font-weight: 750;
-      color: rgba(255,255,255,0.62);
+      color: rgba(255,255,255,0.78);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.75);
     }
 
     .bar {
-      height: 8px;
+      height: 6px;
       border-radius: 999px;
       overflow: hidden;
-      background: rgba(255,255,255,0.09);
-      border: 1px solid rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.18);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.35);
     }
 
     .fill {
@@ -138,7 +125,7 @@
       height: 100%;
       border-radius: inherit;
       background: linear-gradient(90deg, var(--accent1), var(--accent2));
-      box-shadow: 0 0 10px rgba(255,196,54,0.22);
+      box-shadow: 0 0 8px rgba(255,196,54,0.24);
     }
   </style>
 </head>
@@ -149,8 +136,6 @@
       src="https://res.cloudinary.com/a3xk0plk/image/upload/v1788696083/8177ba3e-8184-4b5f-ac9c-e0ebbc0b2d2b.png"
       alt="Goku"
     />
-
-    <div class="shade"></div>
 
     <section class="metrics">
       <div class="row">
