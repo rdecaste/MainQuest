@@ -184,7 +184,6 @@
         muted
         playsinline
         preload="auto"
-        poster="https://res.cloudinary.com/a3xk0plk/image/upload/v1788696083/8177ba3e-8184-4b5f-ac9c-e0ebbc0b2d2b.png"
       ></video>
 
       <video
@@ -194,30 +193,29 @@
         muted
         playsinline
         preload="auto"
-        poster="https://res.cloudinary.com/a3xk0plk/image/upload/v1788696083/8177ba3e-8184-4b5f-ac9c-e0ebbc0b2d2b.png"
       ></video>
     </div>
 
     <section class="hud-top">
       <article class="metric metric-left">
         <div class="label">XP</div>
-        <div class="value" id="xp">12</div>
+        <div class="value" id="xp">-</div>
       </article>
 
       <article class="metric metric-right">
         <div class="label">Level</div>
-        <div class="value" id="level">1</div>
+        <div class="value" id="level">-</div>
       </article>
     </section>
 
     <section class="hud-bottom">
-      <article class="progress" id="progressCard" aria-label="Progress 10 percent">
+      <article class="progress" id="progressCard" aria-label="Progress 0 percent">
         <div class="progress-head">
           <div class="label">Progress</div>
-          <div class="progress-percent" id="progressPercent">10%</div>
+          <div class="progress-percent" id="progressPercent">0%</div>
         </div>
         <div class="bar">
-          <div class="fill" id="progressFill"></div>
+          <div class="fill" id="progressFill" style="width:0%"></div>
         </div>
       </article>
     </section>
@@ -225,16 +223,14 @@
 
   <script>
     const STATE_URL = "https://res.cloudinary.com/a3xk0plk/raw/upload/MainQuest/data.json";
-    const FALLBACK_POSTER = "https://res.cloudinary.com/a3xk0plk/image/upload/v1788696083/8177ba3e-8184-4b5f-ac9c-e0ebbc0b2d2b.png";
-    const FALLBACK_VIDEO = "https://res.cloudinary.com/a3xk0plk/video/upload/v1788698711/Quest-Progress/3d124147-f877-81d1-a87b-fe82ea613420.mp4";
 
     const videoA = document.getElementById("videoA");
     const videoB = document.getElementById("videoB");
 
     let activeVideo = videoA;
     let standbyVideo = videoB;
-    let currentVideoUrl = FALLBACK_VIDEO;
-    let currentPosterUrl = FALLBACK_POSTER;
+    let currentVideoUrl = null;
+    let currentPosterUrl = null;
 
     const FADE_MS = 450;
     const LOOP_CHECK_MS = 80;
@@ -242,15 +238,25 @@
     let loopWatcher = null;
 
     function applyVideoSource(video, src, poster) {
+      if (!src) return;
+
       if (video.dataset.src !== src) {
         video.src = src;
         video.dataset.src = src;
       }
-      video.poster = poster || FALLBACK_POSTER;
+
+      if (poster) {
+        video.poster = poster;
+      } else {
+        video.removeAttribute("poster");
+      }
+
       video.load();
     }
 
     async function safePlay(video) {
+      if (!video.src) return;
+
       try {
         await video.play();
       } catch (e) {
@@ -271,7 +277,7 @@
     }
 
     async function crossfadeLoop() {
-      if (isCrossfading) return;
+      if (isCrossfading || !currentVideoUrl) return;
       isCrossfading = true;
 
       standbyVideo.currentTime = 0;
@@ -294,7 +300,7 @@
       if (loopWatcher) clearInterval(loopWatcher);
 
       loopWatcher = setInterval(() => {
-        if (!activeVideo || !activeVideo.duration || isCrossfading) return;
+        if (!currentVideoUrl || !activeVideo || !activeVideo.duration || isCrossfading) return;
 
         const remaining = activeVideo.duration - activeVideo.currentTime;
         if (remaining <= FADE_MS / 1000) {
@@ -304,8 +310,10 @@
     }
 
     async function initVideos(src, poster) {
-      currentVideoUrl = src || FALLBACK_VIDEO;
-      currentPosterUrl = poster || FALLBACK_POSTER;
+      if (!src) return;
+
+      currentVideoUrl = src;
+      currentPosterUrl = poster || null;
 
       applyVideoSource(videoA, currentVideoUrl, currentPosterUrl);
       applyVideoSource(videoB, currentVideoUrl, currentPosterUrl);
@@ -359,10 +367,10 @@
         const data = parseStatePayload(rawState);
         updateMetrics(data);
 
-        const nextPoster = data.image_url || FALLBACK_POSTER;
-        const nextVideo = data.video_url || FALLBACK_VIDEO;
+        const nextPoster = data.image_url || null;
+        const nextVideo = data.video_url || null;
 
-        if (nextVideo !== currentVideoUrl || nextPoster !== currentPosterUrl) {
+        if (nextVideo && (nextVideo !== currentVideoUrl || nextPoster !== currentPosterUrl)) {
           await initVideos(nextVideo, nextPoster);
         }
       } catch (error) {
@@ -370,10 +378,8 @@
       }
     }
 
-    initVideos(FALLBACK_VIDEO, FALLBACK_POSTER).then(() => {
-      loadState();
-      setInterval(loadState, 60000);
-    });
+    loadState();
+    setInterval(loadState, 60000);
   </script>
 </body>
 </html>
