@@ -7,6 +7,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <title>Main Quest</title>
+
   <style>
     :root {
       --text: #fff;
@@ -15,11 +16,13 @@
       --accent2: #ffd54a;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
-      --safe-left: env(safe-area-inset-left, 0px);
-      --safe-right: env(safe-area-inset-right, 0px);
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
 
     html, body {
       margin: 0;
@@ -32,12 +35,15 @@
         "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       overscroll-behavior: none;
       touch-action: none;
-      -webkit-user-select: none;
-      user-select: none;
     }
 
-    /* Galaxy S20 portrait kiosk target: 1440x3200 = 9:20.
-       100dvh tracks the actually visible Android viewport in kiosk/full-screen mode. */
+    body {
+      width: 100vw;
+      height: 100vh;
+      height: 100svh;
+      height: 100dvh;
+    }
+
     .screen {
       position: fixed;
       inset: 0;
@@ -49,84 +55,104 @@
       background: #05070b;
     }
 
+    .video-stage {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #05070b;
+    }
+
     .hero {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
-      display: block;
       object-fit: cover;
       object-position: 50% 50%;
+      display: block;
+      opacity: 0;
+      transition: opacity 450ms linear;
       background: #05070b;
     }
 
-    /* Small, transparent HUD tuned for the ~360x800 CSS viewport of an S20. */
-    .metrics {
+    .hero.active {
+      opacity: 1;
+      z-index: 1;
+    }
+
+    .hero.standby {
+      opacity: 0;
+      z-index: 0;
+    }
+
+    .hud-top {
       position: absolute;
-      left: calc(10px + var(--safe-left));
-      bottom: calc(16px + var(--safe-bottom));
-      width: clamp(150px, 47vw, 178px);
-      display: grid;
-      gap: 4px;
-      z-index: 2;
+      top: calc(10px + var(--safe-top));
+      left: 10px;
+      right: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      z-index: 3;
       pointer-events: none;
     }
 
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 5px;
-    }
-
-    .card {
+    .metric {
       background: transparent;
       border: 0;
       box-shadow: none;
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
+      padding: 2px 4px;
     }
 
-    .metric {
-      min-height: 43px;
-      padding: 3px 4px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
+    .metric-left { text-align: left; }
+    .metric-right { text-align: right; }
 
     .label {
-      font-size: 7px;
-      font-weight: 750;
-      letter-spacing: 0.13em;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--muted);
-      text-shadow: 0 1px 4px rgba(0,0,0,0.85);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.75);
     }
 
     .value {
-      font-size: clamp(20px, 6vw, 24px);
+      font-size: clamp(20px, 6vw, 28px);
       line-height: 1;
       font-weight: 850;
       letter-spacing: -0.035em;
-      text-shadow: 0 1px 5px rgba(0,0,0,0.9);
+      color: #fff;
+      text-shadow: 0 1px 5px rgba(0,0,0,0.82);
+    }
+
+    .hud-bottom {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      bottom: calc(10px + var(--safe-bottom));
+      z-index: 3;
+      pointer-events: none;
     }
 
     .progress {
-      padding: 3px 4px 4px;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      padding: 2px 0;
     }
 
     .progress-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 4px;
+      margin-bottom: 5px;
     }
 
     .progress-percent {
-      font-size: 8px;
+      font-size: 9px;
       font-weight: 750;
-      color: rgba(255,255,255,0.8);
-      text-shadow: 0 1px 4px rgba(0,0,0,0.85);
+      color: rgba(255,255,255,0.78);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.75);
     }
 
     .bar {
@@ -134,7 +160,7 @@
       border-radius: 999px;
       overflow: hidden;
       background: rgba(255,255,255,0.18);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.42);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.35);
     }
 
     .fill {
@@ -142,47 +168,50 @@
       height: 100%;
       border-radius: inherit;
       background: linear-gradient(90deg, var(--accent1), var(--accent2));
-      box-shadow: 0 0 8px rgba(255,196,54,0.28);
+      box-shadow: 0 0 8px rgba(255,196,54,0.24);
       transition: width 350ms ease;
-    }
-
-    /* Keep the kiosk portrait-first if Android briefly reports a wider viewport. */
-    @media (orientation: landscape) {
-      .metrics {
-        width: min(178px, 34vw);
-      }
     }
   </style>
 </head>
+
 <body>
   <main class="screen">
-    <video
-      id="heroVideo"
-      class="hero"
-      autoplay
-      muted
-      loop
-      playsinline
-      preload="auto"
-      poster="https://res.cloudinary.com/a3xk0plk/image/upload/v1788696083/8177ba3e-8184-4b5f-ac9c-e0ebbc0b2d2b.png"
-    >
-      <source id="heroSource" src="https://res.cloudinary.com/a3xk0plk/video/upload/v1788698711/Quest-Progress/3d124147-f877-81d1-a87b-fe82ea613420.mp4" type="video/mp4" />
-    </video>
+    <div class="video-stage">
+      <video
+        id="videoA"
+        class="hero active"
+        autoplay
+        muted
+        playsinline
+        preload="auto"
+        poster="https://res.cloudinary.com/a3xk0plk/image/upload/v1788696083/8177ba3e-8184-4b5f-ac9c-e0ebbc0b2d2b.png"
+      ></video>
 
-    <section class="metrics">
-      <div class="row">
-        <article class="card metric">
-          <div class="label">Level</div>
-          <div class="value" id="level">1</div>
-        </article>
+      <video
+        id="videoB"
+        class="hero standby"
+        autoplay
+        muted
+        playsinline
+        preload="auto"
+        poster="https://res.cloudinary.com/a3xk0plk/image/upload/v1788696083/8177ba3e-8184-4b5f-ac9c-e0ebbc0b2d2b.png"
+      ></video>
+    </div>
 
-        <article class="card metric">
-          <div class="label">XP</div>
-          <div class="value" id="xp">12</div>
-        </article>
-      </div>
+    <section class="hud-top">
+      <article class="metric metric-left">
+        <div class="label">XP</div>
+        <div class="value" id="xp">12</div>
+      </article>
 
-      <article class="card progress" id="progressCard" aria-label="Progress 10 percent">
+      <article class="metric metric-right">
+        <div class="label">Level</div>
+        <div class="value" id="level">1</div>
+      </article>
+    </section>
+
+    <section class="hud-bottom">
+      <article class="progress" id="progressCard" aria-label="Progress 10 percent">
         <div class="progress-head">
           <div class="label">Progress</div>
           <div class="progress-percent" id="progressPercent">10%</div>
@@ -196,41 +225,142 @@
 
   <script>
     const STATE_URL = "https://res.cloudinary.com/a3xk0plk/raw/upload/MainQuest/data.json";
+    const FALLBACK_POSTER = "https://res.cloudinary.com/a3xk0plk/image/upload/v1788696083/8177ba3e-8184-4b5f-ac9c-e0ebbc0b2d2b.png";
+    const FALLBACK_VIDEO = "https://res.cloudinary.com/a3xk0plk/video/upload/v1788698711/Quest-Progress/3d124147-f877-81d1-a87b-fe82ea613420.mp4";
+
+    const videoA = document.getElementById("videoA");
+    const videoB = document.getElementById("videoB");
+
+    let activeVideo = videoA;
+    let standbyVideo = videoB;
+    let currentVideoUrl = FALLBACK_VIDEO;
+    let currentPosterUrl = FALLBACK_POSTER;
+
+    const FADE_MS = 450;
+    const LOOP_CHECK_MS = 80;
+    let isCrossfading = false;
+    let loopWatcher = null;
+
+    function applyVideoSource(video, src, poster) {
+      if (video.dataset.src !== src) {
+        video.src = src;
+        video.dataset.src = src;
+      }
+      video.poster = poster || FALLBACK_POSTER;
+      video.load();
+    }
+
+    async function safePlay(video) {
+      try {
+        await video.play();
+      } catch (e) {
+        console.error("Video play failed", e);
+      }
+    }
+
+    function swapVideos() {
+      const oldActive = activeVideo;
+      activeVideo = standbyVideo;
+      standbyVideo = oldActive;
+
+      activeVideo.classList.remove("standby");
+      activeVideo.classList.add("active");
+
+      standbyVideo.classList.remove("active");
+      standbyVideo.classList.add("standby");
+    }
+
+    async function crossfadeLoop() {
+      if (isCrossfading) return;
+      isCrossfading = true;
+
+      standbyVideo.currentTime = 0;
+      await safePlay(standbyVideo);
+
+      standbyVideo.classList.remove("standby");
+      standbyVideo.classList.add("active");
+
+      activeVideo.classList.remove("active");
+      activeVideo.classList.add("standby");
+
+      setTimeout(() => {
+        activeVideo.pause();
+        swapVideos();
+        isCrossfading = false;
+      }, FADE_MS);
+    }
+
+    function startLoopWatcher() {
+      if (loopWatcher) clearInterval(loopWatcher);
+
+      loopWatcher = setInterval(() => {
+        if (!activeVideo || !activeVideo.duration || isCrossfading) return;
+
+        const remaining = activeVideo.duration - activeVideo.currentTime;
+        if (remaining <= FADE_MS / 1000) {
+          crossfadeLoop();
+        }
+      }, LOOP_CHECK_MS);
+    }
+
+    async function initVideos(src, poster) {
+      currentVideoUrl = src || FALLBACK_VIDEO;
+      currentPosterUrl = poster || FALLBACK_POSTER;
+
+      applyVideoSource(videoA, currentVideoUrl, currentPosterUrl);
+      applyVideoSource(videoB, currentVideoUrl, currentPosterUrl);
+
+      videoA.currentTime = 0;
+      videoB.currentTime = 0;
+
+      activeVideo = videoA;
+      standbyVideo = videoB;
+
+      videoA.classList.add("active");
+      videoA.classList.remove("standby");
+
+      videoB.classList.add("standby");
+      videoB.classList.remove("active");
+
+      await safePlay(videoA);
+      startLoopWatcher();
+    }
+
+    function updateMetrics(data) {
+      document.getElementById("level").textContent = data.level ?? "-";
+      document.getElementById("xp").textContent = data.xp ?? "-";
+
+      const progress = Number(data.progress ?? 0);
+      const clamped = Math.max(0, Math.min(100, progress));
+
+      document.getElementById("progressPercent").textContent = `${clamped}%`;
+      document.getElementById("progressFill").style.width = `${clamped}%`;
+      document.getElementById("progressCard").setAttribute("aria-label", `Progress ${clamped} percent`);
+    }
 
     async function loadState() {
       try {
         const response = await fetch(`${STATE_URL}?t=${Date.now()}`, { cache: "no-store" });
         if (!response.ok) throw new Error(`State request failed: ${response.status}`);
+
         const data = await response.json();
+        updateMetrics(data);
 
-        document.getElementById("level").textContent = data.level ?? "-";
-        document.getElementById("xp").textContent = data.xp ?? "-";
+        const nextPoster = data.image_url || FALLBACK_POSTER;
+        const nextVideo = data.video_url || FALLBACK_VIDEO;
 
-        const progress = Number(data.progress ?? 0);
-        const safeProgress = Math.max(0, Math.min(100, progress));
-        document.getElementById("progressPercent").textContent = `${progress}%`;
-        document.getElementById("progressFill").style.width = `${safeProgress}%`;
-        document.getElementById("progressCard").setAttribute("aria-label", `Progress ${progress} percent`);
-
-        const video = document.getElementById("heroVideo");
-        const source = document.getElementById("heroSource");
-
-        if (data.image_url && video.poster !== data.image_url) {
-          video.poster = data.image_url;
-        }
-
-        if (data.video_url && source.getAttribute("src") !== data.video_url) {
-          source.setAttribute("src", data.video_url);
-          video.load();
-          video.play().catch(() => {});
+        if (nextVideo !== currentVideoUrl || nextPoster !== currentPosterUrl) {
+          await initVideos(nextVideo, nextPoster);
         }
       } catch (error) {
         console.error("Could not load Main Quest state", error);
       }
     }
 
-    loadState();
-    setInterval(loadState, 60000);
+    initVideos(FALLBACK_VIDEO, FALLBACK_POSTER).then(() => {
+      loadState();
+      setInterval(loadState, 60000);
+    });
   </script>
 </body>
 </html>
