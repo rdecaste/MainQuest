@@ -338,12 +338,25 @@
       document.getElementById("progressCard").setAttribute("aria-label", `Progress ${clamped} percent`);
     }
 
+    function parseStatePayload(raw) {
+      const value = raw.trim();
+      const prefix = "data:application/json;base64,";
+
+      if (value.startsWith(prefix)) {
+        const decoded = atob(value.slice(prefix.length));
+        return JSON.parse(decoded);
+      }
+
+      return JSON.parse(value);
+    }
+
     async function loadState() {
       try {
         const response = await fetch(`${STATE_URL}?t=${Date.now()}`, { cache: "no-store" });
         if (!response.ok) throw new Error(`State request failed: ${response.status}`);
 
-        const data = await response.json();
+        const rawState = await response.text();
+        const data = parseStatePayload(rawState);
         updateMetrics(data);
 
         const nextPoster = data.image_url || FALLBACK_POSTER;
