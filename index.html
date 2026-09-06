@@ -157,7 +157,7 @@
   <script>
     const CLOUD_NAME = "a3xk0plk";
     const VIDEO_TAG = "main-quest-live";
-    const STATE_URL = `https://res.cloudinary.com/${CLOUD_NAME}/raw/upload/MainQuest/data.json`;
+    const STATE_URL = "https://raw.githubusercontent.com/rdecaste/MainQuest/main/data.json";
     const VIDEO_LIST_URL = `https://res.cloudinary.com/${CLOUD_NAME}/video/list/${VIDEO_TAG}.json`;
     const REFRESH_MS = 30000;
     const HARD_RELOAD_MS = 300000;
@@ -169,19 +169,6 @@
     const progressFillEl = document.getElementById("progressFill");
 
     let currentVideoKey = "";
-
-    function decodeState(raw) {
-      const text = raw.trim();
-      const prefix = "data:application/json;base64,";
-
-      if (text.startsWith(prefix)) {
-        const binary = atob(text.slice(prefix.length));
-        const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
-        return JSON.parse(new TextDecoder().decode(bytes));
-      }
-
-      return JSON.parse(text);
-    }
 
     function updateMetrics(state) {
       xpEl.textContent = state.xp ?? "—";
@@ -220,10 +207,7 @@
       try {
         const response = await fetch(`${STATE_URL}?t=${Date.now()}`, { cache: "no-store" });
         if (!response.ok) throw new Error(`State request failed: ${response.status}`);
-
-        const raw = await response.text();
-        const state = decodeState(raw);
-        updateMetrics(state);
+        updateMetrics(await response.json());
       } catch (error) {
         console.error("Could not load Main Quest metrics", error);
       }
