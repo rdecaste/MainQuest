@@ -163,7 +163,8 @@
 
   <script>
     const STATE_URL = "https://res.cloudinary.com/a3xk0plk/raw/upload/MainQuest/data.json";
-    const REFRESH_MS = 60000;
+    const REFRESH_MS = 30000;
+    const HARD_RELOAD_MS = 300000;
 
     const video = document.getElementById("heroVideo");
     const xpEl = document.getElementById("xp");
@@ -249,6 +250,7 @@
 
     loadState();
     setInterval(loadState, REFRESH_MS);
+    setInterval(() => location.reload(), HARD_RELOAD_MS);
   </script>
 </body>
 </html>
