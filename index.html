@@ -156,7 +156,9 @@
 
   <script>
     const CLOUD_NAME = "a3xk0plk";
+    const VIDEO_TAG = "main-quest-live";
     const STATE_URL = `https://res.cloudinary.com/${CLOUD_NAME}/raw/upload/MainQuest/data.json`;
+    const VIDEO_LIST_URL = `https://res.cloudinary.com/${CLOUD_NAME}/video/list/${VIDEO_TAG}.json`;
     const REFRESH_MS = 30000;
     const HARD_RELOAD_MS = 300000;
 
@@ -191,19 +193,6 @@
       progressFillEl.style.width = `${progress}%`;
     }
 
-    function buildVideoUrl(state) {
-      if (state.video_public_id && state.video_version) {
-        const publicId = String(state.video_public_id)
-          .split("/")
-          .map(encodeURIComponent)
-          .join("/");
-        return `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/v${state.video_version}/${publicId}.mp4`;
-      }
-
-      // Temporary backwards compatibility until data.json has been republished
-      return state.video_url || "";
-    }
-
     async function startVideo(url, key) {
       if (!url || key === currentVideoKey) return;
 
@@ -227,7 +216,7 @@
       }
     }
 
-    async function loadState() {
+    async function loadMetrics() {
       try {
         const response = await fetch(`${STATE_URL}?t=${Date.now()}`, { cache: "no-store" });
         if (!response.ok) throw new Error(`State request failed: ${response.status}`);
@@ -235,16 +224,48 @@
         const raw = await response.text();
         const state = decodeState(raw);
         updateMetrics(state);
+      } catch (error) {
+        console.error("Could not load Main Quest metrics", error);
+      }
+    }
 
-        const videoUrl = buildVideoUrl(state);
-        const videoKey = state.video_public_id && state.video_version
-          ? `${state.video_public_id}@${state.video_version}`
-          : videoUrl;
+    async function loadLatestVideo() {
+      try {
+        const response = await fetch(`${VIDEO_LIST_URL}?t=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`Video list request failed: ${response.status}`);
+
+        const data = await response.json();
+        const resources = Array.isArray(data.resources) ? data.resources : [];
+        if (!resources.length) throw new Error(`No videos found for tag ${VIDEO_TAG}`);
+
+        const latest = resources.reduce((best, item) => {
+          if (!best) return item;
+          return Number(item.version || 0) > Number(best.version || 0) ? item : best;
+        }, null);
+
+        const publicId = String(latest.public_id || "")
+          .split("/")
+          .map(encodeURIComponent)
+          .join("/");
+        const format = latest.format || "mp4";
+        const version = Number(latest.version || 0);
+
+        if (!publicId || !version) throw new Error("Tagged video is missing public_id or version");
+
+        const videoUrl = `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/v${version}/${publicId}.${format}`;
+        const videoKey = `${latest.public_id}@${version}`;
 
         await startVideo(videoUrl, videoKey);
       } catch (error) {
-        console.error("Could not load Main Quest state", error);
+        console.error("Could not load latest tagged Main Quest video", error);
       }
+    }
+
+    async function refreshDashboard() {
+      await Promise.allSettled([
+        loadMetrics(),
+        loadLatestVideo()
+      ]);
     }
 
     video.addEventListener("canplay", () => {
@@ -261,8 +282,8 @@
       if (currentVideoKey) video.play().catch(() => {});
     });
 
-    loadState();
-    setInterval(loadState, REFRESH_MS);
+    refreshDashboard();
+    setInterval(refreshDashboard, REFRESH_MS);
     setInterval(() => location.reload(), HARD_RELOAD_MS);
   </script>
 </body>
