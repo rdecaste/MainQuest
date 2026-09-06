@@ -4,51 +4,38 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#05070b" />
-  <title>Main Quest Progression</title>
-
+  <title>Main Quest</title>
   <style>
     :root {
-      --bg: #05070b;
-      --glass: rgba(10, 14, 22, 0.58);
-      --glass-strong: rgba(7, 10, 16, 0.78);
-      --line: rgba(255, 255, 255, 0.14);
-      --text: #f7f8fb;
-      --muted: rgba(247, 248, 251, 0.66);
-      --accent: #ffd54a;
-      --accent-2: #ff9f1c;
-      --safe-top: env(safe-area-inset-top, 0px);
+      --glass: rgba(7, 10, 16, 0.66);
+      --line: rgba(255,255,255,0.15);
+      --text: #fff;
+      --muted: rgba(255,255,255,0.68);
+      --accent1: #ff9f1c;
+      --accent2: #ffd54a;
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; }
 
     html, body {
       margin: 0;
       width: 100%;
       height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family:
-        Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont,
-        "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       overflow: hidden;
-    }
-
-    body {
-      min-height: 100dvh;
+      background: #05070b;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont,
+        "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
     .screen {
       position: relative;
       width: 100vw;
+      height: 100vh;
       height: 100dvh;
-      min-height: 100vh;
       overflow: hidden;
       background: #05070b;
-      isolation: isolate;
     }
 
     .hero {
@@ -57,100 +44,33 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      object-position: center center;
-      z-index: 0;
-      transform: scale(1.002);
+      object-position: center;
+      display: block;
     }
 
     .shade {
       position: absolute;
       inset: 0;
-      z-index: 1;
-      background:
-        linear-gradient(
-          to bottom,
-          rgba(0,0,0,0.52) 0%,
-          rgba(0,0,0,0.08) 18%,
-          rgba(0,0,0,0.03) 52%,
-          rgba(0,0,0,0.32) 72%,
-          rgba(0,0,0,0.88) 100%
-        );
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.03) 0%,
+        rgba(0,0,0,0.02) 58%,
+        rgba(0,0,0,0.40) 76%,
+        rgba(0,0,0,0.88) 100%
+      );
       pointer-events: none;
     }
 
-    .content {
+    .metrics {
       position: absolute;
-      inset: 0;
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding:
-        calc(16px + var(--safe-top))
-        16px
-        calc(18px + var(--safe-bottom));
-    }
-
-    .top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .eyebrow {
-      font-size: 11px;
-      line-height: 1;
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
-      color: var(--muted);
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .title {
-      margin: 0;
-      font-size: clamp(24px, 7vw, 34px);
-      line-height: 0.98;
-      font-weight: 850;
-      letter-spacing: -0.035em;
-      text-shadow: 0 2px 18px rgba(0,0,0,0.35);
-    }
-
-    .level-badge {
-      flex: 0 0 auto;
-      min-width: 72px;
-      padding: 10px 12px;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: rgba(8, 11, 17, 0.54);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      text-align: center;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.18);
-    }
-
-    .level-badge .label {
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: var(--muted);
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .level-badge .value {
-      font-size: 26px;
-      line-height: 1;
-      font-weight: 900;
-    }
-
-    .bottom {
+      left: 14px;
+      right: 14px;
+      bottom: calc(16px + var(--safe-bottom));
       display: grid;
-      gap: 12px;
+      gap: 10px;
     }
 
-    .metric-row {
+    .row {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
@@ -158,186 +78,93 @@
 
     .card {
       border: 1px solid var(--line);
-      border-radius: 22px;
+      border-radius: 20px;
       background: var(--glass);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      box-shadow: 0 14px 42px rgba(0,0,0,0.28);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.28);
     }
 
     .metric {
-      padding: 14px 15px 13px;
-      min-height: 88px;
+      min-height: 84px;
+      padding: 13px 14px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
 
-    .metric .label {
+    .label {
       font-size: 10px;
+      font-weight: 750;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      letter-spacing: 0.16em;
-      font-weight: 700;
       color: var(--muted);
     }
 
-    .metric .value {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-      font-size: clamp(28px, 9vw, 40px);
+    .value {
+      font-size: clamp(31px, 10vw, 42px);
       line-height: 1;
       font-weight: 900;
       letter-spacing: -0.04em;
     }
 
-    .metric .unit {
+    .unit {
+      margin-left: 5px;
       font-size: 12px;
+      font-weight: 750;
       color: var(--muted);
-      font-weight: 700;
-      letter-spacing: 0.02em;
+      letter-spacing: 0;
     }
 
-    .progress-card {
-      padding: 16px;
-      background: var(--glass-strong);
-    }
-
-    .progress-head {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .progress-copy .label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      font-weight: 700;
-      color: var(--muted);
-      margin-bottom: 5px;
-    }
-
-    .progress-copy .next {
-      font-size: 17px;
-      line-height: 1.15;
-      font-weight: 800;
-    }
-
-    .progress-percent {
-      font-size: 28px;
-      line-height: 1;
-      font-weight: 900;
-      letter-spacing: -0.04em;
+    .progress {
+      padding: 14px;
     }
 
     .bar {
-      position: relative;
-      height: 12px;
+      height: 14px;
       border-radius: 999px;
       overflow: hidden;
-      background: rgba(255, 255, 255, 0.11);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255,255,255,0.13);
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
-    .bar-fill {
+    .fill {
       width: 10%;
       height: 100%;
       border-radius: inherit;
-      background: linear-gradient(90deg, var(--accent-2), var(--accent));
-      box-shadow: 0 0 24px rgba(255, 196, 54, 0.42);
-    }
-
-    .footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 3px;
-      color: rgba(255,255,255,0.52);
-      font-size: 10px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      font-weight: 700;
-    }
-
-    @media (max-height: 680px) {
-      .metric {
-        min-height: 76px;
-        padding: 12px 13px;
-      }
-      .progress-card {
-        padding: 13px;
-      }
-      .bottom {
-        gap: 9px;
-      }
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+      box-shadow: 0 0 22px rgba(255,196,54,0.42);
     }
   </style>
 </head>
-
 <body>
   <main class="screen">
     <img
       class="hero"
       src="https://res.cloudinary.com/a3xk0plk/image/upload/v1788696083/8177ba3e-8184-4b5f-ac9c-e0ebbc0b2d2b.png"
-      alt="Goku progression artwork"
+      alt="Goku"
     />
 
     <div class="shade"></div>
 
-    <section class="content">
-      <header class="top">
-        <div>
-          <div class="eyebrow">Main Quest Progression</div>
-          <h1 class="title">Goku · Base</h1>
-        </div>
-
-        <div class="level-badge">
-          <div class="label">Level</div>
+    <section class="metrics">
+      <div class="row">
+        <article class="card metric">
+          <div class="label">Current Level</div>
           <div class="value">1</div>
-        </div>
-      </header>
-
-      <div class="bottom">
-        <div class="metric-row">
-          <article class="card metric">
-            <div class="label">Current XP</div>
-            <div class="value">
-              12
-              <span class="unit">XP</span>
-            </div>
-          </article>
-
-          <article class="card metric">
-            <div class="label">To Next Level</div>
-            <div class="value">
-              18
-              <span class="unit">XP</span>
-            </div>
-          </article>
-        </div>
-
-        <article class="card progress-card">
-          <div class="progress-head">
-            <div class="progress-copy">
-              <div class="label">Level Progress</div>
-              <div class="next">Level 1 → Level 2</div>
-            </div>
-            <div class="progress-percent">10%</div>
-          </div>
-
-          <div class="bar" aria-label="Level progress 10 percent">
-            <div class="bar-fill"></div>
-          </div>
         </article>
 
-        <div class="footer">
-          <span>Base Form</span>
-          <span>12 / 30 XP</span>
-        </div>
+        <article class="card metric">
+          <div class="label">Current XP</div>
+          <div class="value">12<span class="unit">XP</span></div>
+        </article>
       </div>
+
+      <article class="card progress" aria-label="Level progress 10 percent">
+        <div class="bar">
+          <div class="fill"></div>
+        </div>
+      </article>
     </section>
   </main>
 </body>
