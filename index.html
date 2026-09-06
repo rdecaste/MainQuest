@@ -11,41 +11,31 @@
   <style>
     :root {
       --bg: #05070b;
-      --text: #ffffff;
+      --text: #fff;
       --muted: rgba(255,255,255,.72);
       --accent-a: #ff9f1c;
       --accent-b: #ffd54a;
-      --fade-ms: 500ms;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
       --safe-left: env(safe-area-inset-left, 0px);
       --safe-right: env(safe-area-inset-right, 0px);
     }
 
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-      -webkit-user-select: none;
-      user-select: none;
-    }
+    * { box-sizing: border-box; }
 
-    html,
-    body {
+    html, body {
       margin: 0;
       width: 100%;
       height: 100%;
       overflow: hidden;
       background: var(--bg);
       color: var(--text);
-      font-family: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      overscroll-behavior: none;
-      touch-action: none;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
     body {
       width: 100vw;
       height: 100vh;
-      height: 100svh;
       height: 100dvh;
     }
 
@@ -56,14 +46,7 @@
       background: var(--bg);
     }
 
-    .media {
-      position: absolute;
-      inset: 0;
-      background: var(--bg);
-      overflow: hidden;
-    }
-
-    .media video {
+    #heroVideo {
       position: absolute;
       inset: 0;
       width: 100%;
@@ -71,13 +54,7 @@
       object-fit: cover;
       object-position: center;
       background: var(--bg);
-      opacity: 0;
-      transition: opacity var(--fade-ms) linear;
-      pointer-events: none;
-    }
-
-    .media video.visible {
-      opacity: 1;
+      display: block;
     }
 
     .hud-top {
@@ -85,24 +62,16 @@
       top: calc(12px + var(--safe-top));
       left: calc(12px + var(--safe-left));
       right: calc(12px + var(--safe-right));
-      z-index: 5;
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      z-index: 2;
       pointer-events: none;
     }
 
-    .metric {
-      min-width: 72px;
-    }
-
-    .metric.right {
-      text-align: right;
-    }
+    .metric.right { text-align: right; }
 
     .label {
       font-size: 8px;
-      line-height: 1.1;
       font-weight: 800;
       letter-spacing: .14em;
       text-transform: uppercase;
@@ -116,7 +85,6 @@
       line-height: 1;
       font-weight: 850;
       letter-spacing: -.04em;
-      color: var(--text);
       text-shadow: 0 1px 6px rgba(0,0,0,.9);
     }
 
@@ -125,20 +93,18 @@
       left: calc(12px + var(--safe-left));
       right: calc(12px + var(--safe-right));
       bottom: calc(14px + var(--safe-bottom));
-      z-index: 5;
+      z-index: 2;
       pointer-events: none;
     }
 
     .progress-head {
       display: flex;
       justify-content: space-between;
-      align-items: center;
       margin-bottom: 6px;
     }
 
     .progress-value {
       font-size: 10px;
-      line-height: 1;
       font-weight: 800;
       color: rgba(255,255,255,.82);
       text-shadow: 0 1px 4px rgba(0,0,0,.85);
@@ -150,7 +116,6 @@
       overflow: hidden;
       border-radius: 999px;
       background: rgba(255,255,255,.18);
-      box-shadow: 0 1px 5px rgba(0,0,0,.4);
     }
 
     .progress-fill {
@@ -158,25 +123,27 @@
       height: 100%;
       border-radius: inherit;
       background: linear-gradient(90deg, var(--accent-a), var(--accent-b));
-      box-shadow: 0 0 10px rgba(255,196,54,.28);
-      transition: width 350ms ease;
+      transition: width 300ms ease;
     }
   </style>
 </head>
 
 <body>
   <main class="app">
-    <div class="media">
-      <video id="video1" muted playsinline preload="auto"></video>
-      <video id="video2" muted playsinline preload="auto"></video>
-    </div>
+    <video
+      id="heroVideo"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="auto"
+    ></video>
 
     <div class="hud-top">
       <div class="metric">
         <div class="label">XP</div>
         <div class="value" id="xp">—</div>
       </div>
-
       <div class="metric right">
         <div class="label">Level</div>
         <div class="value" id="level">—</div>
@@ -197,63 +164,54 @@
   <script>
     const STATE_URL = "https://res.cloudinary.com/a3xk0plk/raw/upload/MainQuest/data.json";
     const REFRESH_MS = 60000;
-    const FADE_SECONDS = 0.5;
 
+    const video = document.getElementById("heroVideo");
     const xpEl = document.getElementById("xp");
     const levelEl = document.getElementById("level");
     const progressTextEl = document.getElementById("progressText");
     const progressFillEl = document.getElementById("progressFill");
 
-    const video1 = document.getElementById("video1");
-    const video2 = document.getElementById("video2");
-
-    let front = video1;
-    let back = video2;
     let currentVideoUrl = "";
-    let currentPosterUrl = "";
-    let crossfading = false;
 
     function decodeState(raw) {
       const text = raw.trim();
       const prefix = "data:application/json;base64,";
 
       if (text.startsWith(prefix)) {
-        const base64 = text.slice(prefix.length);
-        const binary = atob(base64);
-        const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
+        const binary = atob(text.slice(prefix.length));
+        const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
         return JSON.parse(new TextDecoder().decode(bytes));
       }
 
       return JSON.parse(text);
     }
 
-    function setMetrics(state) {
+    function updateMetrics(state) {
       xpEl.textContent = state.xp ?? "—";
       levelEl.textContent = state.level ?? "—";
 
-      const raw = Number(state.progress ?? 0);
-      const progress = Number.isFinite(raw) ? Math.max(0, Math.min(100, raw)) : 0;
-
+      const value = Number(state.progress ?? 0);
+      const progress = Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
       progressTextEl.textContent = `${progress}%`;
       progressFillEl.style.width = `${progress}%`;
     }
 
-    function configureVideo(video, url, poster) {
+    async function startVideo(url) {
+      if (!url || url === currentVideoUrl) return;
+
+      currentVideoUrl = url;
       video.pause();
       video.removeAttribute("src");
       video.load();
 
-      if (poster) video.poster = poster;
-      else video.removeAttribute("poster");
-
-      video.src = url;
-      video.preload = "auto";
       video.muted = true;
+      video.defaultMuted = true;
+      video.autoplay = true;
+      video.loop = true;
       video.playsInline = true;
+      video.src = url;
       video.load();
-    }
 
-    async function play(video) {
       try {
         await video.play();
       } catch (error) {
@@ -261,80 +219,36 @@
       }
     }
 
-    async function loadVideo(url, poster) {
-      if (!url) return;
-      if (url === currentVideoUrl && poster === currentPosterUrl) return;
-
-      currentVideoUrl = url;
-      currentPosterUrl = poster || "";
-      crossfading = false;
-
-      configureVideo(front, url, poster);
-      configureVideo(back, url, poster);
-
-      front.currentTime = 0;
-      back.currentTime = 0;
-      front.classList.add("visible");
-      back.classList.remove("visible");
-
-      await play(front);
-    }
-
-    async function crossfadeLoop() {
-      if (crossfading || !currentVideoUrl) return;
-      crossfading = true;
-
-      back.currentTime = 0;
-      await play(back);
-
-      back.classList.add("visible");
-      front.classList.remove("visible");
-
-      window.setTimeout(() => {
-        const oldFront = front;
-        front = back;
-        back = oldFront;
-
-        back.pause();
-        back.currentTime = 0;
-        crossfading = false;
-      }, FADE_SECONDS * 1000);
-    }
-
-    function watchLoop() {
-      if (!front.duration || crossfading) return;
-
-      const remaining = front.duration - front.currentTime;
-      if (remaining <= FADE_SECONDS) {
-        crossfadeLoop();
-      }
-    }
-
-    video1.addEventListener("timeupdate", watchLoop);
-    video2.addEventListener("timeupdate", watchLoop);
-
     async function loadState() {
       try {
-        const response = await fetch(`${STATE_URL}?t=${Date.now()}`, {
-          cache: "no-store"
-        });
-
-        if (!response.ok) {
-          throw new Error(`State request failed: ${response.status}`);
-        }
+        const response = await fetch(`${STATE_URL}?t=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`State request failed: ${response.status}`);
 
         const raw = await response.text();
         const state = decodeState(raw);
-
-        setMetrics(state);
-        await loadVideo(state.video_url || "", state.image_url || "");
+        updateMetrics(state);
+        await startVideo(state.video_url || "");
       } catch (error) {
         console.error("Could not load Main Quest state", error);
       }
     }
 
+    video.addEventListener("canplay", () => {
+      video.play().catch(() => {});
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && currentVideoUrl) {
+        video.play().catch(() => {});
+      }
+    });
+
+    window.addEventListener("focus", () => {
+      if (currentVideoUrl) video.play().catch(() => {});
+    });
+
     loadState();
-    window.setInterval(loadState, REFRESH_MS);
+    setInterval(loadState, REFRESH_MS);
   </script>
 </body>
 </html>
