@@ -130,14 +130,7 @@
 
 <body>
   <main class="app">
-    <video
-      id="heroVideo"
-      autoplay
-      muted
-      loop
-      playsinline
-      preload="auto"
-    ></video>
+    <video id="heroVideo" autoplay muted loop playsinline preload="auto"></video>
 
     <div class="hud-top">
       <div class="metric">
@@ -162,7 +155,8 @@
   </main>
 
   <script>
-    const STATE_URL = "https://res.cloudinary.com/a3xk0plk/raw/upload/MainQuest/data.json";
+    const CLOUD_NAME = "a3xk0plk";
+    const STATE_URL = `https://res.cloudinary.com/${CLOUD_NAME}/raw/upload/MainQuest/data.json`;
     const REFRESH_MS = 30000;
     const HARD_RELOAD_MS = 300000;
 
@@ -172,7 +166,7 @@
     const progressTextEl = document.getElementById("progressText");
     const progressFillEl = document.getElementById("progressFill");
 
-    let currentVideoUrl = "";
+    let currentVideoKey = "";
 
     function decodeState(raw) {
       const text = raw.trim();
@@ -197,10 +191,23 @@
       progressFillEl.style.width = `${progress}%`;
     }
 
-    async function startVideo(url) {
-      if (!url || url === currentVideoUrl) return;
+    function buildVideoUrl(state) {
+      if (state.video_public_id && state.video_version) {
+        const publicId = String(state.video_public_id)
+          .split("/")
+          .map(encodeURIComponent)
+          .join("/");
+        return `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/v${state.video_version}/${publicId}.mp4`;
+      }
 
-      currentVideoUrl = url;
+      // Temporary backwards compatibility until data.json has been republished
+      return state.video_url || "";
+    }
+
+    async function startVideo(url, key) {
+      if (!url || key === currentVideoKey) return;
+
+      currentVideoKey = key;
       video.pause();
       video.removeAttribute("src");
       video.load();
@@ -228,7 +235,13 @@
         const raw = await response.text();
         const state = decodeState(raw);
         updateMetrics(state);
-        await startVideo(state.video_url || "");
+
+        const videoUrl = buildVideoUrl(state);
+        const videoKey = state.video_public_id && state.video_version
+          ? `${state.video_public_id}@${state.video_version}`
+          : videoUrl;
+
+        await startVideo(videoUrl, videoKey);
       } catch (error) {
         console.error("Could not load Main Quest state", error);
       }
@@ -239,13 +252,13 @@
     });
 
     document.addEventListener("visibilitychange", () => {
-      if (!document.hidden && currentVideoUrl) {
+      if (!document.hidden && currentVideoKey) {
         video.play().catch(() => {});
       }
     });
 
     window.addEventListener("focus", () => {
-      if (currentVideoUrl) video.play().catch(() => {});
+      if (currentVideoKey) video.play().catch(() => {});
     });
 
     loadState();
