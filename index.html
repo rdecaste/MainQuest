@@ -52,8 +52,6 @@
 
   <script>
     const STATE_URL = './data.json';
-    const VIDEO_ROOT = 'https://res.cloudinary.com/a3xk0plk/video/upload';
-    const VIDEO_PATH = 'Quest-Progress/current.mp4';
     const REFRESH_MS = 15000;
 
     const video = document.getElementById('heroVideo');
@@ -62,7 +60,7 @@
     const progressTextEl = document.getElementById('progressText');
     const progressFillEl = document.getElementById('progressFill');
 
-    let loadedVersion = null;
+    let loadedVideoKey = '';
 
     async function refreshDashboard() {
       try {
@@ -78,10 +76,15 @@
         progressTextEl.textContent = `${progress}%`;
         progressFillEl.style.width = `${progress}%`;
 
-        const version = Number(state.video_version || 0);
-        if (version && version !== loadedVersion) {
-          loadedVersion = version;
-          video.src = `${VIDEO_ROOT}/v${version}/${VIDEO_PATH}`;
+        const videoUrl = state.video_url || '';
+        const videoKey = String(state.video_public_id || state.video_version || videoUrl);
+
+        if (videoUrl && videoKey !== loadedVideoKey) {
+          loadedVideoKey = videoKey;
+          video.pause();
+          video.removeAttribute('src');
+          video.load();
+          video.src = videoUrl;
           video.load();
           video.play().catch(() => {});
         }
