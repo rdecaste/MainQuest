@@ -22,7 +22,6 @@
     }
 
     * { box-sizing: border-box; }
-
     html, body {
       margin: 0;
       width: 100%;
@@ -32,20 +31,8 @@
       color: var(--text);
       font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-
-    body {
-      width: 100vw;
-      height: 100vh;
-      height: 100dvh;
-    }
-
-    .app {
-      position: fixed;
-      inset: 0;
-      overflow: hidden;
-      background: var(--bg);
-    }
-
+    body { width: 100vw; height: 100vh; height: 100dvh; }
+    .app { position: fixed; inset: 0; overflow: hidden; background: var(--bg); }
     #heroVideo {
       position: absolute;
       inset: 0;
@@ -56,7 +43,6 @@
       background: var(--bg);
       display: block;
     }
-
     .hud-top {
       position: absolute;
       top: calc(12px + var(--safe-top));
@@ -67,9 +53,7 @@
       z-index: 2;
       pointer-events: none;
     }
-
     .metric.right { text-align: right; }
-
     .label {
       font-size: 8px;
       font-weight: 800;
@@ -78,7 +62,6 @@
       color: var(--muted);
       text-shadow: 0 1px 4px rgba(0,0,0,.85);
     }
-
     .value {
       margin-top: 3px;
       font-size: clamp(23px, 6.5vw, 31px);
@@ -87,7 +70,6 @@
       letter-spacing: -.04em;
       text-shadow: 0 1px 6px rgba(0,0,0,.9);
     }
-
     .hud-bottom {
       position: absolute;
       left: calc(12px + var(--safe-left));
@@ -96,20 +78,13 @@
       z-index: 2;
       pointer-events: none;
     }
-
-    .progress-head {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 6px;
-    }
-
+    .progress-head { display: flex; justify-content: space-between; margin-bottom: 6px; }
     .progress-value {
       font-size: 10px;
       font-weight: 800;
       color: rgba(255,255,255,.82);
       text-shadow: 0 1px 4px rgba(0,0,0,.85);
     }
-
     .progress-track {
       width: 100%;
       height: 7px;
@@ -117,7 +92,6 @@
       border-radius: 999px;
       background: rgba(255,255,255,.18);
     }
-
     .progress-fill {
       width: 0%;
       height: 100%;
@@ -127,7 +101,6 @@
     }
   </style>
 </head>
-
 <body>
   <main class="app">
     <video id="heroVideo" autoplay muted loop playsinline preload="auto"></video>
@@ -155,11 +128,8 @@
   </main>
 
   <script>
-    const CLOUD_NAME = "a3xk0plk";
-    const VIDEO_TAG = "main-quest-live";
     const STATE_URL = "https://raw.githubusercontent.com/rdecaste/MainQuest/main/data.json";
-    const VIDEO_LIST_URL = `https://res.cloudinary.com/${CLOUD_NAME}/video/list/${VIDEO_TAG}.json`;
-    const REFRESH_MS = 60000;
+    const REFRESH_MS = 15000;
     const HARD_RELOAD_MS = 900000;
 
     const video = document.getElementById("heroVideo");
@@ -173,7 +143,6 @@
     function updateMetrics(state) {
       xpEl.textContent = state.xp ?? "—";
       levelEl.textContent = state.level ?? "—";
-
       const value = Number(state.progress ?? 0);
       const progress = Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
       progressTextEl.textContent = `${progress}%`;
@@ -203,53 +172,20 @@
       }
     }
 
-    async function loadMetrics() {
+    async function refreshDashboard() {
       try {
         const response = await fetch(`${STATE_URL}?t=${Date.now()}`, { cache: "no-store" });
         if (!response.ok) throw new Error(`State request failed: ${response.status}`);
-        updateMetrics(await response.json());
-      } catch (error) {
-        console.error("Could not load Main Quest metrics", error);
-      }
-    }
 
-    async function loadLatestVideo() {
-      try {
-        const response = await fetch(`${VIDEO_LIST_URL}?t=${Date.now()}`, { cache: "no-store" });
-        if (!response.ok) throw new Error(`Video list request failed: ${response.status}`);
+        const state = await response.json();
+        updateMetrics(state);
 
-        const data = await response.json();
-        const resources = Array.isArray(data.resources) ? data.resources : [];
-        if (!resources.length) throw new Error(`No videos found for tag ${VIDEO_TAG}`);
-
-        const latest = resources.reduce((best, item) => {
-          if (!best) return item;
-          return Number(item.version || 0) > Number(best.version || 0) ? item : best;
-        }, null);
-
-        const publicId = String(latest.public_id || "")
-          .split("/")
-          .map(encodeURIComponent)
-          .join("/");
-        const format = latest.format || "mp4";
-        const version = Number(latest.version || 0);
-
-        if (!publicId || !version) throw new Error("Tagged video is missing public_id or version");
-
-        const videoUrl = `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/v${version}/${publicId}.${format}`;
-        const videoKey = `${latest.public_id}@${version}`;
-
+        const videoUrl = state.video_url;
+        const videoKey = String(state.video_version ?? videoUrl ?? "");
         await startVideo(videoUrl, videoKey);
       } catch (error) {
-        console.error("Could not load latest tagged Main Quest video", error);
+        console.error("Could not refresh Main Quest dashboard", error);
       }
-    }
-
-    async function refreshDashboard() {
-      await Promise.allSettled([
-        loadMetrics(),
-        loadLatestVideo()
-      ]);
     }
 
     video.addEventListener("canplay", () => {
@@ -257,9 +193,7 @@
     });
 
     document.addEventListener("visibilitychange", () => {
-      if (!document.hidden && currentVideoKey) {
-        video.play().catch(() => {});
-      }
+      if (!document.hidden && currentVideoKey) video.play().catch(() => {});
     });
 
     window.addEventListener("focus", () => {
