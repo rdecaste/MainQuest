@@ -45,7 +45,7 @@
     </div>
 
     <div class="hud-bottom">
-      <div class="progress-head"><div class="label">Progress</div><div class="progress-value" id="progressText">0%</div></div>
+      <div class="progress-head"><div class="label">Stage Progress</div><div class="progress-value" id="progressText">0%</div></div>
       <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
     </div>
   </main>
@@ -70,7 +70,7 @@
         const state = await response.json();
 
         xpEl.textContent = state.xp ?? '—';
-        levelEl.textContent = state.level ?? '—';
+        levelEl.textContent = state.display_level ?? state.level ?? '—';
 
         const progress = Math.max(0, Math.min(100, Number(state.progress || 0)));
         progressTextEl.textContent = `${progress}%`;
