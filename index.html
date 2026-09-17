@@ -30,22 +30,26 @@
     .value{margin-top:3px;font-size:clamp(23px,6.5vw,31px);line-height:1;font-weight:850;letter-spacing:-.04em;text-shadow:0 1px 6px rgba(0,0,0,.9)}
     .hud-bottom{position:absolute;left:calc(12px + var(--safe-left));right:calc(12px + var(--safe-right));bottom:calc(14px + var(--safe-bottom));z-index:2;pointer-events:none}
     .progress-head{display:flex;justify-content:space-between;margin-bottom:6px}
-    .progress-value{font-size:10px;font-weight:800;color:rgba(255,255,255,.82);text-shadow:0 1px 4px rgba(0,0,0,.85)}
-    .progress-track{width:100%;height:7px;overflow:visible;border-radius:999px;background:rgba(255,255,255,.18);--flow-duration:8s;--flow-opacity:.16;--bar-glow:0 0 4px rgba(255,213,74,.18);--pulse-duration:8s}
-    .progress-track[data-tier="2"]{--flow-duration:5.5s;--flow-opacity:.25;--bar-glow:0 0 6px rgba(255,213,74,.28);--pulse-duration:6s}
-    .progress-track[data-tier="3"]{--flow-duration:3.2s;--flow-opacity:.38;--bar-glow:0 0 9px rgba(255,213,74,.42);--pulse-duration:4.2s}
-    .progress-track[data-tier="4"]{--flow-duration:1.9s;--flow-opacity:.55;--bar-glow:0 0 13px rgba(255,213,74,.58);--pulse-duration:2.8s}
-    .progress-fill{position:relative;width:0%;height:100%;overflow:hidden;border-radius:inherit;background:linear-gradient(90deg,var(--accent-a),var(--accent-b));box-shadow:var(--bar-glow);transition:width 300ms ease;animation:bar-pulse var(--pulse-duration) ease-in-out infinite}
+    .progress-label{position:relative;display:inline-block;color:var(--rate-color);text-shadow:0 0 var(--label-glow-radius) var(--rate-glow),0 1px 4px rgba(0,0,0,.85);animation:label-pulse var(--label-pulse-duration) ease-in-out infinite}
+    .progress-label::after{content:"";position:absolute;inset:-2px -4px;pointer-events:none;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,0) 38%,rgba(255,255,255,var(--label-shimmer-opacity)) 50%,rgba(255,255,255,0) 62%,transparent 80%);background-size:220% 100%;background-position:220% 0;mix-blend-mode:screen;animation:label-shimmer var(--label-shimmer-duration) linear infinite}
+    .progress-value{font-size:10px;font-weight:800;color:var(--rate-color);text-shadow:0 0 var(--label-glow-radius) var(--rate-glow),0 1px 4px rgba(0,0,0,.85);animation:label-pulse var(--label-pulse-duration) ease-in-out infinite}
+    .progress-track{width:100%;height:7px;overflow:visible;border-radius:999px;background:rgba(255,255,255,.18);--rate-color:#b7773d;--rate-a:#8d5524;--rate-b:#d59656;--rate-glow:rgba(191,119,57,.28);--flow-duration:9s;--flow-opacity:.08;--bar-glow:0 0 4px rgba(183,119,61,.22);--pulse-duration:9s;--label-glow-radius:3px;--label-pulse-duration:9s;--label-shimmer-duration:12s;--label-shimmer-opacity:.06}
+    .progress-track[data-tier="2"]{--rate-color:#d6d9df;--rate-a:#9fa7b2;--rate-b:#eef2f7;--rate-glow:rgba(220,226,236,.38);--flow-duration:6.5s;--flow-opacity:.20;--bar-glow:0 0 7px rgba(214,219,228,.34);--pulse-duration:6.5s;--label-glow-radius:5px;--label-pulse-duration:6.5s;--label-shimmer-duration:8.5s;--label-shimmer-opacity:.18}
+    .progress-track[data-tier="3"]{--rate-color:#ffd65c;--rate-a:#c99318;--rate-b:#ffe985;--rate-glow:rgba(255,211,72,.54);--flow-duration:3.8s;--flow-opacity:.34;--bar-glow:0 0 11px rgba(255,211,72,.48);--pulse-duration:4.4s;--label-glow-radius:8px;--label-pulse-duration:4.4s;--label-shimmer-duration:5.5s;--label-shimmer-opacity:.32}
+    .progress-track[data-tier="4"]{--rate-color:#6fd5ff;--rate-a:#1597e5;--rate-b:#a8ecff;--rate-glow:rgba(61,190,255,.74);--flow-duration:1.9s;--flow-opacity:.56;--bar-glow:0 0 16px rgba(42,184,255,.68),0 0 28px rgba(42,184,255,.24);--pulse-duration:2.6s;--label-glow-radius:12px;--label-pulse-duration:2.6s;--label-shimmer-duration:3.2s;--label-shimmer-opacity:.56}
+    .progress-fill{position:relative;width:0%;height:100%;overflow:hidden;border-radius:inherit;background:linear-gradient(90deg,var(--rate-a),var(--rate-b));box-shadow:var(--bar-glow);transition:width 300ms ease;animation:bar-pulse var(--pulse-duration) ease-in-out infinite}
     .progress-fill::after{content:"";position:absolute;top:0;bottom:0;left:-45%;width:42%;background:linear-gradient(90deg,transparent,rgba(255,255,255,var(--flow-opacity)),transparent);transform:skewX(-18deg);animation:bar-flow var(--flow-duration) linear infinite}
     @keyframes bar-flow{from{left:-45%}to{left:110%}}
-    @keyframes bar-pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.08)}}
+    @keyframes bar-pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.10)}}
+    @keyframes label-pulse{0%,100%{opacity:.88;filter:brightness(.96)}50%{opacity:1;filter:brightness(1.14)}}
+    @keyframes label-shimmer{0%,22%{background-position:220% 0}58%,100%{background-position:-120% 0}}
     .stage-orbs{display:flex;justify-content:center;gap:12px;margin-bottom:12px;min-height:14px}
     .stage-orb{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3bd 0%,#ffd54a 35%,#ee8a19 80%);box-shadow:0 0 5px #fff1aa66,0 0 14px #ffc43c77}
     .stage-orb[hidden]{display:none}
     .xp-gain{position:absolute;top:100%;margin-top:9px;padding:5px 8px;border-radius:8px;background:rgba(5,7,11,.7);color:var(--accent-b);font-size:13px;font-weight:800}
     .xp-gain:not([hidden]){animation:xp-arrive 450ms ease-out}
     @keyframes xp-arrive{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-    @media(prefers-reduced-motion:reduce){.xp-gain:not([hidden]){animation:none}.progress-fill{transition:none;animation:none}.progress-fill::after{animation:none;display:none}}
+    @media(prefers-reduced-motion:reduce){.xp-gain:not([hidden]){animation:none}.progress-fill{transition:none;animation:none}.progress-fill::after,.progress-label::after{animation:none;display:none}.progress-label,.progress-value{animation:none}}
   </style>
 </head>
 <body>
@@ -58,7 +62,7 @@
     </div>
 
     <div class="hud-bottom">
-      <div class="progress-head"><div class="label">Level Progress</div><div class="progress-value" id="progressText">0%</div></div>
+      <div class="progress-head"><div class="label progress-label" id="progressLabel">Level Progress</div><div class="progress-value" id="progressText">0%</div></div>
       <div class="stage-orbs" id="stageOrbs" role="img" aria-label="Sublevel 1 of 3"><span class="stage-orb" id="orb1" aria-hidden="true"></span><span class="stage-orb" id="orb2" aria-hidden="true" hidden></span><span class="stage-orb" id="orb3" aria-hidden="true" hidden></span></div>
       <div class="progress-track" id="levelProgress" data-tier="1" role="progressbar" aria-label="Level progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-fill" id="progressFill"></div></div>
     </div>
