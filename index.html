@@ -44,7 +44,7 @@
     .energy[data-tier="3"]{--aura:.21;--pulse:4.5s}
     .energy[data-tier="4"]{--aura:.29;--pulse:3.2s}
     .aura{position:absolute;inset:0;opacity:var(--aura);background:radial-gradient(ellipse at 50% 65%,transparent 40%,#ffbc3433 72%,#ffd54a88 100%);animation:energy-pulse var(--pulse) ease-in-out infinite alternate}
-    .particles{position:absolute;inset:12% 5% 15%}
+    .particles{display:none} /* Particle overlay disabled for visual comparison. */
     .particle{position:absolute;left:var(--x);bottom:0;width:2px;height:2px;border-radius:50%;background:#ffe9a3;box-shadow:0 0 5px #ffd54a;animation:energy-drift var(--duration) linear infinite;animation-delay:var(--delay)}
     .particle[hidden]{display:none}
     .lightning{display:none;position:absolute;top:28%;right:7%;width:24px;height:110px;background:#fff3bd;clip-path:polygon(68% 0,25% 44%,55% 44%,10% 100%,88% 35%,57% 35%);opacity:0}
