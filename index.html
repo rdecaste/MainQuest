@@ -35,22 +35,22 @@
     .hud-bottom[data-tier="4"]{--rate-color:#6fd5ff;--rate-a:#1597e5;--rate-b:#a8ecff;--rate-glow:rgba(61,190,255,.74);--flow-duration:1.9s;--flow-opacity:.56;--bar-glow:0 0 16px rgba(42,184,255,.68),0 0 28px rgba(42,184,255,.24);--pulse-duration:2.6s;--label-glow-radius:12px;--label-pulse-duration:2.6s;--label-shimmer-duration:3.2s;--label-shimmer-opacity:.56;--word-a:#0b7dcb;--word-b:#6fd5ff;--word-c:#d5f6ff;--word-glow:rgba(61,190,255,.78)}
     .hud-bottom[data-rarity="rare"] .progress-wordmark{filter:drop-shadow(0 0 calc(var(--label-glow-radius) + 2px) var(--word-glow))}
     .hud-bottom[data-rarity="epic"] .progress-wordmark{filter:drop-shadow(0 0 calc(var(--label-glow-radius) + 4px) var(--word-glow)) drop-shadow(0 0 7px var(--word-glow))}
-    .progress-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-    .progress-wordmark{width:min(72vw,220px);height:16px;overflow:visible;filter:drop-shadow(0 0 var(--label-glow-radius) var(--word-glow));animation:label-pulse var(--label-pulse-duration) ease-in-out infinite}
-    .progress-wordmark text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:9px;font-weight:850;letter-spacing:1px;fill:url(#wordGradient)}
+    .progress-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .progress-wordmark{width:min(80vw,260px);height:24px;overflow:visible;filter:drop-shadow(0 0 var(--label-glow-radius) var(--word-glow));animation:label-pulse var(--label-pulse-duration) ease-in-out infinite}
+    .progress-wordmark text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;font-weight:850;letter-spacing:.9px;fill:url(#wordGradient)}
     .progress-wordmark .word-stop-a{stop-color:var(--word-a)}
     .progress-wordmark .word-stop-b{stop-color:var(--word-b)}
     .progress-wordmark .word-stop-c{stop-color:var(--word-c)}
     .progress-wordmark .word-shimmer{fill:url(#shimmerGradient);opacity:var(--label-shimmer-opacity);mix-blend-mode:screen;animation:svg-shimmer var(--label-shimmer-duration) linear infinite}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-    .progress-value{font-size:10px;font-weight:800;color:var(--rate-color);text-shadow:0 0 var(--label-glow-radius) var(--rate-glow),0 1px 4px rgba(0,0,0,.85);animation:label-pulse var(--label-pulse-duration) ease-in-out infinite}
+    .progress-value{font-size:11px;font-weight:800;color:var(--rate-color);text-shadow:0 0 var(--label-glow-radius) var(--rate-glow),0 1px 4px rgba(0,0,0,.85);animation:label-pulse var(--label-pulse-duration) ease-in-out infinite}
     .progress-track{width:100%;height:7px;overflow:visible;border-radius:999px;background:rgba(255,255,255,.18)}
     .progress-fill{position:relative;width:0%;height:100%;overflow:hidden;border-radius:inherit;background:linear-gradient(90deg,var(--rate-a),var(--rate-b));box-shadow:var(--bar-glow);transition:width 300ms ease;animation:bar-pulse var(--pulse-duration) ease-in-out infinite}
     .progress-fill::after{content:"";position:absolute;top:0;bottom:0;left:-45%;width:42%;background:linear-gradient(90deg,transparent,rgba(255,255,255,var(--flow-opacity)),transparent);transform:skewX(-18deg);animation:bar-flow var(--flow-duration) linear infinite}
     @keyframes bar-flow{from{left:-45%}to{left:110%}}
     @keyframes bar-pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.10)}}
     @keyframes label-pulse{0%,100%{opacity:.88;filter:brightness(.96)}50%{opacity:1;filter:brightness(1.14)}}
-    @keyframes svg-shimmer{from{transform:translateX(-220px)}to{transform:translateX(240px)}}
+    @keyframes svg-shimmer{from{transform:translateX(-260px)}to{transform:translateX(280px)}}
     .stage-orbs{display:flex;justify-content:center;gap:12px;margin-bottom:12px;min-height:14px}
     .stage-orb{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3bd 0%,#ffd54a 35%,#ee8a19 80%);box-shadow:0 0 5px #fff1aa66,0 0 14px #ffc43c77}
     .stage-orb[hidden]{display:none}
@@ -73,7 +73,7 @@
     <div class="hud-bottom" id="progressHud" data-tier="1" data-rarity="common">
       <div class="progress-head">
         <div aria-hidden="true">
-          <svg class="progress-wordmark" viewBox="0 0 220 16" role="presentation">
+          <svg class="progress-wordmark" viewBox="0 0 260 24" role="presentation">
             <defs>
               <linearGradient id="wordGradient" x1="0" y1="0" x2="1" y2="0">
                 <stop class="word-stop-a" offset="0%" />
@@ -87,10 +87,10 @@
                 <stop offset="58%" stop-color="rgba(255,255,255,0)" />
                 <stop offset="100%" stop-color="rgba(255,255,255,0)" />
               </linearGradient>
-              <clipPath id="wordClip"><text id="motivationClipText" x="0" y="11.5">KEEP GOING</text></clipPath>
+              <clipPath id="wordClip"><text id="motivationClipText" x="0" y="17">KEEP GOING</text></clipPath>
             </defs>
-            <text id="motivationText" x="0" y="11.5">KEEP GOING</text>
-            <rect class="word-shimmer" x="-220" y="0" width="220" height="16" clip-path="url(#wordClip)" />
+            <text id="motivationText" x="0" y="17">KEEP GOING</text>
+            <rect class="word-shimmer" x="-260" y="0" width="260" height="24" clip-path="url(#wordClip)" />
           </svg>
         </div>
         <span class="sr-only" id="progressLabel">Keep going</span>
@@ -177,11 +177,11 @@
 
     function motivationFontSize(text) {
       const length = text.length;
-      if (length <= 14) return 9.4;
-      if (length <= 20) return 8.7;
-      if (length <= 27) return 7.9;
-      if (length <= 34) return 7.1;
-      return 6.4;
+      if (length <= 14) return 15;
+      if (length <= 20) return 13.8;
+      if (length <= 27) return 12.5;
+      if (length <= 34) return 11.3;
+      return 10.2;
     }
 
     function setMotivation(tier) {
