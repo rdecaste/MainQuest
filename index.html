@@ -33,6 +33,16 @@
     .progress-value{font-size:10px;font-weight:800;color:rgba(255,255,255,.82);text-shadow:0 1px 4px rgba(0,0,0,.85)}
     .progress-track{width:100%;height:7px;overflow:hidden;border-radius:999px;background:rgba(255,255,255,.18)}
     .progress-fill{width:0%;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--accent-a),var(--accent-b));transition:width 300ms ease}
+    .stage-markers{display:flex;justify-content:space-between;gap:12px;margin-bottom:9px}
+    .stage-marker{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:700;color:rgba(255,255,255,.5);text-shadow:0 1px 4px #000}
+    .stage-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.25)}
+    .stage-marker.reached{color:var(--accent-b)}
+    .stage-marker.reached .stage-dot{background:var(--accent-a)}
+    .stage-marker.current .stage-dot{background:var(--accent-b);box-shadow:0 0 0 3px rgba(255,213,74,.18)}
+    .xp-gain{position:absolute;top:100%;margin-top:9px;padding:5px 8px;border-radius:8px;background:rgba(5,7,11,.7);color:var(--accent-b);font-size:13px;font-weight:800}
+    .xp-gain:not([hidden]){animation:xp-arrive 450ms ease-out}
+    @keyframes xp-arrive{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    @media(prefers-reduced-motion:reduce){.xp-gain:not([hidden]){animation:none}.progress-fill{transition:none}}
   </style>
 </head>
 <body>
@@ -40,13 +50,14 @@
     <video id="heroVideo" autoplay muted loop playsinline preload="auto"></video>
 
     <div class="hud-top">
-      <div class="metric"><div class="label">XP</div><div class="value" id="xp">—</div></div>
+      <div class="metric"><div class="label">XP</div><div class="value" id="xp">—</div><div class="xp-gain" id="xpGain" role="status" aria-live="polite" hidden></div></div>
       <div class="metric right"><div class="label">Level</div><div class="value" id="level">—</div></div>
     </div>
 
     <div class="hud-bottom">
       <div class="progress-head"><div class="label">Level Progress</div><div class="progress-value" id="progressText">0%</div></div>
-      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="stage-markers" aria-label="Four sublevels"><div class="stage-marker" id="stage1"><span class="stage-dot" aria-hidden="true"></span><span id="stageLabel1">.1</span></div><div class="stage-marker" id="stage2"><span class="stage-dot" aria-hidden="true"></span><span id="stageLabel2">.2</span></div><div class="stage-marker" id="stage3"><span class="stage-dot" aria-hidden="true"></span><span id="stageLabel3">.3</span></div><div class="stage-marker" id="stage4"><span class="stage-dot" aria-hidden="true"></span><span id="stageLabel4">.4</span></div></div>
+      <div class="progress-track" id="levelProgress" role="progressbar" aria-label="Level progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-fill" id="progressFill"></div></div>
     </div>
   </main>
 
@@ -61,6 +72,43 @@
     const progressFillEl = document.getElementById('progressFill');
 
     let loadedVideoKey = '';
+    const XP_STORAGE_KEY = 'mainQuest.lastSeenXp.v1';
+    let lastSeenXp = null;
+    let gainTimer;
+    try {
+      const saved = localStorage.getItem(XP_STORAGE_KEY);
+      if (saved !== null && Number.isFinite(Number(saved))) lastSeenXp = Number(saved);
+    } catch (_) {}
+    function renderState(state) {
+      xpEl.textContent = state.xp ?? '—';
+      levelEl.textContent = state.display_level ?? state.level ?? '—';
+      const currentXp = state.xp == null ? NaN : Number(state.xp);
+      if (Number.isFinite(currentXp)) {
+        const gain = lastSeenXp === null ? 0 : currentXp - lastSeenXp;
+        if (gain > 0) {
+          const toast = document.getElementById('xpGain');
+          toast.textContent = '+' + gain.toLocaleString() + ' XP';
+          toast.hidden = false;
+          clearTimeout(gainTimer);
+          gainTimer = setTimeout(() => { toast.hidden = true; }, 4000);
+        }
+        lastSeenXp = currentXp;
+        try { localStorage.setItem(XP_STORAGE_KEY, String(currentXp)); } catch (_) {}
+      }
+      const rawProgress = Number(state.level_progress ?? state.progress ?? 0);
+      const progress = Number.isFinite(rawProgress) ? Math.max(0, Math.min(100, rawProgress)) : 0;
+      progressTextEl.textContent = progress + '%';
+      progressFillEl.style.width = progress + '%';
+      document.getElementById('levelProgress').setAttribute('aria-valuenow', String(progress));
+      const sublevel = Math.max(1, Math.min(4, Math.trunc(Number(state.sublevel) || 1)));
+      for (let i = 1; i <= 4; i++) {
+        const marker = document.getElementById('stage' + i);
+        marker.classList.toggle('reached', i <= sublevel);
+        marker.classList.toggle('current', i === sublevel);
+        marker.setAttribute('aria-label', 'Sublevel ' + i + (i < sublevel ? ', completed' : i === sublevel ? ', current' : ', upcoming'));
+        document.getElementById('stageLabel' + i).textContent = (state.level ?? '—') + '.' + i;
+      }
+    }
 
     async function refreshDashboard() {
       try {
@@ -69,12 +117,7 @@
 
         const state = await response.json();
 
-        xpEl.textContent = state.xp ?? '—';
-        levelEl.textContent = state.display_level ?? state.level ?? '—';
-
-        const progress = Math.max(0, Math.min(100, Number(state.level_progress ?? state.progress ?? 0)));
-        progressTextEl.textContent = `${progress}%`;
-        progressFillEl.style.width = `${progress}%`;
+        renderState(state);
 
         const videoUrl = state.video_url || '';
         const videoKey = String(state.video_public_id || state.video_version || videoUrl);
