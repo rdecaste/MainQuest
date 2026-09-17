@@ -33,9 +33,11 @@
     .hud-bottom[data-tier="2"]{--rate-color:#d6d9df;--rate-a:#9fa7b2;--rate-b:#eef2f7;--rate-glow:rgba(220,226,236,.38);--flow-duration:6.5s;--flow-opacity:.20;--bar-glow:0 0 7px rgba(214,219,228,.34);--pulse-duration:6.5s;--label-glow-radius:5px;--label-pulse-duration:6.5s;--label-shimmer-duration:8.5s;--label-shimmer-opacity:.18;--word-a:#8d95a0;--word-b:#d6d9df;--word-c:#ffffff;--word-glow:rgba(220,226,236,.45)}
     .hud-bottom[data-tier="3"]{--rate-color:#ffd65c;--rate-a:#c99318;--rate-b:#ffe985;--rate-glow:rgba(255,211,72,.54);--flow-duration:3.8s;--flow-opacity:.34;--bar-glow:0 0 11px rgba(255,211,72,.48);--pulse-duration:4.4s;--label-glow-radius:8px;--label-pulse-duration:4.4s;--label-shimmer-duration:5.5s;--label-shimmer-opacity:.32;--word-a:#a26c0d;--word-b:#ffd65c;--word-c:#fff3a1;--word-glow:rgba(255,211,72,.60)}
     .hud-bottom[data-tier="4"]{--rate-color:#6fd5ff;--rate-a:#1597e5;--rate-b:#a8ecff;--rate-glow:rgba(61,190,255,.74);--flow-duration:1.9s;--flow-opacity:.56;--bar-glow:0 0 16px rgba(42,184,255,.68),0 0 28px rgba(42,184,255,.24);--pulse-duration:2.6s;--label-glow-radius:12px;--label-pulse-duration:2.6s;--label-shimmer-duration:3.2s;--label-shimmer-opacity:.56;--word-a:#0b7dcb;--word-b:#6fd5ff;--word-c:#d5f6ff;--word-glow:rgba(61,190,255,.78)}
+    .hud-bottom[data-rarity="rare"] .progress-wordmark{filter:drop-shadow(0 0 calc(var(--label-glow-radius) + 2px) var(--word-glow))}
+    .hud-bottom[data-rarity="epic"] .progress-wordmark{filter:drop-shadow(0 0 calc(var(--label-glow-radius) + 4px) var(--word-glow)) drop-shadow(0 0 7px var(--word-glow))}
     .progress-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-    .progress-wordmark{width:116px;height:14px;overflow:visible;filter:drop-shadow(0 0 var(--label-glow-radius) var(--word-glow));animation:label-pulse var(--label-pulse-duration) ease-in-out infinite}
-    .progress-wordmark text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:9px;font-weight:850;letter-spacing:1.1px;fill:url(#wordGradient)}
+    .progress-wordmark{width:min(72vw,220px);height:16px;overflow:visible;filter:drop-shadow(0 0 var(--label-glow-radius) var(--word-glow));animation:label-pulse var(--label-pulse-duration) ease-in-out infinite}
+    .progress-wordmark text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:9px;font-weight:850;letter-spacing:1px;fill:url(#wordGradient)}
     .progress-wordmark .word-stop-a{stop-color:var(--word-a)}
     .progress-wordmark .word-stop-b{stop-color:var(--word-b)}
     .progress-wordmark .word-stop-c{stop-color:var(--word-c)}
@@ -48,7 +50,7 @@
     @keyframes bar-flow{from{left:-45%}to{left:110%}}
     @keyframes bar-pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.10)}}
     @keyframes label-pulse{0%,100%{opacity:.88;filter:brightness(.96)}50%{opacity:1;filter:brightness(1.14)}}
-    @keyframes svg-shimmer{from{transform:translateX(-135px)}to{transform:translateX(135px)}}
+    @keyframes svg-shimmer{from{transform:translateX(-220px)}to{transform:translateX(240px)}}
     .stage-orbs{display:flex;justify-content:center;gap:12px;margin-bottom:12px;min-height:14px}
     .stage-orb{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3bd 0%,#ffd54a 35%,#ee8a19 80%);box-shadow:0 0 5px #fff1aa66,0 0 14px #ffc43c77}
     .stage-orb[hidden]{display:none}
@@ -68,10 +70,10 @@
       <div class="metric right"><div class="label">Level</div><div class="value" id="level">—</div></div>
     </div>
 
-    <div class="hud-bottom" id="progressHud" data-tier="1">
+    <div class="hud-bottom" id="progressHud" data-tier="1" data-rarity="common">
       <div class="progress-head">
         <div aria-hidden="true">
-          <svg class="progress-wordmark" viewBox="0 0 116 14" role="presentation">
+          <svg class="progress-wordmark" viewBox="0 0 220 16" role="presentation">
             <defs>
               <linearGradient id="wordGradient" x1="0" y1="0" x2="1" y2="0">
                 <stop class="word-stop-a" offset="0%" />
@@ -85,13 +87,13 @@
                 <stop offset="58%" stop-color="rgba(255,255,255,0)" />
                 <stop offset="100%" stop-color="rgba(255,255,255,0)" />
               </linearGradient>
-              <clipPath id="wordClip"><text x="0" y="10.5">LEVEL PROGRESS</text></clipPath>
+              <clipPath id="wordClip"><text id="motivationClipText" x="0" y="11.5">KEEP GOING</text></clipPath>
             </defs>
-            <text x="0" y="10.5">LEVEL PROGRESS</text>
-            <rect class="word-shimmer" x="-116" y="0" width="116" height="14" clip-path="url(#wordClip)" />
+            <text id="motivationText" x="0" y="11.5">KEEP GOING</text>
+            <rect class="word-shimmer" x="-220" y="0" width="220" height="16" clip-path="url(#wordClip)" />
           </svg>
         </div>
-        <span class="sr-only" id="progressLabel">Level Progress</span>
+        <span class="sr-only" id="progressLabel">Keep going</span>
         <div class="progress-value" id="progressText">0%</div>
       </div>
       <div class="stage-orbs" id="stageOrbs" role="img" aria-label="Sublevel 1 of 3"><span class="stage-orb" id="orb1" aria-hidden="true"></span><span class="stage-orb" id="orb2" aria-hidden="true" hidden></span><span class="stage-orb" id="orb3" aria-hidden="true" hidden></span></div>
@@ -104,6 +106,23 @@
     const REFRESH_MS = 15000;
     const CROSSFADE_MS = 1200;
     const CROSSFADE_LEAD_MS = 60;
+    const MOTIVATION_HISTORY_KEY = 'mainQuest.motivationHistory.v1';
+    const MOTIVATION_HISTORY_LIMIT = 12;
+
+    const MOTIVATION = {
+      1: [
+        {text:'FRESH START. LET\'S GO',rarity:'common',weight:8},{text:'ONE MOVE AT A TIME',rarity:'common',weight:8},{text:'KEEP SHOWING UP',rarity:'common',weight:8},{text:'YOU\'VE GOT THIS',rarity:'common',weight:8},{text:'BUILD THE MOMENTUM',rarity:'common',weight:8},{text:'START STRONG FROM HERE',rarity:'common',weight:8},{text:'TODAY STILL COUNTS',rarity:'common',weight:8},{text:'MAKE THE NEXT MOVE',rarity:'common',weight:8},{text:'GOOD. NOW BUILD ON IT',rarity:'rare',weight:3},{text:'THE COMEBACK STARTS NOW',rarity:'rare',weight:3},{text:'TURN THE PAGE. GO.',rarity:'rare',weight:3},{text:'YOU ONLY NEED ONE WIN',rarity:'rare',weight:3},{text:'LIGHT THE SPARK',rarity:'rare',weight:3},{text:'THIS IS WHERE IT STARTS',rarity:'epic',weight:1},{text:'RELOAD. REFOCUS. RISE.',rarity:'epic',weight:1},{text:'BUILD THE VERSION YOU WANT',rarity:'epic',weight:1},{text:'THE NEXT CHAPTER STARTS HERE',rarity:'epic',weight:1},{text:'YOUR MOVE. MAKE IT COUNT.',rarity:'epic',weight:1}
+      ],
+      2: [
+        {text:'NICE. KEEP GOING.',rarity:'common',weight:8},{text:'YOU\'RE DOING GREAT',rarity:'common',weight:8},{text:'KEEP STACKING WINS',rarity:'common',weight:8},{text:'MOMENTUM IS BUILDING',rarity:'common',weight:8},{text:'THAT\'S THE DIRECTION',rarity:'common',weight:8},{text:'KEEP THIS MOVING',rarity:'common',weight:8},{text:'GOOD WORK. STAY ON IT.',rarity:'common',weight:8},{text:'YOU\'RE FINDING YOUR RHYTHM',rarity:'common',weight:8},{text:'OKAY, THIS IS CLICKING',rarity:'rare',weight:3},{text:'LOOK AT YOU GO',rarity:'rare',weight:3},{text:'THE MOMENTUM IS REAL',rarity:'rare',weight:3},{text:'THIS IS STARTING TO MOVE',rarity:'rare',weight:3},{text:'KEEP FEEDING THE FIRE',rarity:'rare',weight:3},{text:'YOU\'RE BUILDING SOMETHING HERE',rarity:'epic',weight:1},{text:'THE ENGINE IS WAKING UP',rarity:'epic',weight:1},{text:'YOUR FUTURE SELF NOTICED THAT',rarity:'epic',weight:1},{text:'THIS IS HOW MOMENTUM IS MADE',rarity:'epic',weight:1},{text:'KEEP GOING. THIS IS WORKING.',rarity:'epic',weight:1}
+      ],
+      3: [
+        {text:'YOU\'RE ON FIRE',rarity:'common',weight:8},{text:'THIS IS STRONG',rarity:'common',weight:8},{text:'KEEP PRESSING',rarity:'common',weight:8},{text:'YOU\'RE CRUSHING TODAY',rarity:'common',weight:8},{text:'THAT\'S HOW YOU SHOW UP',rarity:'common',weight:8},{text:'SERIOUS MOMENTUM',rarity:'common',weight:8},{text:'YOU\'RE LOCKED IN',rarity:'common',weight:8},{text:'KEEP THE PRESSURE ON',rarity:'common',weight:8},{text:'OKAY, THIS IS GETTING SERIOUS',rarity:'rare',weight:3},{text:'THE STREAK HAS TEETH NOW',rarity:'rare',weight:3},{text:'YOU\'RE COOKING',rarity:'rare',weight:3},{text:'THIS VERSION IS DIFFERENT',rarity:'rare',weight:3},{text:'DON\'T TAKE YOUR FOOT OFF IT',rarity:'rare',weight:3},{text:'THE MACHINE IS ONLINE',rarity:'epic',weight:1},{text:'YOU\'RE BECOMING DANGEROUS',rarity:'epic',weight:1},{text:'THIS IS WHAT BUILDING LOOKS LIKE',rarity:'epic',weight:1},{text:'YOU\'RE TURNING EFFORT INTO POWER',rarity:'epic',weight:1},{text:'MOMENTUM HAS ENTERED THE CHAT',rarity:'epic',weight:1}
+      ],
+      4: [
+        {text:'ABSOLUTELY CRUSHING IT',rarity:'common',weight:8},{text:'YOU\'RE UNSTOPPABLE',rarity:'common',weight:8},{text:'BEAST MODE',rarity:'common',weight:8},{text:'HELL YES',rarity:'common',weight:8},{text:'THIS IS YOUR ZONE',rarity:'common',weight:8},{text:'YOU\'RE FLYING',rarity:'common',weight:8},{text:'KEEP DOMINATING',rarity:'common',weight:8},{text:'FULL POWER',rarity:'common',weight:8},{text:'ABSOLUTE MACHINE',rarity:'rare',weight:3},{text:'YOU\'RE BUILT FOR THIS',rarity:'rare',weight:3},{text:'THIS IS PEAK YOU',rarity:'rare',weight:3},{text:'THE STANDARD JUST MOVED',rarity:'rare',weight:3},{text:'YOU\'RE MAKING THIS LOOK EASY',rarity:'rare',weight:3},{text:'THIS VERSION OF YOU DOESN\'T QUIT',rarity:'epic',weight:1},{text:'THE LIMIT JUST MOVED AGAIN',rarity:'epic',weight:1},{text:'YOU CAME TO PLAY TODAY',rarity:'epic',weight:1},{text:'THIS IS WHAT UNSTOPPABLE LOOKS LIKE',rarity:'epic',weight:1},{text:'KEEP GOING. YOU\'RE WRITING THE STORY.',rarity:'epic',weight:1}
+      ]
+    };
 
     const videos = [document.getElementById('heroVideoA'), document.getElementById('heroVideoB')];
     let activeVideoIndex = 0;
@@ -115,6 +134,10 @@
     const progressFillEl = document.getElementById('progressFill');
     const progressTrackEl = document.getElementById('levelProgress');
     const progressHudEl = document.getElementById('progressHud');
+    const motivationTextEl = document.getElementById('motivationText');
+    const motivationClipTextEl = document.getElementById('motivationClipText');
+    const progressLabelEl = document.getElementById('progressLabel');
+    let currentMotivationTier = null;
 
     function performanceTier(state) {
       const tier = Number(state.performance_tier);
@@ -122,6 +145,56 @@
       const rate = Number(state.performance_rate);
       if (!Number.isFinite(rate)) return 1;
       return rate >= 99.5 ? 4 : rate >= 66 ? 3 : rate >= 33 ? 2 : 1;
+    }
+
+    function readMotivationHistory() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(MOTIVATION_HISTORY_KEY) || '[]');
+        return Array.isArray(parsed) ? parsed.filter(item => typeof item === 'string').slice(-MOTIVATION_HISTORY_LIMIT) : [];
+      } catch (_) { return []; }
+    }
+
+    function weightedPick(items) {
+      const total = items.reduce((sum, item) => sum + Math.max(1, Number(item.weight) || 1), 0);
+      let roll = Math.random() * total;
+      for (const item of items) {
+        roll -= Math.max(1, Number(item.weight) || 1);
+        if (roll <= 0) return item;
+      }
+      return items[items.length - 1];
+    }
+
+    function chooseMotivation(tier) {
+      const pool = MOTIVATION[tier] || MOTIVATION[1];
+      const history = readMotivationHistory();
+      const unseen = pool.filter(item => !history.includes(item.text));
+      const candidates = unseen.length ? unseen : pool;
+      const picked = weightedPick(candidates);
+      const nextHistory = [...history, picked.text].slice(-MOTIVATION_HISTORY_LIMIT);
+      try { localStorage.setItem(MOTIVATION_HISTORY_KEY, JSON.stringify(nextHistory)); } catch (_) {}
+      return picked;
+    }
+
+    function motivationFontSize(text) {
+      const length = text.length;
+      if (length <= 14) return 9.4;
+      if (length <= 20) return 8.7;
+      if (length <= 27) return 7.9;
+      if (length <= 34) return 7.1;
+      return 6.4;
+    }
+
+    function setMotivation(tier) {
+      if (tier === currentMotivationTier) return;
+      const message = chooseMotivation(tier);
+      currentMotivationTier = tier;
+      const size = motivationFontSize(message.text);
+      motivationTextEl.textContent = message.text;
+      motivationClipTextEl.textContent = message.text;
+      motivationTextEl.style.fontSize = size + 'px';
+      motivationClipTextEl.style.fontSize = size + 'px';
+      progressLabelEl.textContent = message.text;
+      progressHudEl.dataset.rarity = message.rarity || 'common';
     }
 
     const VIDEO_FRAMING = {
@@ -169,6 +242,7 @@
 
       const tier = performanceTier(state);
       progressHudEl.dataset.tier = String(tier);
+      setMotivation(tier);
     }
 
     function resetCrossfadeState() {
