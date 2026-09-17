@@ -23,7 +23,7 @@
     html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
     body{width:100vw;height:100vh;height:100dvh}
     .app{position:fixed;inset:0;overflow:hidden;background:var(--bg)}
-    #heroVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;background:var(--bg);display:block}
+    #heroVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;background:var(--bg);display:block;transform:scale(var(--video-scale,1));transform-origin:center}
     .hud-top{position:absolute;top:calc(12px + var(--safe-top));left:calc(12px + var(--safe-left));right:calc(12px + var(--safe-right));display:flex;justify-content:space-between;z-index:2;pointer-events:none}
     .metric.right{text-align:right}
     .label{font-size:8px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-shadow:0 1px 4px rgba(0,0,0,.85)}
@@ -105,6 +105,11 @@
       if (!Number.isFinite(rate)) return 1;
       return rate >= 99.5 ? 4 : rate >= 66 ? 3 : rate >= 33 ? 2 : 1;
     }
+    // This existing asset has baked-in top/bottom letterboxing (~8% each).
+    // Crop only this asset; future edge-to-edge videos keep their normal cover fit.
+    const VIDEO_FRAMING = {
+      'Quest-Progress/main-quest-20260917-073323': 1.20
+    };
     let loadedVideoKey = '';
     const XP_STORAGE_KEY = 'mainQuest.lastSeenXp.v1';
     let lastSeenXp = null;
@@ -156,6 +161,9 @@
 
         const videoUrl = state.video_url || '';
         const videoKey = String(state.video_public_id || state.video_version || videoUrl);
+
+        const framingId = state.video_public_id || videoUrl.split('/').slice(-2).join('/').replace(/\.mp4(?:\?.*)?$/, '');
+        video.style.setProperty('--video-scale', String(VIDEO_FRAMING[framingId] || 1));
 
         if (videoUrl && videoKey !== loadedVideoKey) {
           loadedVideoKey = videoKey;
