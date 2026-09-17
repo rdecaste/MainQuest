@@ -31,40 +31,27 @@
     .hud-bottom{position:absolute;left:calc(12px + var(--safe-left));right:calc(12px + var(--safe-right));bottom:calc(14px + var(--safe-bottom));z-index:2;pointer-events:none}
     .progress-head{display:flex;justify-content:space-between;margin-bottom:6px}
     .progress-value{font-size:10px;font-weight:800;color:rgba(255,255,255,.82);text-shadow:0 1px 4px rgba(0,0,0,.85)}
-    .progress-track{width:100%;height:7px;overflow:hidden;border-radius:999px;background:rgba(255,255,255,.18)}
-    .progress-fill{width:0%;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--accent-a),var(--accent-b));transition:width 300ms ease}
+    .progress-track{width:100%;height:7px;overflow:visible;border-radius:999px;background:rgba(255,255,255,.18);--flow-duration:8s;--flow-opacity:.16;--bar-glow:0 0 4px rgba(255,213,74,.18);--pulse-duration:8s}
+    .progress-track[data-tier="2"]{--flow-duration:5.5s;--flow-opacity:.25;--bar-glow:0 0 6px rgba(255,213,74,.28);--pulse-duration:6s}
+    .progress-track[data-tier="3"]{--flow-duration:3.2s;--flow-opacity:.38;--bar-glow:0 0 9px rgba(255,213,74,.42);--pulse-duration:4.2s}
+    .progress-track[data-tier="4"]{--flow-duration:1.9s;--flow-opacity:.55;--bar-glow:0 0 13px rgba(255,213,74,.58);--pulse-duration:2.8s}
+    .progress-fill{position:relative;width:0%;height:100%;overflow:hidden;border-radius:inherit;background:linear-gradient(90deg,var(--accent-a),var(--accent-b));box-shadow:var(--bar-glow);transition:width 300ms ease;animation:bar-pulse var(--pulse-duration) ease-in-out infinite}
+    .progress-fill::after{content:"";position:absolute;top:0;bottom:0;left:-45%;width:42%;background:linear-gradient(90deg,transparent,rgba(255,255,255,var(--flow-opacity)),transparent);transform:skewX(-18deg);animation:bar-flow var(--flow-duration) linear infinite}
+    @keyframes bar-flow{from{left:-45%}to{left:110%}}
+    @keyframes bar-pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.08)}}
     .stage-orbs{display:flex;justify-content:center;gap:12px;margin-bottom:12px;min-height:14px}
-    .stage-orb{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3bd 0%,#ffd54a 35%,#ee8a19 80%);box-shadow:0 0 9px #ffb52b55}
+    .stage-orb{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3bd 0%,#ffd54a 35%,#ee8a19 80%);box-shadow:0 0 5px #fff1aa66,0 0 14px #ffc43c77}
     .stage-orb[hidden]{display:none}
-    .app.ready .stage-orb{background:radial-gradient(circle at 35% 30%,#fff 0%,#fff5ba 35%,#ffd54a 75%);box-shadow:0 0 5px #fff1aa99,0 0 17px #ffc43c99}
-    .earned-frame{position:absolute;inset:5px;border:1px solid transparent;border-radius:16px;pointer-events:none;z-index:1}
-    .app.ready .earned-frame{border-color:#ffd54a66;box-shadow:inset 0 0 25px #ffba2226,0 0 12px #ffd54a33}
-    .energy{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;--aura:.07;--pulse:8s}
-    .energy[data-tier="2"]{--aura:.13;--pulse:6s}
-    .energy[data-tier="3"]{--aura:.21;--pulse:4.5s}
-    .energy[data-tier="4"]{--aura:.29;--pulse:3.2s}
-    .aura{position:absolute;inset:0;opacity:var(--aura);background:radial-gradient(ellipse at 50% 65%,transparent 40%,#ffbc3433 72%,#ffd54a88 100%);animation:energy-pulse var(--pulse) ease-in-out infinite alternate}
-    .particles{display:none} /* Particle overlay disabled for visual comparison. */
-    .particle{position:absolute;left:var(--x);bottom:0;width:2px;height:2px;border-radius:50%;background:#ffe9a3;box-shadow:0 0 5px #ffd54a;animation:energy-drift var(--duration) linear infinite;animation-delay:var(--delay)}
-    .particle[hidden]{display:none}
-    .lightning{display:none;position:absolute;top:28%;right:7%;width:24px;height:110px;background:#fff3bd;clip-path:polygon(68% 0,25% 44%,55% 44%,10% 100%,88% 35%,57% 35%);opacity:0}
-    .energy[data-tier="4"] .lightning{display:block;animation:energy-lightning 14s linear infinite}
-    @keyframes energy-pulse{from{opacity:calc(var(--aura) * .65)}to{opacity:var(--aura)}}
-    @keyframes energy-drift{0%{transform:translateY(0);opacity:0}20%{opacity:.35}80%{opacity:.2}100%{transform:translateY(-55vh);opacity:0}}
-    @keyframes energy-lightning{0%,87%,92%,100%{opacity:0}89%{opacity:.16}}
-    @media(prefers-reduced-motion:reduce){.aura,.particle,.lightning{animation:none!important}.particles,.lightning{display:none!important}}
     .xp-gain{position:absolute;top:100%;margin-top:9px;padding:5px 8px;border-radius:8px;background:rgba(5,7,11,.7);color:var(--accent-b);font-size:13px;font-weight:800}
     .xp-gain:not([hidden]){animation:xp-arrive 450ms ease-out}
     @keyframes xp-arrive{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-    @media(prefers-reduced-motion:reduce){.xp-gain:not([hidden]){animation:none}.progress-fill{transition:none}}
+    @media(prefers-reduced-motion:reduce){.xp-gain:not([hidden]){animation:none}.progress-fill{transition:none;animation:none}.progress-fill::after{animation:none;display:none}}
   </style>
 </head>
 <body>
   <main class="app" id="app">
     <video id="heroVideo" autoplay muted loop playsinline preload="auto"></video>
 
-    <div class="earned-frame" aria-hidden="true"></div>
-    <div class="energy" id="energy" data-tier="1" aria-hidden="true"><div class="aura"></div><div class="particles" id="particles"></div><div class="lightning"></div></div>
     <div class="hud-top">
       <div class="metric"><div class="label">XP</div><div class="value" id="xp">—</div><div class="xp-gain" id="xpGain" role="status" aria-live="polite" hidden></div></div>
       <div class="metric right"><div class="label">Level</div><div class="value" id="level">—</div></div>
@@ -72,8 +59,8 @@
 
     <div class="hud-bottom">
       <div class="progress-head"><div class="label">Level Progress</div><div class="progress-value" id="progressText">0%</div></div>
-      <div class="stage-orbs" id="stageOrbs" role="img" aria-label="Sublevel 1 of 4"><span class="stage-orb" id="orb1" aria-hidden="true"></span><span class="stage-orb" id="orb2" aria-hidden="true" hidden></span><span class="stage-orb" id="orb3" aria-hidden="true" hidden></span></div>
-      <div class="progress-track" id="levelProgress" role="progressbar" aria-label="Level progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="stage-orbs" id="stageOrbs" role="img" aria-label="Sublevel 1 of 3"><span class="stage-orb" id="orb1" aria-hidden="true"></span><span class="stage-orb" id="orb2" aria-hidden="true" hidden></span><span class="stage-orb" id="orb3" aria-hidden="true" hidden></span></div>
+      <div class="progress-track" id="levelProgress" data-tier="1" role="progressbar" aria-label="Level progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-fill" id="progressFill"></div></div>
     </div>
   </main>
 
@@ -86,18 +73,8 @@
     const levelEl = document.getElementById('level');
     const progressTextEl = document.getElementById('progressText');
     const progressFillEl = document.getElementById('progressFill');
+    const progressTrackEl = document.getElementById('levelProgress');
 
-    const app = document.getElementById('app');
-    const energy = document.getElementById('energy');
-    const particles = Array.from({length:12}, (_, i) => {
-      const particle = document.createElement('span');
-      particle.className = 'particle';
-      particle.style.setProperty('--x', ((i * 37 + 7) % 100) + '%');
-      particle.style.setProperty('--duration', (9 + i % 5) + 's');
-      particle.style.setProperty('--delay', (-i * 1.7) + 's');
-      document.getElementById('particles').appendChild(particle);
-      return particle;
-    });
     function performanceTier(state) {
       const tier = Number(state.performance_tier);
       if (Number.isInteger(tier) && tier >= 1 && tier <= 4) return tier;
@@ -105,6 +82,7 @@
       if (!Number.isFinite(rate)) return 1;
       return rate >= 99.5 ? 4 : rate >= 66 ? 3 : rate >= 33 ? 2 : 1;
     }
+
     // This existing asset has baked-in top/bottom letterboxing (~8% each).
     // Crop only this asset; future edge-to-edge videos keep their normal cover fit.
     const VIDEO_FRAMING = {
@@ -118,10 +96,12 @@
       const saved = localStorage.getItem(XP_STORAGE_KEY);
       if (saved !== null && Number.isFinite(Number(saved))) lastSeenXp = Number(saved);
     } catch (_) {}
+
     function renderState(state) {
       xpEl.textContent = state.xp ?? '—';
       const wholeLevel = Math.trunc(Number(state.level ?? state.display_level));
       levelEl.textContent = Number.isFinite(wholeLevel) && wholeLevel > 0 ? wholeLevel : '—';
+
       const currentXp = state.xp == null ? NaN : Number(state.xp);
       if (Number.isFinite(currentXp)) {
         const gain = lastSeenXp === null ? 0 : currentXp - lastSeenXp;
@@ -135,19 +115,21 @@
         lastSeenXp = currentXp;
         try { localStorage.setItem(XP_STORAGE_KEY, String(currentXp)); } catch (_) {}
       }
+
       const rawProgress = Number(state.level_progress ?? state.progress ?? 0);
       const progress = Number.isFinite(rawProgress) ? Math.max(0, Math.min(100, rawProgress)) : 0;
       progressTextEl.textContent = progress + '%';
       progressFillEl.style.width = progress + '%';
-      document.getElementById('levelProgress').setAttribute('aria-valuenow', String(progress));
-      const sublevel = Math.max(1, Math.min(4, Math.trunc(Number(state.sublevel) || 1)));
-      for (let i = 1; i <= 3; i++) document.getElementById('orb' + i).hidden = i > Math.min(sublevel, 3);
-      app.classList.toggle('ready', sublevel === 4);
-      document.getElementById('stageOrbs').setAttribute('aria-label', 'Sublevel ' + sublevel + ' of 4' + (sublevel === 4 ? ', fully charged, ready to transform' : ''));
+      progressTrackEl.setAttribute('aria-valuenow', String(progress));
+
+      const derivedSublevel = progress >= (200 / 3) ? 3 : progress >= (100 / 3) ? 2 : 1;
+      const stateSublevel = Math.trunc(Number(state.sublevel));
+      const sublevel = Number.isFinite(stateSublevel) && stateSublevel >= 1 && stateSublevel <= 3 ? stateSublevel : derivedSublevel;
+      for (let i = 1; i <= 3; i++) document.getElementById('orb' + i).hidden = i > sublevel;
+      document.getElementById('stageOrbs').setAttribute('aria-label', 'Sublevel ' + sublevel + ' of 3');
+
       const tier = performanceTier(state);
-      energy.dataset.tier = String(tier);
-      const particleCount = [0, 2, 4, 8, 12][tier];
-      particles.forEach((particle, i) => { particle.hidden = i >= particleCount; });
+      progressTrackEl.dataset.tier = String(tier);
     }
 
     async function refreshDashboard() {
@@ -156,12 +138,10 @@
         if (!response.ok) return;
 
         const state = await response.json();
-
         renderState(state);
 
         const videoUrl = state.video_url || '';
         const videoKey = String(state.video_public_id || state.video_version || videoUrl);
-
         const framingId = state.video_public_id || videoUrl.split('/').slice(-2).join('/').replace(/\.mp4(?:\?.*)?$/, '');
         video.style.setProperty('--video-scale', String(VIDEO_FRAMING[framingId] || 1));
 
