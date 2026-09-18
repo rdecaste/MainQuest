@@ -43,7 +43,6 @@
     .progress-wordmark .word-stop-c{stop-color:var(--word-c)}
     .progress-wordmark .word-shimmer{fill:url(#shimmerGradient);opacity:var(--label-shimmer-opacity);mix-blend-mode:screen;animation:svg-shimmer var(--label-shimmer-duration) linear infinite}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-    .progress-value{font-size:11px;font-weight:800;color:var(--rate-color);text-shadow:0 0 var(--label-glow-radius) var(--rate-glow),0 1px 4px rgba(0,0,0,.85);animation:label-pulse var(--label-pulse-duration) ease-in-out infinite}
     .progress-track{width:100%;height:7px;overflow:visible;border-radius:999px;background:rgba(255,255,255,.18)}
     .progress-fill{position:relative;width:0%;height:100%;overflow:hidden;border-radius:inherit;background:linear-gradient(90deg,var(--rate-a),var(--rate-b));box-shadow:var(--bar-glow);transition:width 300ms ease;animation:bar-pulse var(--pulse-duration) ease-in-out infinite}
     .progress-fill::after{content:"";position:absolute;top:0;bottom:0;left:-45%;width:42%;background:linear-gradient(90deg,transparent,rgba(255,255,255,var(--flow-opacity)),transparent);transform:skewX(-18deg);animation:bar-flow var(--flow-duration) linear infinite}
@@ -51,13 +50,10 @@
     @keyframes bar-pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.10)}}
     @keyframes label-pulse{0%,100%{opacity:.94;filter:brightness(.98)}50%{opacity:1;filter:brightness(1.09)}}
     @keyframes svg-shimmer{from{transform:translateX(-260px)}to{transform:translateX(280px)}}
-    .stage-orbs{display:flex;justify-content:center;gap:12px;margin-bottom:12px;min-height:14px}
-    .stage-orb{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3bd 0%,#ffd54a 35%,#ee8a19 80%);box-shadow:0 0 5px #fff1aa66,0 0 14px #ffc43c77}
-    .stage-orb[hidden]{display:none}
     .xp-gain{position:absolute;top:100%;margin-top:9px;padding:5px 8px;border-radius:8px;background:rgba(5,7,11,.7);color:var(--accent-b);font-size:13px;font-weight:800}
     .xp-gain:not([hidden]){animation:xp-arrive 450ms ease-out}
     @keyframes xp-arrive{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-    @media(prefers-reduced-motion:reduce){.hero-video{transition:none}.xp-gain:not([hidden]){animation:none}.progress-fill{transition:none;animation:none}.progress-fill::after{animation:none;display:none}.progress-wordmark,.progress-wordmark .word-shimmer,.progress-value{animation:none}.progress-wordmark .word-shimmer{display:none}}
+    @media(prefers-reduced-motion:reduce){.hero-video{transition:none}.xp-gain:not([hidden]){animation:none}.progress-fill{transition:none;animation:none}.progress-fill::after{animation:none;display:none}.progress-wordmark,.progress-wordmark .word-shimmer{animation:none}.progress-wordmark .word-shimmer{display:none}}
   </style>
 </head>
 <body>
@@ -94,9 +90,9 @@
           </svg>
         </div>
         <span class="sr-only" id="progressLabel">Keep going</span>
-        <div class="progress-value" id="progressText">0%</div>
+        
       </div>
-      <div class="stage-orbs" id="stageOrbs" role="img" aria-label="Sublevel 1 of 3"><span class="stage-orb" id="orb1" aria-hidden="true"></span><span class="stage-orb" id="orb2" aria-hidden="true" hidden></span><span class="stage-orb" id="orb3" aria-hidden="true" hidden></span></div>
+      
       <div class="progress-track" id="levelProgress" role="progressbar" aria-label="Level progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-fill" id="progressFill"></div></div>
     </div>
   </main>
@@ -130,7 +126,6 @@
     let crossfadeTimer = null;
     const xpEl = document.getElementById('xp');
     const levelEl = document.getElementById('level');
-    const progressTextEl = document.getElementById('progressText');
     const progressFillEl = document.getElementById('progressFill');
     const progressTrackEl = document.getElementById('levelProgress');
     const progressHudEl = document.getElementById('progressHud');
@@ -230,15 +225,8 @@
 
       const rawProgress = Number(state.level_progress ?? state.progress ?? 0);
       const progress = Number.isFinite(rawProgress) ? Math.max(0, Math.min(100, rawProgress)) : 0;
-      progressTextEl.textContent = progress + '%';
       progressFillEl.style.width = progress + '%';
       progressTrackEl.setAttribute('aria-valuenow', String(progress));
-
-      const derivedSublevel = progress >= (200 / 3) ? 3 : progress >= (100 / 3) ? 2 : 1;
-      const stateSublevel = Math.trunc(Number(state.sublevel));
-      const sublevel = Number.isFinite(stateSublevel) && stateSublevel >= 1 && stateSublevel <= 3 ? stateSublevel : derivedSublevel;
-      for (let i = 1; i <= 3; i++) document.getElementById('orb' + i).hidden = i > sublevel;
-      document.getElementById('stageOrbs').setAttribute('aria-label', 'Sublevel ' + sublevel + ' of 3');
 
       const tier = performanceTier(state);
       progressHudEl.dataset.tier = String(tier);
