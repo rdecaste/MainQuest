@@ -33,11 +33,11 @@
     .hud-bottom[data-tier="2"]{--rate-color:#d6d9df;--rate-a:#9fa7b2;--rate-b:#eef2f7;--rate-glow:rgba(220,226,236,.38);--flow-duration:6.5s;--flow-opacity:.20;--bar-glow:0 0 7px rgba(214,219,228,.34);--pulse-duration:6.5s;--label-glow-radius:5px;--label-pulse-duration:6.5s;--label-shimmer-duration:8.5s;--label-shimmer-opacity:.18;--word-a:#8d95a0;--word-b:#d6d9df;--word-c:#ffffff;--word-glow:rgba(220,226,236,.45)}
     .hud-bottom[data-tier="3"]{--rate-color:#ffd65c;--rate-a:#c99318;--rate-b:#ffe985;--rate-glow:rgba(255,211,72,.54);--flow-duration:3.8s;--flow-opacity:.34;--bar-glow:0 0 11px rgba(255,211,72,.48);--pulse-duration:4.4s;--label-glow-radius:8px;--label-pulse-duration:4.4s;--label-shimmer-duration:5.5s;--label-shimmer-opacity:.32;--word-a:#a26c0d;--word-b:#ffd65c;--word-c:#fff3a1;--word-glow:rgba(255,211,72,.60)}
     .hud-bottom[data-tier="4"]{--rate-color:#6fd5ff;--rate-a:#1597e5;--rate-b:#a8ecff;--rate-glow:rgba(61,190,255,.74);--flow-duration:1.9s;--flow-opacity:.56;--bar-glow:0 0 16px rgba(42,184,255,.68),0 0 28px rgba(42,184,255,.24);--pulse-duration:2.6s;--label-glow-radius:12px;--label-pulse-duration:2.6s;--label-shimmer-duration:3.2s;--label-shimmer-opacity:.56;--word-a:#0b7dcb;--word-b:#6fd5ff;--word-c:#d5f6ff;--word-glow:rgba(61,190,255,.78)}
-    .hud-bottom[data-rarity="rare"] .progress-wordmark{filter:drop-shadow(0 0 calc(var(--label-glow-radius) + 2px) var(--word-glow))}
-    .hud-bottom[data-rarity="epic"] .progress-wordmark{filter:drop-shadow(0 0 calc(var(--label-glow-radius) + 4px) var(--word-glow)) drop-shadow(0 0 7px var(--word-glow))}
-    .progress-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-    .progress-wordmark{width:min(80vw,260px);height:24px;overflow:visible;filter:drop-shadow(0 0 var(--label-glow-radius) var(--word-glow));animation:label-pulse var(--label-pulse-duration) ease-in-out infinite}
-    .progress-wordmark text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;font-weight:850;letter-spacing:.9px;fill:url(#wordGradient)}
+    .hud-bottom[data-rarity="rare"] .progress-wordmark{filter:drop-shadow(0 1px 2px rgba(0,0,0,.9)) drop-shadow(0 0 calc(var(--label-glow-radius) + 4px) var(--word-glow)) drop-shadow(0 0 12px var(--word-glow))}
+    .hud-bottom[data-rarity="epic"] .progress-wordmark{filter:drop-shadow(0 1px 2px rgba(0,0,0,.95)) drop-shadow(0 0 calc(var(--label-glow-radius) + 6px) var(--word-glow)) drop-shadow(0 0 18px var(--word-glow)) drop-shadow(0 0 28px var(--word-glow))}
+    .progress-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+    .progress-wordmark{width:min(84vw,280px);height:28px;overflow:visible;filter:drop-shadow(0 1px 2px rgba(0,0,0,.9)) drop-shadow(0 0 calc(var(--label-glow-radius) + 3px) var(--word-glow)) drop-shadow(0 0 10px var(--word-glow));animation:label-pulse var(--label-pulse-duration) ease-in-out infinite}
+    .progress-wordmark text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;font-weight:760;letter-spacing:.25px;fill:url(#wordGradient);paint-order:stroke fill;stroke:rgba(0,0,0,.22);stroke-width:.35px}
     .progress-wordmark .word-stop-a{stop-color:var(--word-a)}
     .progress-wordmark .word-stop-b{stop-color:var(--word-b)}
     .progress-wordmark .word-stop-c{stop-color:var(--word-c)}
@@ -49,7 +49,7 @@
     .progress-fill::after{content:"";position:absolute;top:0;bottom:0;left:-45%;width:42%;background:linear-gradient(90deg,transparent,rgba(255,255,255,var(--flow-opacity)),transparent);transform:skewX(-18deg);animation:bar-flow var(--flow-duration) linear infinite}
     @keyframes bar-flow{from{left:-45%}to{left:110%}}
     @keyframes bar-pulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.10)}}
-    @keyframes label-pulse{0%,100%{opacity:.88;filter:brightness(.96)}50%{opacity:1;filter:brightness(1.14)}}
+    @keyframes label-pulse{0%,100%{opacity:.94;filter:brightness(.98)}50%{opacity:1;filter:brightness(1.09)}}
     @keyframes svg-shimmer{from{transform:translateX(-260px)}to{transform:translateX(280px)}}
     .stage-orbs{display:flex;justify-content:center;gap:12px;margin-bottom:12px;min-height:14px}
     .stage-orb{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3bd 0%,#ffd54a 35%,#ee8a19 80%);box-shadow:0 0 5px #fff1aa66,0 0 14px #ffc43c77}
@@ -73,7 +73,7 @@
     <div class="hud-bottom" id="progressHud" data-tier="1" data-rarity="common">
       <div class="progress-head">
         <div aria-hidden="true">
-          <svg class="progress-wordmark" viewBox="0 0 260 24" role="presentation">
+          <svg class="progress-wordmark" viewBox="0 0 280 28" role="presentation">
             <defs>
               <linearGradient id="wordGradient" x1="0" y1="0" x2="1" y2="0">
                 <stop class="word-stop-a" offset="0%" />
@@ -87,10 +87,10 @@
                 <stop offset="58%" stop-color="rgba(255,255,255,0)" />
                 <stop offset="100%" stop-color="rgba(255,255,255,0)" />
               </linearGradient>
-              <clipPath id="wordClip"><text id="motivationClipText" x="0" y="17">KEEP GOING</text></clipPath>
+              <clipPath id="wordClip"><text id="motivationClipText" x="0" y="20">🔥 KEEP GOING</text></clipPath>
             </defs>
-            <text id="motivationText" x="0" y="17">KEEP GOING</text>
-            <rect class="word-shimmer" x="-260" y="0" width="260" height="24" clip-path="url(#wordClip)" />
+            <text id="motivationText" x="0" y="20">🔥 KEEP GOING</text>
+            <rect class="word-shimmer" x="-280" y="0" width="280" height="28" clip-path="url(#wordClip)" />
           </svg>
         </div>
         <span class="sr-only" id="progressLabel">Keep going</span>
@@ -106,21 +106,21 @@
     const REFRESH_MS = 15000;
     const CROSSFADE_MS = 1200;
     const CROSSFADE_LEAD_MS = 60;
-    const MOTIVATION_HISTORY_KEY = 'mainQuest.motivationHistory.v1';
+    const MOTIVATION_HISTORY_KEY = 'mainQuest.motivationHistory.v2';
     const MOTIVATION_HISTORY_LIMIT = 12;
 
     const MOTIVATION = {
       1: [
-        {text:'FRESH START. LET\'S GO',rarity:'common',weight:8},{text:'ONE MOVE AT A TIME',rarity:'common',weight:8},{text:'KEEP SHOWING UP',rarity:'common',weight:8},{text:'YOU\'VE GOT THIS',rarity:'common',weight:8},{text:'BUILD THE MOMENTUM',rarity:'common',weight:8},{text:'START STRONG FROM HERE',rarity:'common',weight:8},{text:'TODAY STILL COUNTS',rarity:'common',weight:8},{text:'MAKE THE NEXT MOVE',rarity:'common',weight:8},{text:'GOOD. NOW BUILD ON IT',rarity:'rare',weight:3},{text:'THE COMEBACK STARTS NOW',rarity:'rare',weight:3},{text:'TURN THE PAGE. GO.',rarity:'rare',weight:3},{text:'YOU ONLY NEED ONE WIN',rarity:'rare',weight:3},{text:'LIGHT THE SPARK',rarity:'rare',weight:3},{text:'THIS IS WHERE IT STARTS',rarity:'epic',weight:1},{text:'RELOAD. REFOCUS. RISE.',rarity:'epic',weight:1},{text:'BUILD THE VERSION YOU WANT',rarity:'epic',weight:1},{text:'THE NEXT CHAPTER STARTS HERE',rarity:'epic',weight:1},{text:'YOUR MOVE. MAKE IT COUNT.',rarity:'epic',weight:1}
+        {text:'🔥 FRESH START. LET\'S GO',rarity:'common',weight:8},{text:'👊 ONE MOVE AT A TIME',rarity:'common',weight:8},{text:'💪 KEEP SHOWING UP',rarity:'common',weight:8},{text:'✨ YOU\'VE GOT THIS',rarity:'common',weight:8},{text:'🔥 BUILD THE MOMENTUM',rarity:'common',weight:8},{text:'🚀 START STRONG FROM HERE',rarity:'common',weight:8},{text:'🌟 TODAY STILL COUNTS',rarity:'common',weight:8},{text:'👊 MAKE THE NEXT MOVE',rarity:'common',weight:8},{text:'💪 GOOD. NOW BUILD ON IT',rarity:'rare',weight:3},{text:'🔥 THE COMEBACK STARTS NOW',rarity:'rare',weight:3},{text:'🚀 TURN THE PAGE. GO.',rarity:'rare',weight:3},{text:'🏆 YOU ONLY NEED ONE WIN',rarity:'rare',weight:3},{text:'✨ LIGHT THE SPARK',rarity:'rare',weight:3},{text:'⚡ THIS IS WHERE IT STARTS',rarity:'epic',weight:1},{text:'🔥 RELOAD. REFOCUS. RISE.',rarity:'epic',weight:1},{text:'🦾 BUILD THE VERSION YOU WANT',rarity:'epic',weight:1},{text:'🚀 THE NEXT CHAPTER STARTS HERE',rarity:'epic',weight:1},{text:'👊 YOUR MOVE. MAKE IT COUNT.',rarity:'epic',weight:1}
       ],
       2: [
-        {text:'NICE. KEEP GOING.',rarity:'common',weight:8},{text:'YOU\'RE DOING GREAT',rarity:'common',weight:8},{text:'KEEP STACKING WINS',rarity:'common',weight:8},{text:'MOMENTUM IS BUILDING',rarity:'common',weight:8},{text:'THAT\'S THE DIRECTION',rarity:'common',weight:8},{text:'KEEP THIS MOVING',rarity:'common',weight:8},{text:'GOOD WORK. STAY ON IT.',rarity:'common',weight:8},{text:'YOU\'RE FINDING YOUR RHYTHM',rarity:'common',weight:8},{text:'OKAY, THIS IS CLICKING',rarity:'rare',weight:3},{text:'LOOK AT YOU GO',rarity:'rare',weight:3},{text:'THE MOMENTUM IS REAL',rarity:'rare',weight:3},{text:'THIS IS STARTING TO MOVE',rarity:'rare',weight:3},{text:'KEEP FEEDING THE FIRE',rarity:'rare',weight:3},{text:'YOU\'RE BUILDING SOMETHING HERE',rarity:'epic',weight:1},{text:'THE ENGINE IS WAKING UP',rarity:'epic',weight:1},{text:'YOUR FUTURE SELF NOTICED THAT',rarity:'epic',weight:1},{text:'THIS IS HOW MOMENTUM IS MADE',rarity:'epic',weight:1},{text:'KEEP GOING. THIS IS WORKING.',rarity:'epic',weight:1}
+        {text:'💪 NICE. KEEP GOING.',rarity:'common',weight:8},{text:'✨ YOU\'RE DOING GREAT',rarity:'common',weight:8},{text:'🏆 KEEP STACKING WINS',rarity:'common',weight:8},{text:'🔥 MOMENTUM IS BUILDING',rarity:'common',weight:8},{text:'🚀 THAT\'S THE DIRECTION',rarity:'common',weight:8},{text:'👊 KEEP THIS MOVING',rarity:'common',weight:8},{text:'💪 GOOD WORK. STAY ON IT.',rarity:'common',weight:8},{text:'😎 YOU\'RE FINDING YOUR RHYTHM',rarity:'common',weight:8},{text:'✨ OKAY, THIS IS CLICKING',rarity:'rare',weight:3},{text:'🚀 LOOK AT YOU GO',rarity:'rare',weight:3},{text:'🔥 THE MOMENTUM IS REAL',rarity:'rare',weight:3},{text:'⚡ THIS IS STARTING TO MOVE',rarity:'rare',weight:3},{text:'🔥 KEEP FEEDING THE FIRE',rarity:'rare',weight:3},{text:'🦾 YOU\'RE BUILDING SOMETHING HERE',rarity:'epic',weight:1},{text:'⚡ THE ENGINE IS WAKING UP',rarity:'epic',weight:1},{text:'🏆 YOUR FUTURE SELF NOTICED THAT',rarity:'epic',weight:1},{text:'🔥 THIS IS HOW MOMENTUM IS MADE',rarity:'epic',weight:1},{text:'✨ KEEP GOING. THIS IS WORKING.',rarity:'epic',weight:1}
       ],
       3: [
-        {text:'YOU\'RE ON FIRE',rarity:'common',weight:8},{text:'THIS IS STRONG',rarity:'common',weight:8},{text:'KEEP PRESSING',rarity:'common',weight:8},{text:'YOU\'RE CRUSHING TODAY',rarity:'common',weight:8},{text:'THAT\'S HOW YOU SHOW UP',rarity:'common',weight:8},{text:'SERIOUS MOMENTUM',rarity:'common',weight:8},{text:'YOU\'RE LOCKED IN',rarity:'common',weight:8},{text:'KEEP THE PRESSURE ON',rarity:'common',weight:8},{text:'OKAY, THIS IS GETTING SERIOUS',rarity:'rare',weight:3},{text:'THE STREAK HAS TEETH NOW',rarity:'rare',weight:3},{text:'YOU\'RE COOKING',rarity:'rare',weight:3},{text:'THIS VERSION IS DIFFERENT',rarity:'rare',weight:3},{text:'DON\'T TAKE YOUR FOOT OFF IT',rarity:'rare',weight:3},{text:'THE MACHINE IS ONLINE',rarity:'epic',weight:1},{text:'YOU\'RE BECOMING DANGEROUS',rarity:'epic',weight:1},{text:'THIS IS WHAT BUILDING LOOKS LIKE',rarity:'epic',weight:1},{text:'YOU\'RE TURNING EFFORT INTO POWER',rarity:'epic',weight:1},{text:'MOMENTUM HAS ENTERED THE CHAT',rarity:'epic',weight:1}
+        {text:'🔥 YOU\'RE ON FIRE',rarity:'common',weight:8},{text:'💪 THIS IS STRONG',rarity:'common',weight:8},{text:'👊 KEEP PRESSING',rarity:'common',weight:8},{text:'🚀 YOU\'RE CRUSHING TODAY',rarity:'common',weight:8},{text:'🏆 THAT\'S HOW YOU SHOW UP',rarity:'common',weight:8},{text:'⚡ SERIOUS MOMENTUM',rarity:'common',weight:8},{text:'😎 YOU\'RE LOCKED IN',rarity:'common',weight:8},{text:'🔥 KEEP THE PRESSURE ON',rarity:'common',weight:8},{text:'💥 OKAY, THIS IS GETTING SERIOUS',rarity:'rare',weight:3},{text:'🦾 THE STREAK HAS TEETH NOW',rarity:'rare',weight:3},{text:'🔥 YOU\'RE COOKING',rarity:'rare',weight:3},{text:'⚡ THIS VERSION IS DIFFERENT',rarity:'rare',weight:3},{text:'👊 DON\'T TAKE YOUR FOOT OFF IT',rarity:'rare',weight:3},{text:'🦾 THE MACHINE IS ONLINE',rarity:'epic',weight:1},{text:'💥 YOU\'RE BECOMING DANGEROUS',rarity:'epic',weight:1},{text:'🏆 THIS IS WHAT BUILDING LOOKS LIKE',rarity:'epic',weight:1},{text:'⚡ YOU\'RE TURNING EFFORT INTO POWER',rarity:'epic',weight:1},{text:'😎 MOMENTUM HAS ENTERED THE CHAT',rarity:'epic',weight:1}
       ],
       4: [
-        {text:'ABSOLUTELY CRUSHING IT',rarity:'common',weight:8},{text:'YOU\'RE UNSTOPPABLE',rarity:'common',weight:8},{text:'BEAST MODE',rarity:'common',weight:8},{text:'HELL YES',rarity:'common',weight:8},{text:'THIS IS YOUR ZONE',rarity:'common',weight:8},{text:'YOU\'RE FLYING',rarity:'common',weight:8},{text:'KEEP DOMINATING',rarity:'common',weight:8},{text:'FULL POWER',rarity:'common',weight:8},{text:'ABSOLUTE MACHINE',rarity:'rare',weight:3},{text:'YOU\'RE BUILT FOR THIS',rarity:'rare',weight:3},{text:'THIS IS PEAK YOU',rarity:'rare',weight:3},{text:'THE STANDARD JUST MOVED',rarity:'rare',weight:3},{text:'YOU\'RE MAKING THIS LOOK EASY',rarity:'rare',weight:3},{text:'THIS VERSION OF YOU DOESN\'T QUIT',rarity:'epic',weight:1},{text:'THE LIMIT JUST MOVED AGAIN',rarity:'epic',weight:1},{text:'YOU CAME TO PLAY TODAY',rarity:'epic',weight:1},{text:'THIS IS WHAT UNSTOPPABLE LOOKS LIKE',rarity:'epic',weight:1},{text:'KEEP GOING. YOU\'RE WRITING THE STORY.',rarity:'epic',weight:1}
+        {text:'⚡ ABSOLUTELY CRUSHING IT',rarity:'common',weight:8},{text:'🔥 YOU\'RE UNSTOPPABLE',rarity:'common',weight:8},{text:'🦾 BEAST MODE',rarity:'common',weight:8},{text:'💥 HELL YES',rarity:'common',weight:8},{text:'😎 THIS IS YOUR ZONE',rarity:'common',weight:8},{text:'🚀 YOU\'RE FLYING',rarity:'common',weight:8},{text:'🏆 KEEP DOMINATING',rarity:'common',weight:8},{text:'⚡ FULL POWER',rarity:'common',weight:8},{text:'🦾 ABSOLUTE MACHINE',rarity:'rare',weight:3},{text:'💪 YOU\'RE BUILT FOR THIS',rarity:'rare',weight:3},{text:'🔥 THIS IS PEAK YOU',rarity:'rare',weight:3},{text:'🏆 THE STANDARD JUST MOVED',rarity:'rare',weight:3},{text:'😎 YOU\'RE MAKING THIS LOOK EASY',rarity:'rare',weight:3},{text:'⚡ THIS VERSION OF YOU DOESN\'T QUIT',rarity:'epic',weight:1},{text:'🚀 THE LIMIT JUST MOVED AGAIN',rarity:'epic',weight:1},{text:'💥 YOU CAME TO PLAY TODAY',rarity:'epic',weight:1},{text:'🔥 THIS IS WHAT UNSTOPPABLE LOOKS LIKE',rarity:'epic',weight:1},{text:'🏆 KEEP GOING. YOU\'RE WRITING THE STORY.',rarity:'epic',weight:1}
       ]
     };
 
@@ -177,11 +177,11 @@
 
     function motivationFontSize(text) {
       const length = text.length;
-      if (length <= 14) return 15;
-      if (length <= 20) return 13.8;
-      if (length <= 27) return 12.5;
-      if (length <= 34) return 11.3;
-      return 10.2;
+      if (length <= 16) return 15.4;
+      if (length <= 23) return 14.2;
+      if (length <= 31) return 12.9;
+      if (length <= 39) return 11.7;
+      return 10.6;
     }
 
     function setMotivation(tier) {
