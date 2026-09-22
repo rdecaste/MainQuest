@@ -111,7 +111,9 @@
   </main>
 
   <script>
-    const STATE_URL = 'https://raw.githubusercontent.com/rdecaste/MainQuest/main/data.json';
+    // Same-origin (GitHub Pages) rather than raw.githubusercontent: Pages purges
+    // its CDN on deploy, raw does not. Measured 58s vs >200s to reflect an update.
+    const STATE_URL = 'data.json';
     const REFRESH_MS = 15000;
     const CROSSFADE_MS = 1200;
     const CROSSFADE_LEAD_MS = 60;
