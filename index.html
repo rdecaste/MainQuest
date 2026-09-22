@@ -35,6 +35,12 @@
     .hud-bottom[data-tier="4"]{--rate-color:#6fd5ff;--rate-a:#1597e5;--rate-b:#a8ecff;--rate-glow:rgba(61,190,255,.74);--flow-duration:1.9s;--flow-opacity:.56;--bar-glow:0 0 16px rgba(42,184,255,.68),0 0 28px rgba(42,184,255,.24);--pulse-duration:2.6s;--label-glow-radius:12px;--label-pulse-duration:2.6s;--label-shimmer-duration:3.2s;--label-shimmer-opacity:.56;--word-a:#0b7dcb;--word-b:#6fd5ff;--word-c:#d5f6ff;--word-glow:rgba(61,190,255,.78)}
     .hud-bottom[data-rarity="rare"] .progress-wordmark{filter:drop-shadow(0 1px 2px rgba(0,0,0,.9)) drop-shadow(0 0 calc(var(--label-glow-radius) + 4px) var(--word-glow)) drop-shadow(0 0 12px var(--word-glow))}
     .hud-bottom[data-rarity="epic"] .progress-wordmark{filter:drop-shadow(0 1px 2px rgba(0,0,0,.95)) drop-shadow(0 0 calc(var(--label-glow-radius) + 6px) var(--word-glow)) drop-shadow(0 0 18px var(--word-glow)) drop-shadow(0 0 28px var(--word-glow))}
+    .hp-row{margin-bottom:11px}
+    .hp-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+    .hp-num{font-size:12px;font-weight:850;letter-spacing:-.01em;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.9);font-variant-numeric:tabular-nums}
+    .hp-track{width:100%;height:5px;overflow:hidden;border-radius:999px;background:rgba(255,255,255,.18)}
+    .hp-fill{width:100%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#3ddc84,#8ef0b4);transition:width 300ms ease}
+    .hp-row[data-low="1"] .hp-fill{background:linear-gradient(90deg,#ff5f5f,#ff9f1c)}
     .progress-head{display:flex;justify-content:flex-start;align-items:center;margin-bottom:9px}
     .motivation-line{display:flex;align-items:center;gap:7px;min-width:0}
     .motivation-emoji{flex:0 0 auto;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;font-size:20px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.9));transform:translateY(-1px)}
@@ -55,7 +61,7 @@
     .xp-gain{position:absolute;top:100%;margin-top:9px;padding:5px 8px;border-radius:8px;background:rgba(5,7,11,.7);color:var(--accent-b);font-size:13px;font-weight:800}
     .xp-gain:not([hidden]){animation:xp-arrive 450ms ease-out}
     @keyframes xp-arrive{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-    @media(prefers-reduced-motion:reduce){.hero-video{transition:none}.xp-gain:not([hidden]){animation:none}.progress-fill{transition:none;animation:none}.progress-fill::after{animation:none;display:none}.progress-wordmark,.progress-wordmark .word-shimmer{animation:none}.progress-wordmark .word-shimmer{display:none}}
+    @media(prefers-reduced-motion:reduce){.hero-video{transition:none}.hp-fill{transition:none}.xp-gain:not([hidden]){animation:none}.progress-fill{transition:none;animation:none}.progress-fill::after{animation:none;display:none}.progress-wordmark,.progress-wordmark .word-shimmer{animation:none}.progress-wordmark .word-shimmer{display:none}}
   </style>
 </head>
 <body>
@@ -69,6 +75,10 @@
     </div>
 
     <div class="hud-bottom" id="progressHud" data-tier="1" data-rarity="common">
+      <div class="hp-row" id="hpHud" hidden>
+        <div class="hp-head"><span class="label">HP</span><span class="hp-num" id="hpNum">—</span></div>
+        <div class="hp-track" id="hpTrack" role="progressbar" aria-label="Hero HP" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="hp-fill" id="hpFill"></div></div>
+      </div>
       <div class="progress-head">
         <div class="motivation-line" aria-hidden="true">
           <span class="motivation-emoji" id="motivationEmoji">🔥</span>
@@ -130,6 +140,10 @@
     const xpEl = document.getElementById('xp');
     const levelEl = document.getElementById('level');
     const progressFillEl = document.getElementById('progressFill');
+    const hpHudEl = document.getElementById('hpHud');
+    const hpFillEl = document.getElementById('hpFill');
+    const hpNumEl = document.getElementById('hpNum');
+    const hpTrackEl = document.getElementById('hpTrack');
     const progressTrackEl = document.getElementById('levelProgress');
     const progressHudEl = document.getElementById('progressHud');
     const motivationEmojiEl = document.getElementById('motivationEmoji');
@@ -233,6 +247,19 @@
         }
         lastSeenXp = currentXp;
         try { localStorage.setItem(XP_STORAGE_KEY, String(currentXp)); } catch (_) {}
+      }
+
+      const curHp = Number(state.current_hp);
+      const maxHp = Number(state.max_hp);
+      if (Number.isFinite(curHp) && Number.isFinite(maxHp) && maxHp > 0) {
+        const hpPct = Math.max(0, Math.min(100, (curHp / maxHp) * 100));
+        hpFillEl.style.width = hpPct + '%';
+        hpNumEl.textContent = Math.round(curHp).toLocaleString() + ' / ' + Math.round(maxHp).toLocaleString();
+        hpTrackEl.setAttribute('aria-valuenow', String(Math.round(hpPct)));
+        hpHudEl.dataset.low = hpPct <= 30 ? '1' : '0';
+        hpHudEl.hidden = false;
+      } else {
+        hpHudEl.hidden = true;
       }
 
       const rawProgress = Number(state.level_progress ?? state.progress ?? 0);
