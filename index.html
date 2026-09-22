@@ -261,13 +261,16 @@
         hpHudEl.hidden = true;
       }
 
-      const rawProgress = Number(state.level_progress ?? state.progress ?? 0);
-      const progress = Number.isFinite(rawProgress) ? Math.max(0, Math.min(100, rawProgress)) : 0;
-      progressFillEl.style.width = progress + '%';
-      progressTrackEl.setAttribute('aria-valuenow', String(progress));
+      // Fill from XP within the level when available so the bar matches the readout;
+      // level_progress (stage-weighted) is only the fallback.
       const levelXp = state.level_xp == null ? NaN : Number(state.level_xp);
       const levelXpMax = state.level_xp_max == null ? NaN : Number(state.level_xp_max);
-      xpNumEl.textContent = Number.isFinite(levelXp) && Number.isFinite(levelXpMax) && levelXpMax > 0
+      const hasLevelXp = Number.isFinite(levelXp) && Number.isFinite(levelXpMax) && levelXpMax > 0;
+      const rawProgress = hasLevelXp ? (levelXp / levelXpMax) * 100 : Number(state.level_progress ?? state.progress ?? 0);
+      const progress = Number.isFinite(rawProgress) ? Math.max(0, Math.min(100, rawProgress)) : 0;
+      progressFillEl.style.width = progress + '%';
+      progressTrackEl.setAttribute('aria-valuenow', String(Math.round(progress)));
+      xpNumEl.textContent = hasLevelXp
         ? Math.round(levelXp).toLocaleString() + ' / ' + Math.round(levelXpMax).toLocaleString()
         : Math.round(progress) + '%';
 
