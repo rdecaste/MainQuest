@@ -26,9 +26,8 @@
     .hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;background:var(--bg);display:block;transform:scale(var(--video-scale,1));transform-origin:center;opacity:0;transition:opacity 1200ms linear;will-change:opacity;pointer-events:none;z-index:0}
     .hero-video.is-active{opacity:1}
     /* Hero mood mirrors the quest: same video, lit up on strong days, dimmed when slipping.
-       Plain overlays only: changing a video's filter (or blend mode) at runtime can leave it
-       black in a backgrounded page. Playback speed is never changed, so his breathing stays
-       a steady pace to follow. */
+       Plain overlays only, so the video element itself is never restyled. Playback speed is
+       never changed, so his breathing stays a steady pace to follow. Preview with ?mood=. */
     .hero-glow,.hero-shade{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity 2s ease}
     .hero-glow{background:radial-gradient(ellipse 60% 45% at 50% 42%,rgba(255,210,120,.22),transparent 70%)}
     .hero-shade{background:radial-gradient(ellipse 75% 60% at 50% 45%,rgba(40,42,50,.38) 0%,rgba(20,22,28,.5) 55%,rgba(0,0,0,.72) 100%)}
@@ -303,9 +302,12 @@
 
       const tier = performanceTier(state);
       progressHudEl.dataset.tier = String(tier);
-      progressHudEl.dataset.mood = heroMood(tier, hpPct);
+      progressHudEl.dataset.mood = PREVIEW_MOOD || heroMood(tier, hpPct);
       setMotivation(tier);
     }
+
+    // ?mood=strong|steady|slipping previews a mood instead of the live one.
+    const PREVIEW_MOOD = ['strong', 'steady', 'slipping'].find(m => m === new URLSearchParams(location.search).get('mood')) || '';
 
     // Strong = 3/3 Movement days with HP above the low mark; slipping = 1/3 or fewer
     // Movement days, or low HP (same 30% mark as the red HP bar); otherwise steady.
