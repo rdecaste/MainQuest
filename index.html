@@ -23,8 +23,18 @@
     html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
     body{width:100vw;height:100vh;height:100dvh}
     .app{position:fixed;inset:0;overflow:hidden;background:var(--bg);--rate-color:#b7773d;--rate-a:#8d5524;--rate-b:#d59656;--rate-glow:rgba(191,119,57,.28);--flow-duration:9s;--flow-opacity:.08;--bar-glow:0 0 4px rgba(183,119,61,.22);--pulse-duration:9s;--label-glow-radius:3px;--label-pulse-duration:9s;--label-shimmer-duration:12s;--label-shimmer-opacity:.06;--word-a:#74421f;--word-b:#b7773d;--word-c:#e0a56b;--word-glow:rgba(183,119,61,.28)}
-    .hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;background:var(--bg);display:block;transform:scale(var(--video-scale,1));transform-origin:center;opacity:0;transition:opacity 1200ms linear;will-change:opacity;pointer-events:none;z-index:0}
+    .hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;background:var(--bg);display:block;transform:scale(var(--video-scale,1));transform-origin:center;opacity:0;filter:var(--hero-filter,none);transition:opacity 1200ms linear,filter 2s ease;will-change:opacity;pointer-events:none;z-index:0}
     .hero-video.is-active{opacity:1}
+    /* Hero mood mirrors the quest: same video, lit up on strong days, dimmed when slipping.
+       Playback speed is never changed, so his breathing stays a steady pace to follow. */
+    .hero-glow,.hero-shade{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity 2s ease}
+    .hero-glow{background:radial-gradient(ellipse 60% 45% at 50% 42%,rgba(255,214,120,.30),transparent 70%);mix-blend-mode:screen}
+    .hero-shade{background:radial-gradient(ellipse 75% 60% at 50% 45%,transparent 35%,rgba(0,0,0,.6) 100%)}
+    .app[data-mood="strong"]{--hero-filter:brightness(1.08) saturate(1.18) contrast(1.04)}
+    .app[data-mood="strong"] .hero-glow{opacity:1;animation:hero-glow 4s ease-in-out infinite}
+    .app[data-mood="slipping"]{--hero-filter:brightness(.78) saturate(.5)}
+    .app[data-mood="slipping"] .hero-shade{opacity:1}
+    @keyframes hero-glow{0%,100%{opacity:.55}50%{opacity:1}}
     .hud-top{position:absolute;top:calc(12px + var(--safe-top));left:calc(12px + var(--safe-left));right:calc(12px + var(--safe-right));display:flex;justify-content:space-between;align-items:flex-start;gap:12px;z-index:2;pointer-events:none}
     .metric.right{flex:0 0 auto;text-align:right}
     .label{font-size:8px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-shadow:0 1px 4px rgba(0,0,0,.85)}
@@ -65,13 +75,15 @@
     .xp-gain{position:absolute;right:100%;top:50%;margin:-13px 8px 0 0;white-space:nowrap;padding:5px 8px;border-radius:8px;background:rgba(5,7,11,.7);color:var(--accent-b);font-size:13px;font-weight:800}
     .xp-gain:not([hidden]){animation:xp-arrive 450ms ease-out}
     @keyframes xp-arrive{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-    @media(prefers-reduced-motion:reduce){.hero-video{transition:none}.hp-fill{transition:none}.xp-gain:not([hidden]){animation:none}.progress-fill{transition:none;animation:none}.progress-fill::after{animation:none;display:none}.progress-wordmark,.progress-wordmark .word-shimmer{animation:none}.progress-wordmark .word-shimmer{display:none}}
+    @media(prefers-reduced-motion:reduce){.hero-video{transition:none}.app[data-mood="strong"] .hero-glow{animation:none}.hp-fill{transition:none}.xp-gain:not([hidden]){animation:none}.progress-fill{transition:none;animation:none}.progress-fill::after{animation:none;display:none}.progress-wordmark,.progress-wordmark .word-shimmer{animation:none}.progress-wordmark .word-shimmer{display:none}}
   </style>
 </head>
 <body>
-  <main class="app" id="app" data-tier="1" data-rarity="common">
+  <main class="app" id="app" data-tier="1" data-rarity="common" data-mood="steady">
     <video id="heroVideoA" class="hero-video is-active" autoplay muted playsinline preload="auto"></video>
     <video id="heroVideoB" class="hero-video" muted playsinline preload="auto"></video>
+    <div class="hero-glow" aria-hidden="true"></div>
+    <div class="hero-shade" aria-hidden="true"></div>
 
     <div class="hud-top">
       <div class="motivation-line" aria-hidden="true">
@@ -255,8 +267,9 @@
 
       const curHp = Number(state.current_hp);
       const maxHp = Number(state.max_hp);
+      let hpPct = NaN;
       if (Number.isFinite(curHp) && Number.isFinite(maxHp) && maxHp > 0) {
-        const hpPct = Math.max(0, Math.min(100, (curHp / maxHp) * 100));
+        hpPct = Math.max(0, Math.min(100, (curHp / maxHp) * 100));
         hpFillEl.style.width = hpPct + '%';
         hpNumEl.textContent = Math.round(curHp).toLocaleString() + ' / ' + Math.round(maxHp).toLocaleString();
         hpTrackEl.setAttribute('aria-valuenow', String(Math.round(hpPct)));
@@ -290,7 +303,15 @@
 
       const tier = performanceTier(state);
       progressHudEl.dataset.tier = String(tier);
+      progressHudEl.dataset.mood = heroMood(tier, hpPct);
       setMotivation(tier);
+    }
+
+    // Strong = 3/3 Movement days with HP above the low mark; slipping = 1/3 or fewer
+    // Movement days, or low HP (same 30% mark as the red HP bar); otherwise steady.
+    function heroMood(tier, hpPct) {
+      if (tier <= 2 || (Number.isFinite(hpPct) && hpPct <= 30)) return 'slipping';
+      return tier === 4 ? 'strong' : 'steady';
     }
 
     function resetCrossfadeState() {
