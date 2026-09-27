@@ -212,6 +212,9 @@
     // Same-origin (GitHub Pages) rather than raw.githubusercontent: Pages purges
     // its CDN on deploy, raw does not. Measured 58s vs >200s to reflect an update.
     const STATE_URL = 'data.json';
+    // Hero HP lives with the boss battle in the Quest Engine Worker
+    // (~/code/quest-engine), which updates it the moment a habit hits or heals.
+    const BOSS_URL = 'https://quest-engine.quest-engine.workers.dev/boss';
     const REFRESH_MS = 15000;
     const CROSSFADE_MS = 1200;
     const CROSSFADE_LEAD_MS = 60;
@@ -480,10 +483,18 @@
 
     async function refreshDashboard() {
       try {
-        const response = await fetch(`${STATE_URL}?t=${Date.now()}`, { cache: 'no-store' });
+        const [response, boss] = await Promise.all([
+          fetch(`${STATE_URL}?t=${Date.now()}`, { cache: 'no-store' }),
+          fetch(BOSS_URL, { cache: 'no-store' }).then(r => (r.ok ? r.json() : null)).catch(() => null)
+        ]);
         if (!response.ok) return;
 
         const state = await response.json();
+        // data.json's HP is only refreshed by the nightly runs; the live value wins.
+        if (boss && Number(boss.hero_max_hp) > 0) {
+          state.current_hp = Number(boss.hero_hp);
+          state.max_hp = Number(boss.hero_max_hp);
+        }
         renderState(state);
 
         const videoUrl = state.video_url || '';
@@ -538,8 +549,7 @@
     const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
     // hero.json is built at 04:40, so today's heals come live from the boss card's
-    // log (same site), summed per game day (04:00 Amsterdam rollover).
-    const BOSS_URL = '../Boss/data.json';
+    // log (BOSS_URL above), summed per game day (04:00 Amsterdam rollover).
     const gameDay = ms => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(ms - 4 * 3600000));
     let liveHeal = { day: '', hp: 0 };
 
