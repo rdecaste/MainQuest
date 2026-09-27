@@ -119,7 +119,8 @@
     /* Forms: only the ones already reached, newest first. Tap one to replay it. */
     .forms{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .form{position:relative;overflow:hidden;aspect-ratio:3/4;border-radius:14px;background:#0b0f17 center/cover no-repeat;border:1px solid rgba(255,255,255,.09);cursor:pointer}
-    .form video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .form video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s linear}
+    .form video.ready{opacity:1}
     .form-cap{position:absolute;left:0;right:0;bottom:0;padding:22px 9px 8px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.85))}
     .form-name{font-size:13px;font-weight:850;line-height:1.15}
     .form-meta{margin-top:2px;font-size:10px;font-weight:700;color:var(--muted)}
@@ -133,6 +134,7 @@
     .pill.moved{background:rgba(125,255,176,.14);color:var(--scouter)}
     .pill.rest{color:rgba(255,255,255,.45)}
     .pill.up{background:rgba(255,214,92,.16);color:var(--gold)}
+    .pill.hp{background:rgba(125,255,176,.1);color:var(--scouter)}
     .day-xp{font-size:13px;font-weight:850;color:var(--accent-b);font-variant-numeric:tabular-nums;white-space:nowrap}
     .day-xp.pending{color:rgba(255,255,255,.35);font-weight:700;font-size:11px}
     @media(prefers-reduced-motion:reduce){.flipper{transition:none}.reading.typing::after{animation:none}}
@@ -530,13 +532,34 @@
     const todayKey = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
     const questDay = () => hero && hero.started ? Math.round((dayMs(todayKey()) - dayMs(hero.started)) / 86400000) + 1 : null;
     const still = f => f.video_public_id && f.video_version ? CLOUD + 'so_1.5,w_360,h_480,c_fill,g_north/v' + f.video_version + '/' + f.video_public_id + '.jpg' : '';
-    const clip = f => f.video_public_id && f.video_version ? CLOUD + 'ac_none,so_1.0,w_480/v' + f.video_version + '/' + f.video_public_id + '.mp4' : '';
+    // Same crop and start frame as the still, so the clip takes over without a jump.
+    const clip = f => f.video_public_id && f.video_version ? CLOUD + 'ac_none,so_1.5,w_540,h_720,c_fill,g_north/v' + f.video_version + '/' + f.video_public_id + '.mp4' : '';
     const pick = list => list[Math.floor(Math.random() * list.length)];
     const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
+    // hero.json is built at 04:40, so today's heals come live from the boss card's
+    // log (same site), summed per game day (04:00 Amsterdam rollover).
+    const BOSS_URL = '../Boss/data.json';
+    const gameDay = ms => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(ms - 4 * 3600000));
+    let liveHeal = { day: '', hp: 0 };
+
+    async function loadLiveHeal() {
+      try {
+        const response = await fetch(`${BOSS_URL}?t=${Date.now()}`, { cache: 'no-store' });
+        if (!response.ok) return;
+        const boss = await response.json();
+        const day = gameDay(Date.now());
+        const hp = (Array.isArray(boss.log) ? boss.log : []).reduce((sum, e) => {
+          const at = Date.parse(e && e.at);
+          return sum + (!isNaN(at) && gameDay(at) === day ? Math.max(0, Number(e.heal) || 0) : 0);
+        }, 0);
+        liveHeal = { day: day, hp: hp };
+      } catch (error) { /* the boss card is optional here */ }
+    }
+
     async function loadHero() {
       try {
-        const response = await fetch(`${HERO_URL}?t=${Date.now()}`, { cache: 'no-store' });
+        const [response] = await Promise.all([fetch(`${HERO_URL}?t=${Date.now()}`, { cache: 'no-store' }), loadLiveHeal()]);
         if (response.ok) hero = await response.json();
       } catch (error) { console.error('Hero card refresh failed', error); }
       renderBack();
@@ -567,8 +590,12 @@
       el.innerHTML = cells.map(([n, label]) => `<div class="record"><div class="record-num">${esc(n)}</div><span class="label">${esc(label)}</span></div>`).join('');
     }
 
+    let formsKey = '';
     function renderForms(forms) {
       const el = document.getElementById('forms');
+      const key = JSON.stringify(forms);
+      if (key === formsKey && el.children.length) return;
+      formsKey = key;
       if (!forms.length) { el.innerHTML = '<div class="empty">Your forms appear here after tonight’s run.</div>'; return; }
       el.innerHTML = forms.slice().reverse().map((f, i) => `
         <div class="form" data-level="${esc(f.level)}" style="background-image:url('${esc(still(f))}')" role="button" tabindex="0" aria-label="${esc(f.form)}, reached ${esc(fmtDay(f.reached))}. Tap to replay.">
@@ -585,6 +612,8 @@
       const video = document.createElement('video');
       Object.assign(video, { src: clip(f), muted: true, loop: true, playsInline: true, autoplay: true });
       video.setAttribute('playsinline', '');
+      // Stay invisible over the still until frames are actually showing: no black flash.
+      video.addEventListener('playing', () => video.classList.add('ready'), { once: true });
       tile.insertBefore(video, tile.firstChild);
       video.play().catch(() => {});
     }
@@ -600,6 +629,12 @@
         if (d.workouts) pills.push(`<span class="pill">${d.workouts > 1 ? d.workouts + ' workouts' : '1 workout'}</span>`);
         if (d.level_up) pills.push(`<span class="pill up">Level ${esc(d.level)}</span>`);
         else if (d.stage_up) pills.push(`<span class="pill">Stage ${esc(d.stage)}</span>`);
+        const healed = Math.max(Number(d.healed) || 0, d.date === liveHeal.day ? liveHeal.hp : 0);
+        const hp = (Number(d.restored) || 0) + healed;
+        if (hp > 0) {
+          const why = [d.restored > 0 ? `${fmtNum(d.restored)} overnight` : '', healed > 0 ? `${fmtNum(healed)} from habits` : ''].filter(Boolean).join(' · ');
+          pills.push(`<span class="pill hp" title="${esc(why)}">💚 +${fmtNum(hp)} HP</span>`);
+        }
         const xp = d.gain == null ? '<span class="day-xp pending">counts at 04:00</span>' : `<span class="day-xp">+${fmtNum(d.gain)} XP</span>`;
         return `<li class="day"><span class="day-date">${esc(fmtDay(d.date, true))}</span><span class="day-what">${pills.join('')}</span>${xp}</li>`;
       }).join('');
