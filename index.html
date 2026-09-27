@@ -209,12 +209,12 @@
   </div>
 
   <script>
-    // Same-origin (GitHub Pages) rather than raw.githubusercontent: Pages purges
-    // its CDN on deploy, raw does not. Measured 58s vs >200s to reflect an update.
-    const STATE_URL = 'data.json';
-    // Hero HP lives with the boss battle in the Quest Engine Worker
-    // (~/code/quest-engine), which updates it the moment a habit hits or heals.
-    const BOSS_URL = 'https://quest-engine.quest-engine.workers.dev/boss';
+    // The Quest Engine Worker (~/code/quest-engine) runs the nightly progression
+    // and serves this card's state. Hero HP lives with the boss battle there too,
+    // updated the moment a habit hits or heals.
+    const ENGINE_URL = 'https://quest-engine.quest-engine.workers.dev';
+    const STATE_URL = ENGINE_URL + '/mainquest';
+    const BOSS_URL = ENGINE_URL + '/boss';
     const REFRESH_MS = 15000;
     const CROSSFADE_MS = 1200;
     const CROSSFADE_LEAD_MS = 60;
@@ -514,10 +514,9 @@
 
 
     // ---- The back of the card: Goku's journey so far ----
-    // hero.json is rebuilt nightly by the Make scenario "Main Quest — Publish
-    // Hero Card". It only ever holds the past: forms already reached, logged
-    // days and records.
-    const HERO_URL = 'hero.json';
+    // The hero card is rebuilt nightly by the Quest Engine Worker. It only ever
+    // holds the past: forms already reached, logged days and records.
+    const HERO_URL = ENGINE_URL + '/hero';
     const CLOUD = 'https://res.cloudinary.com/a3xk0plk/video/upload/';
     const READING_HISTORY_KEY = 'mainQuest.scouterHistory.v1';
     const RARE_CHANCE = 0.12;
