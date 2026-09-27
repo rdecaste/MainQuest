@@ -22,7 +22,7 @@
     *{box-sizing:border-box}
     html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
     body{width:100vw;height:100vh;height:100dvh}
-    .app{position:fixed;inset:0;overflow:hidden;background:var(--bg);--rate-color:#b7773d;--rate-a:#8d5524;--rate-b:#d59656;--rate-glow:rgba(191,119,57,.28);--flow-duration:9s;--flow-opacity:.08;--bar-glow:0 0 4px rgba(183,119,61,.22);--pulse-duration:9s;--label-glow-radius:3px;--label-pulse-duration:9s;--label-shimmer-duration:12s;--label-shimmer-opacity:.06;--word-a:#74421f;--word-b:#b7773d;--word-c:#e0a56b;--word-glow:rgba(183,119,61,.28)}
+    .app{position:absolute;inset:0;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;background:var(--bg);--rate-color:#b7773d;--rate-a:#8d5524;--rate-b:#d59656;--rate-glow:rgba(191,119,57,.28);--flow-duration:9s;--flow-opacity:.08;--bar-glow:0 0 4px rgba(183,119,61,.22);--pulse-duration:9s;--label-glow-radius:3px;--label-pulse-duration:9s;--label-shimmer-duration:12s;--label-shimmer-opacity:.06;--word-a:#74421f;--word-b:#b7773d;--word-c:#e0a56b;--word-glow:rgba(183,119,61,.28)}
     .hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;background:var(--bg);display:block;transform:scale(var(--video-scale,1));transform-origin:center;opacity:0;transition:opacity 1200ms linear;will-change:opacity;pointer-events:none;z-index:0}
     .hero-video.is-active{opacity:1}
     /* Hero mood mirrors the quest: same video, lit up on strong days, dimmed when slipping.
@@ -75,10 +75,73 @@
     .xp-gain:not([hidden]){animation:xp-arrive 450ms ease-out}
     @keyframes xp-arrive{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
     @media(prefers-reduced-motion:reduce){.hero-video{transition:none}.app[data-mood="strong"] .hero-glow{animation:none}.hp-fill{transition:none}.xp-gain:not([hidden]){animation:none}.progress-fill{transition:none;animation:none}.progress-fill::after{animation:none;display:none}.progress-wordmark,.progress-wordmark .word-shimmer{animation:none}.progress-wordmark .word-shimmer{display:none}}
+
+    /* The card flips on a tap, like the boss card. The back is Goku's side of the
+       game: only what's already happened (forms reached, days logged, records).
+       Nothing on it previews a form, level or stage still to come. */
+    :root{--flip-ms:1100ms;--scouter:#7dffb0;--scouter-dim:rgba(125,255,176,.55);--gold:#ffd65c}
+    .stage{position:fixed;inset:0;perspective:1800px;background:var(--bg)}
+    /* Symmetric easing keeps the edge-on moment at exactly half the duration,
+       which is when the faces swap visibility (Safari can ignore
+       backface-visibility on <video>). */
+    .flipper{position:absolute;inset:0;transform-style:preserve-3d;transition:transform var(--flip-ms) cubic-bezier(.45,0,.55,1)}
+    .flipper.is-flipped{transform:rotateY(180deg)}
+    .app,.hero-back{-webkit-backface-visibility:hidden;backface-visibility:hidden}
+    .flipper.show-back .app,.flipper:not(.show-back) .hero-back{visibility:hidden}
+    .hero-back{position:absolute;inset:0;transform:rotateY(180deg);display:flex;flex-direction:column;padding:calc(14px + var(--safe-top)) calc(14px + var(--safe-right)) calc(10px + var(--safe-bottom)) calc(14px + var(--safe-left));background:radial-gradient(120% 70% at 50% 0%,rgba(255,159,28,.16),transparent 60%),linear-gradient(180deg,#111624,#080b12);overflow:hidden}
+    .hb-head{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;cursor:pointer}
+    .hb-title{font-size:clamp(18px,5.6vw,24px);font-weight:850;letter-spacing:-.02em;line-height:1.1}
+    .hb-sub{margin-top:4px;font-size:12px;font-weight:700;color:var(--muted)}
+    .hb-level{text-align:right}
+    .hb-level .value{font-size:clamp(20px,6vw,26px)}
+    .hero-back .label{text-shadow:none}
+    .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:12px;padding:3px;border-radius:11px;background:rgba(255,255,255,.06)}
+    .tab{border:0;margin:0;padding:7px 0;border-radius:8px;background:transparent;color:rgba(255,255,255,.5);font:inherit;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+    .tab[aria-selected="true"]{background:rgba(255,255,255,.12);color:#fff}
+    .panel{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:12px 0}
+    .panel[hidden]{display:none}
+    .hint{flex:0 0 auto;padding-top:6px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.08em;color:rgba(255,255,255,.4);cursor:pointer}
+    .empty{padding:30px 10px;text-align:center;color:var(--muted);font-size:13px;line-height:1.5}
+    /* Scouter: one reading per flip, drawn at random from what you've done. */
+    .scouter{position:relative;overflow:hidden;padding:18px 16px 16px;border-radius:16px;border:1px solid rgba(125,255,176,.28);background:radial-gradient(120% 90% at 85% 10%,rgba(125,255,176,.18),transparent 55%),rgba(10,30,20,.55);box-shadow:inset 0 0 24px rgba(125,255,176,.08)}
+    .scouter::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(125,255,176,.05) 0 1px,transparent 1px 4px);pointer-events:none}
+    .scouter .label{color:var(--scouter-dim)}
+    .reading{position:relative;margin-top:8px;min-height:2.6em;font-size:clamp(17px,5vw,21px);font-weight:800;line-height:1.3;color:var(--scouter);text-shadow:0 0 10px rgba(125,255,176,.35)}
+    .reading.typing::after{content:"▌";margin-left:2px;animation:blink .8s steps(1) infinite}
+    @keyframes blink{50%{opacity:0}}
+    .scouter.rare{border-color:rgba(255,214,92,.55);background:radial-gradient(120% 90% at 85% 10%,rgba(255,214,92,.25),transparent 55%),rgba(40,28,6,.6);box-shadow:inset 0 0 28px rgba(255,214,92,.15),0 0 22px rgba(255,214,92,.18)}
+    .scouter.rare .label{color:rgba(255,214,92,.8)}
+    .scouter.rare .reading{color:var(--gold);text-shadow:0 0 12px rgba(255,214,92,.45)}
+    .records{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+    .record{padding:11px 12px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07)}
+    .record-num{font-size:20px;font-weight:850;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+    .record .label{margin-top:3px;display:block}
+    /* Forms: only the ones already reached, newest first. Tap one to replay it. */
+    .forms{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .form{position:relative;overflow:hidden;aspect-ratio:3/4;border-radius:14px;background:#0b0f17 center/cover no-repeat;border:1px solid rgba(255,255,255,.09);cursor:pointer}
+    .form video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .form-cap{position:absolute;left:0;right:0;bottom:0;padding:22px 9px 8px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.85))}
+    .form-name{font-size:13px;font-weight:850;line-height:1.15}
+    .form-meta{margin-top:2px;font-size:10px;font-weight:700;color:var(--muted)}
+    .form-now{position:absolute;top:8px;left:8px;padding:3px 7px;border-radius:999px;background:rgba(255,159,28,.9);color:#111;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+    /* Log: the last 14 journal days. */
+    .days{list-style:none;margin:0;padding:0}
+    .day{display:grid;grid-template-columns:74px 1fr auto;align-items:center;gap:8px;padding:10px 2px;border-bottom:1px solid rgba(255,255,255,.07)}
+    .day-date{font-size:12px;font-weight:800;color:var(--muted)}
+    .day-what{display:flex;flex-wrap:wrap;gap:5px;align-items:center;font-size:12px;font-weight:700}
+    .pill{padding:2px 7px;border-radius:999px;background:rgba(255,255,255,.08);font-size:11px;font-weight:800;white-space:nowrap}
+    .pill.moved{background:rgba(125,255,176,.14);color:var(--scouter)}
+    .pill.rest{color:rgba(255,255,255,.45)}
+    .pill.up{background:rgba(255,214,92,.16);color:var(--gold)}
+    .day-xp{font-size:13px;font-weight:850;color:var(--accent-b);font-variant-numeric:tabular-nums;white-space:nowrap}
+    .day-xp.pending{color:rgba(255,255,255,.35);font-weight:700;font-size:11px}
+    @media(prefers-reduced-motion:reduce){.flipper{transition:none}.reading.typing::after{animation:none}}
   </style>
 </head>
 <body>
-  <main class="app" id="app" data-tier="1" data-rarity="common" data-mood="steady">
+  <div class="stage">
+  <div class="flipper" id="flipper">
+  <main class="app" id="app" role="button" tabindex="0" aria-label="Goku. Tap to flip the card." data-tier="1" data-rarity="common" data-mood="steady">
     <video id="heroVideoA" class="hero-video is-active" autoplay muted playsinline preload="auto"></video>
     <video id="heroVideoB" class="hero-video" muted playsinline preload="auto"></video>
     <div class="hero-glow" aria-hidden="true"></div>
@@ -122,6 +185,26 @@
       </div>
     </div>
   </main>
+  <section class="hero-back" id="heroBack" aria-hidden="true">
+    <div class="hb-head" id="hbHead">
+      <div><div class="label">Hero</div><div class="hb-title" id="hbForm">Goku</div><div class="hb-sub" id="hbSub"></div></div>
+      <div class="hb-level"><div class="label">Level</div><div class="value" id="hbLevel">—</div></div>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab" type="button" role="tab" id="tabScouter" aria-controls="panelScouter" aria-selected="true">Scouter</button>
+      <button class="tab" type="button" role="tab" id="tabForms" aria-controls="panelForms" aria-selected="false">Forms</button>
+      <button class="tab" type="button" role="tab" id="tabLog" aria-controls="panelLog" aria-selected="false">Log</button>
+    </div>
+    <div class="panel" id="panelScouter" role="tabpanel" aria-labelledby="tabScouter">
+      <div class="scouter" id="scouter"><div class="label" id="scouterLabel">Scouter reading</div><div class="reading" id="reading" aria-live="polite"></div></div>
+      <div class="records" id="records"></div>
+    </div>
+    <div class="panel" id="panelForms" role="tabpanel" aria-labelledby="tabForms" hidden><div class="forms" id="forms"></div></div>
+    <div class="panel" id="panelLog" role="tabpanel" aria-labelledby="tabLog" hidden><ul class="days" id="days"></ul></div>
+    <div class="hint" id="hbHint">Tap here to flip back</div>
+  </section>
+  </div>
+  </div>
 
   <script>
     // Same-origin (GitHub Pages) rather than raw.githubusercontent: Pages purges
@@ -416,7 +499,219 @@
       }
     }
 
+
+    // ---- The back of the card: Goku's journey so far ----
+    // hero.json is rebuilt nightly by the Make scenario "Main Quest — Publish
+    // Hero Card". It only ever holds the past: forms already reached, logged
+    // days and records.
+    const HERO_URL = 'hero.json';
+    const CLOUD = 'https://res.cloudinary.com/a3xk0plk/video/upload/';
+    const READING_HISTORY_KEY = 'mainQuest.scouterHistory.v1';
+    const RARE_CHANCE = 0.12;
+    const flipperEl = document.getElementById('flipper');
+    const backEl = document.getElementById('heroBack');
+    const readingEl = document.getElementById('reading');
+    const scouterEl = document.getElementById('scouter');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let hero = null;
+    let flipTimer = null;
+    let typeTimer = null;
+
+    const fmtNum = n => Math.round(Number(n) || 0).toLocaleString();
+    const dayMs = key => Date.parse(key + 'T12:00:00Z');
+    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const fmtDay = (key, withWeekday) => {
+      const t = dayMs(key);
+      if (isNaN(t)) return '';
+      const d = new Date(t);
+      return (withWeekday ? WEEKDAYS[d.getUTCDay()] + ' ' : '') + d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()];
+    };
+    const todayKey = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+    const questDay = () => hero && hero.started ? Math.round((dayMs(todayKey()) - dayMs(hero.started)) / 86400000) + 1 : null;
+    const still = f => f.video_public_id && f.video_version ? CLOUD + 'so_1.5,w_360,h_480,c_fill,g_north/v' + f.video_version + '/' + f.video_public_id + '.jpg' : '';
+    const clip = f => f.video_public_id && f.video_version ? CLOUD + 'ac_none,so_1.0,w_480/v' + f.video_version + '/' + f.video_public_id + '.mp4' : '';
+    const pick = list => list[Math.floor(Math.random() * list.length)];
+    const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+    async function loadHero() {
+      try {
+        const response = await fetch(`${HERO_URL}?t=${Date.now()}`, { cache: 'no-store' });
+        if (response.ok) hero = await response.json();
+      } catch (error) { console.error('Hero card refresh failed', error); }
+      renderBack();
+    }
+
+    function renderBack() {
+      const forms = (hero && Array.isArray(hero.forms)) ? hero.forms : [];
+      const now = forms[forms.length - 1];
+      document.getElementById('hbForm').textContent = now && now.form ? 'Goku · ' + now.form : 'Goku';
+      document.getElementById('hbLevel').textContent = hero && hero.level ? hero.level : (levelEl.textContent || '—');
+      const day = questDay();
+      document.getElementById('hbSub').textContent = day ? 'Day ' + day + ' of the quest' : '';
+      renderRecords();
+      renderForms(forms);
+      renderDays();
+    }
+
+    function renderRecords() {
+      const el = document.getElementById('records');
+      const r = hero && hero.records;
+      if (!r) { el.innerHTML = ''; return; }
+      const cells = [
+        [r.current_run, r.current_run === 1 ? 'Day moving' : 'Days moving in a row'],
+        [r.best_gain ? '+' + fmtNum(r.best_gain.gain) : '—', 'Best day' + (r.best_gain ? ' · ' + fmtDay(r.best_gain.date) : '')],
+        [r.movement_days, 'Days with movement'],
+        [r.longest_run, 'Longest run']
+      ];
+      el.innerHTML = cells.map(([n, label]) => `<div class="record"><div class="record-num">${esc(n)}</div><span class="label">${esc(label)}</span></div>`).join('');
+    }
+
+    function renderForms(forms) {
+      const el = document.getElementById('forms');
+      if (!forms.length) { el.innerHTML = '<div class="empty">Your forms appear here after tonight’s run.</div>'; return; }
+      el.innerHTML = forms.slice().reverse().map((f, i) => `
+        <div class="form" data-level="${esc(f.level)}" style="background-image:url('${esc(still(f))}')" role="button" tabindex="0" aria-label="${esc(f.form)}, reached ${esc(fmtDay(f.reached))}. Tap to replay.">
+          ${i === 0 ? '<span class="form-now">Now</span>' : ''}
+          <div class="form-cap"><div class="form-name">${esc(f.form)}</div><div class="form-meta">Level ${esc(f.level)}${f.reached ? ' · ' + esc(fmtDay(f.reached)) : ''}</div></div>
+        </div>`).join('');
+    }
+
+    function toggleFormClip(tile) {
+      const f = (hero.forms || []).find(x => String(x.level) === tile.dataset.level);
+      const playing = tile.querySelector('video');
+      document.querySelectorAll('.form video').forEach(v => v.remove());
+      if (playing || !f || !clip(f)) return;
+      const video = document.createElement('video');
+      Object.assign(video, { src: clip(f), muted: true, loop: true, playsInline: true, autoplay: true });
+      video.setAttribute('playsinline', '');
+      tile.insertBefore(video, tile.firstChild);
+      video.play().catch(() => {});
+    }
+
+    function renderDays() {
+      const el = document.getElementById('days');
+      const days = (hero && Array.isArray(hero.days)) ? hero.days : [];
+      if (!days.length) { el.innerHTML = '<li class="empty">Your days appear here after tonight’s run.</li>'; return; }
+      const today = todayKey();
+      el.innerHTML = days.map(d => {
+        // Today's Movement is ticked later in the day, so no verdict on it yet.
+        const pills = [d.movement ? '<span class="pill moved">Moved</span>' : d.date === today ? '<span class="pill">Today</span>' : '<span class="pill rest">No movement</span>'];
+        if (d.workouts) pills.push(`<span class="pill">${d.workouts > 1 ? d.workouts + ' workouts' : '1 workout'}</span>`);
+        if (d.level_up) pills.push(`<span class="pill up">Level ${esc(d.level)}</span>`);
+        else if (d.stage_up) pills.push(`<span class="pill">Stage ${esc(d.stage)}</span>`);
+        const xp = d.gain == null ? '<span class="day-xp pending">counts at 04:00</span>' : `<span class="day-xp">+${fmtNum(d.gain)} XP</span>`;
+        return `<li class="day"><span class="day-date">${esc(fmtDay(d.date, true))}</span><span class="day-what">${pills.join('')}</span>${xp}</li>`;
+      }).join('');
+    }
+
+    // One reading per flip, never one of the last few. Now and then a rare one.
+    function readings() {
+      const r = (hero && hero.records) || {};
+      const forms = (hero && hero.forms) || [];
+      const days = (hero && hero.days) || [];
+      const common = [], rare = [];
+      const xp = Number(r.xp || 0);
+      if (xp) common.push(xp > 9000 ? `Power reading: ${fmtNum(xp)} XP. It's over 9000!` : `Power reading: ${fmtNum(xp)} XP.`);
+      if (r.current_run > 1) common.push(`${r.current_run} days in a row with movement.`);
+      if (r.best_gain) common.push(`Biggest day so far: ${fmtDay(r.best_gain.date)}, +${fmtNum(r.best_gain.gain)} XP.`);
+      if (r.movement_days) common.push(`${r.movement_days} days with movement since ${fmtDay(hero.started)}.`);
+      if (r.workouts) common.push(`${r.workouts} workouts logged on the quest.`);
+      if (r.longest_run > 2) common.push(`Longest run: ${r.longest_run} days of movement without a break.`);
+      if (r.fastest_level) common.push(`Fastest transformation: ${r.fastest_level.form} in ${r.fastest_level.days} days.`);
+      if (r.stage) common.push(`Stage ${r.stage} of the Main Quest, cleared by showing up.`);
+      const day = questDay();
+      if (day) common.push(`Day ${day} of the quest. Still standing.`);
+      const earned = days.find(d => d.gain != null);
+      if (earned && earned.gain) common.push(`${fmtDay(earned.date, true)} earned you +${fmtNum(earned.gain)} XP.`);
+      for (const f of forms.slice(0, -1)) if (f.reached) common.push(`Flashback: on ${fmtDay(f.reached)} you became ${f.form}.`);
+      if (forms.length > 1 && forms[0].reached) rare.push(`Memory unlocked: ${fmtDay(forms[0].reached)}, the day it all started as ${forms[0].form}. Look at you now.`);
+      rare.push('Reading unstable… the scouter just cracked.', 'The only one you need to beat is the you from yesterday.', 'Power comes in response to a need, not a desire.', 'A Saiyan never stops at their limit.', 'Somewhere, Vegeta just clenched his fist.');
+      return { common: common, rare: rare };
+    }
+
+    function nextReading() {
+      const pool = readings();
+      if (!pool.common.length) return { text: 'Scouter calibrating… come back after tonight’s run.', rare: false };
+      let history = [];
+      try { history = JSON.parse(localStorage.getItem(READING_HISTORY_KEY) || '[]'); } catch (_) {}
+      if (!Array.isArray(history)) history = [];
+      const isRare = Math.random() < RARE_CHANCE;
+      const list = isRare ? pool.rare : pool.common;
+      const fresh = list.filter(t => !history.includes(t));
+      const text = pick(fresh.length ? fresh : list);
+      try { localStorage.setItem(READING_HISTORY_KEY, JSON.stringify([...history, text].slice(-6))); } catch (_) {}
+      return { text: text, rare: isRare };
+    }
+
+    function showReading() {
+      const reading = nextReading();
+      scouterEl.classList.toggle('rare', reading.rare);
+      document.getElementById('scouterLabel').textContent = reading.rare ? '⚡ Rare reading' : 'Scouter reading';
+      clearInterval(typeTimer);
+      if (reduceMotion) { readingEl.textContent = reading.text; return; }
+      // Typed out like a scouter readout.
+      let i = 0;
+      readingEl.textContent = '';
+      readingEl.classList.add('typing');
+      typeTimer = setInterval(() => {
+        i += 1;
+        readingEl.textContent = reading.text.slice(0, i);
+        if (i >= reading.text.length) { clearInterval(typeTimer); readingEl.classList.remove('typing'); }
+      }, 28);
+    }
+
+    function selectTab(id) {
+      document.querySelectorAll('.tab').forEach(tab => {
+        const on = tab.id === id;
+        tab.setAttribute('aria-selected', String(on));
+        document.getElementById(tab.getAttribute('aria-controls')).hidden = !on;
+      });
+      if (id !== 'tabForms') document.querySelectorAll('.form video').forEach(v => v.remove());
+    }
+
+    function setFlipped(flipped) {
+      const flipMs = reduceMotion ? 0 : parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--flip-ms')) || 1100;
+      flipperEl.classList.toggle('is-flipped', flipped);
+      progressHudEl.setAttribute('aria-hidden', String(flipped));
+      backEl.setAttribute('aria-hidden', String(!flipped));
+      clearTimeout(flipTimer);
+      flipTimer = setTimeout(() => flipperEl.classList.toggle('show-back', flipped), flipMs / 2);
+      if (flipped) {
+        renderBack();
+        showReading();
+        loadHero();
+        document.querySelectorAll('.panel').forEach(p => { p.scrollTop = 0; });
+        setTimeout(() => videos.forEach(v => v.pause()), flipMs);
+      } else {
+        document.querySelectorAll('.form video').forEach(v => v.remove());
+        videos[activeVideoIndex].play().catch(() => {});
+      }
+    }
+
+    progressHudEl.addEventListener('click', () => setFlipped(true));
+    progressHudEl.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setFlipped(true); }
+    });
+    backEl.addEventListener('click', event => {
+      const tab = event.target.closest('.tab');
+      if (tab) { selectTab(tab.id); return; }
+      const tile = event.target.closest('.form');
+      if (tile) { toggleFormClip(tile); return; }
+      if (event.target.closest('#hbHead, #hbHint')) setFlipped(false);
+    });
+    backEl.addEventListener('keydown', event => {
+      const tile = event.target.closest('.form');
+      if (tile && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); toggleFormClip(tile); }
+      if (event.key === 'Escape') setFlipped(false);
+    });
+    // Browsers pause muted video in a hidden tab; pick the front back up.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && !flipperEl.classList.contains('is-flipped')) videos[activeVideoIndex].play().catch(() => {});
+    });
+
     monitorVideoLoop();
+    loadHero();
     refreshDashboard();
     setInterval(refreshDashboard, REFRESH_MS);
   </script>
