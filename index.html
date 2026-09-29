@@ -182,7 +182,7 @@
         <div class="hp-track" id="hpTrack" role="progressbar" aria-label="Hero HP" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="hp-fill" id="hpFill"></div></div>
       </div>
       <div class="bar-row">
-        <div class="bar-head"><span class="bar-title"><span class="label">XP</span><span class="rate-dots" id="rateDots" role="img" aria-label="Movement days"><span class="rate-dot"></span><span class="rate-dot"></span><span class="rate-dot"></span></span></span><span class="xp-num-wrap"><span class="bar-num" id="xpNum">—</span><span class="xp-gain" id="xpGain" role="status" aria-live="polite" hidden></span></span></div>
+        <div class="bar-head"><span class="bar-title"><span class="label">XP</span><span class="rate-dots" id="rateDots" role="img" aria-label="Success days"><span class="rate-dot"></span><span class="rate-dot"></span><span class="rate-dot"></span></span></span><span class="xp-num-wrap"><span class="bar-num" id="xpNum">—</span><span class="xp-gain" id="xpGain" role="status" aria-live="polite" hidden></span></span></div>
         <div class="progress-track" id="levelProgress" role="progressbar" aria-label="Level progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-fill" id="progressFill"></div></div>
       </div>
     </div>
@@ -379,14 +379,14 @@
         ? Math.round(levelXp).toLocaleString() + ' / ' + Math.round(levelXpMax).toLocaleString()
         : Math.round(progress) + '%';
 
-      // Movement days in the last 3 journal entries; falls back to the 3-day average.
+      // Success days in the last 3 journal entries; falls back to the 3-day average.
       const doneRaw = state.completed_count == null ? NaN : Number(state.completed_count);
       const usedRaw = state.entries_used == null ? NaN : Number(state.entries_used);
       const rate = Number(state.performance_rate);
       const done = Math.max(0, Math.min(3, Number.isFinite(doneRaw) ? doneRaw : Number.isFinite(rate) ? Math.round(rate / 100 * 3) : 0));
       const used = Number.isFinite(usedRaw) && usedRaw > 0 ? Math.min(3, usedRaw) : 3;
       Array.from(rateDotsEl.children).forEach((dot, i) => dot.classList.toggle('is-on', i < done));
-      rateDotsEl.setAttribute('aria-label', 'Movement on ' + done + ' of the last ' + used + ' days');
+      rateDotsEl.setAttribute('aria-label', 'Success on ' + done + ' of the last ' + used + ' days');
 
       const tier = performanceTier(state);
       progressHudEl.dataset.tier = String(tier);
@@ -397,8 +397,8 @@
     // ?mood=strong|steady|slipping previews a mood instead of the live one.
     const PREVIEW_MOOD = ['strong', 'steady', 'slipping'].find(m => m === new URLSearchParams(location.search).get('mood')) || '';
 
-    // Strong = 3/3 Movement days with HP above the low mark; slipping = 1/3 or fewer
-    // Movement days, or low HP (same 30% mark as the red HP bar); otherwise steady.
+    // Strong = 3/3 Success days with HP above the low mark; slipping = 1/3 or fewer
+    // Success days, or low HP (same 30% mark as the red HP bar); otherwise steady.
     function heroMood(tier, hpPct) {
       if (tier <= 2 || (Number.isFinite(hpPct) && hpPct <= 30)) return 'slipping';
       return tier === 4 ? 'strong' : 'steady';
@@ -591,9 +591,9 @@
       const r = hero && hero.records;
       if (!r) { el.innerHTML = ''; return; }
       const cells = [
-        [r.current_run, r.current_run === 1 ? 'Day moving' : 'Days moving in a row'],
+        [r.current_run, r.current_run === 1 ? 'Day of success' : 'Success days in a row'],
         [r.best_gain ? '+' + fmtNum(r.best_gain.gain) : '—', 'Best day' + (r.best_gain ? ' · ' + fmtDay(r.best_gain.date) : '')],
-        [r.movement_days, 'Days with movement'],
+        [r.movement_days, 'Success days'],
         [r.longest_run, 'Longest run']
       ];
       el.innerHTML = cells.map(([n, label]) => `<div class="record"><div class="record-num">${esc(n)}</div><span class="label">${esc(label)}</span></div>`).join('');
@@ -633,8 +633,8 @@
       if (!days.length) { el.innerHTML = '<li class="empty">Your days appear here after tonight’s run.</li>'; return; }
       const today = todayKey();
       el.innerHTML = days.map(d => {
-        // Today's Movement is ticked later in the day, so no verdict on it yet.
-        const pills = [d.movement ? '<span class="pill moved">Moved</span>' : d.date === today ? '<span class="pill">Today</span>' : '<span class="pill rest">No movement</span>'];
+        // Today's Success is ticked later in the day, so no verdict on it yet.
+        const pills = [d.movement ? '<span class="pill moved">Success</span>' : d.date === today ? '<span class="pill">Today</span>' : '<span class="pill rest">No success</span>'];
         if (d.workouts) pills.push(`<span class="pill">${d.workouts > 1 ? d.workouts + ' workouts' : '1 workout'}</span>`);
         if (d.level_up) pills.push(`<span class="pill up">Level ${esc(d.level)}</span>`);
         else if (d.stage_up) pills.push(`<span class="pill">Stage ${esc(d.stage)}</span>`);
@@ -657,11 +657,11 @@
       const common = [], rare = [];
       const xp = Number(r.xp || 0);
       if (xp) common.push(xp > 9000 ? `Power reading: ${fmtNum(xp)} XP. It's over 9000!` : `Power reading: ${fmtNum(xp)} XP.`);
-      if (r.current_run > 1) common.push(`${r.current_run} days in a row with movement.`);
+      if (r.current_run > 1) common.push(`${r.current_run} success days in a row.`);
       if (r.best_gain) common.push(`Biggest day so far: ${fmtDay(r.best_gain.date)}, +${fmtNum(r.best_gain.gain)} XP.`);
-      if (r.movement_days) common.push(`${r.movement_days} days with movement since ${fmtDay(hero.started)}.`);
+      if (r.movement_days) common.push(`${r.movement_days} success days since ${fmtDay(hero.started)}.`);
       if (r.workouts) common.push(`${r.workouts} workouts logged on the quest.`);
-      if (r.longest_run > 2) common.push(`Longest run: ${r.longest_run} days of movement without a break.`);
+      if (r.longest_run > 2) common.push(`Longest run: ${r.longest_run} success days without a break.`);
       if (r.fastest_level) common.push(`Fastest transformation: ${r.fastest_level.form} in ${r.fastest_level.days} days.`);
       if (r.stage) common.push(`Stage ${r.stage} of the Main Quest, cleared by showing up.`);
       const day = questDay();
