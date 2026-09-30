@@ -141,6 +141,7 @@
     .pill.rest{color:rgba(255,255,255,.45)}
     .pill.up{background:rgba(255,214,92,.16);color:var(--gold)}
     .pill.hp{background:rgba(125,255,176,.1);color:var(--scouter)}
+    .pill.dmg{background:rgba(255,92,92,.12);color:#ff8a8a}
     .day-xp{font-size:13px;font-weight:850;color:var(--accent-b);font-variant-numeric:tabular-nums;white-space:nowrap}
     .day-xp.pending{color:rgba(255,255,255,.35);font-weight:700;font-size:11px}
     @media(prefers-reduced-motion:reduce){.flipper{transition:none}.reading.typing::after{animation:none}}
@@ -586,10 +587,10 @@
     const pick = list => list[Math.floor(Math.random() * list.length)];
     const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
-    // hero.json is built at 04:40, so today's heals come live from the boss card's
+    // hero.json is built at 04:00, so today's heals and hits come live from the boss card's
     // log (BOSS_URL above), summed per game day (04:00 Amsterdam rollover).
     const gameDay = ms => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(ms - 4 * 3600000));
-    let liveHeal = { day: '', hp: 0 };
+    let liveHeal = { day: '', hp: 0, damage: 0 };
 
     async function loadLiveHeal() {
       try {
@@ -597,11 +598,10 @@
         if (!response.ok) return;
         const boss = await response.json();
         const day = gameDay(Date.now());
-        const hp = (Array.isArray(boss.log) ? boss.log : []).reduce((sum, e) => {
-          const at = Date.parse(e && e.at);
-          return sum + (!isNaN(at) && gameDay(at) === day ? Math.max(0, Number(e.heal) || 0) : 0);
-        }, 0);
-        liveHeal = { day: day, hp: hp };
+        const today = (Array.isArray(boss.log) ? boss.log : []).filter(e => { const at = Date.parse(e && e.at); return !isNaN(at) && gameDay(at) === day; });
+        const hp = today.reduce((sum, e) => sum + Math.max(0, Number(e.heal) || 0), 0);
+        const damage = today.reduce((sum, e) => sum + (e.kind === 'hero' ? Math.max(0, Number(e.damage) || 0) : 0), 0);
+        liveHeal = { day: day, hp: hp, damage: damage };
       } catch (error) { /* the boss card is optional here */ }
     }
 
@@ -683,6 +683,9 @@
           const why = [d.restored > 0 ? `${fmtNum(d.restored)} overnight` : '', healed > 0 ? `${fmtNum(healed)} from habits` : ''].filter(Boolean).join(' · ');
           pills.push(`<span class="pill hp" title="${esc(why)}">💚 +${fmtNum(hp)} HP</span>`);
         }
+        // Damage taken from bad habits that day.
+        const hurt = Math.max(Number(d.damaged) || 0, d.date === liveHeal.day ? liveHeal.damage : 0);
+        if (hurt > 0) pills.push(`<span class="pill dmg" title="Damage taken from bad habits">💢 −${fmtNum(hurt)} HP</span>`);
         const xp = d.gain == null ? '<span class="day-xp pending">counts at 04:00</span>' : `<span class="day-xp">+${fmtNum(d.gain)} XP</span>`;
         return `<li class="day"><span class="day-date">${esc(fmtDay(d.date, true))}</span><span class="day-what">${pills.join('')}</span>${xp}</li>`;
       }).join('');
