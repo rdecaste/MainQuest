@@ -189,6 +189,22 @@
     .pl-trend{margin-left:6px;font-size:12px;font-weight:800;color:var(--scouter);opacity:.8}
     .pl-trend.down{color:#ff9f9f}
     .spark{display:block;width:100%;height:36px;margin-top:2px}
+    /* The load chart: long-term load (fitness, the power level) and short-term load (fatigue). */
+    .ld-legend{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:10px;font-weight:800;color:rgba(255,255,255,.75);font-variant-numeric:tabular-nums}
+    .ld-legend i{display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:4px;vertical-align:2px}
+    .ld-wrap{position:relative;margin-top:8px;touch-action:none;cursor:crosshair}
+    .ld-chart{display:block;width:100%;height:150px;overflow:visible}
+    .ld-strip{display:flex;height:6px;border-radius:3px;overflow:hidden;margin-top:4px}
+    .ld-strip span{flex:1}
+    .ld-x{position:relative;height:12px;margin-top:3px;font-size:9px;font-weight:800;color:rgba(255,255,255,.4)}
+    .ld-x span{position:absolute;transform:translateX(-50%)}
+    .ld-tip{position:absolute;top:-6px;z-index:2;padding:6px 8px;border-radius:9px;background:rgba(5,7,11,.92);border:1px solid rgba(255,255,255,.18);font-size:10px;font-weight:800;line-height:1.45;white-space:nowrap;pointer-events:none;font-variant-numeric:tabular-nums}
+    .ld-tip[hidden]{display:none}
+    .ld-tip .f{color:var(--scouter)}.ld-tip .a{color:#ff8fa3}
+    .form-chip{display:inline-block;padding:2px 7px;border-radius:999px;font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+    .fs-Rusty{background:#5b6472}.fs-Steady{background:#3ddc84}.fs-Building{background:#ffd65c}.fs-Overreaching{background:#ff5f5f}
+    .form-chip.fs-Rusty{background:rgba(91,100,114,.35);color:#c9d1dc}.form-chip.fs-Steady{background:rgba(61,220,132,.18);color:#7dffb0}
+    .form-chip.fs-Building{background:rgba(255,214,92,.2);color:#ffd65c}.form-chip.fs-Overreaching{background:rgba(255,95,95,.2);color:#ff9f9f}
     .gauge{position:relative;height:6px;border-radius:999px;background:rgba(255,255,255,.12);margin:16px 4px 26px}
     .gauge-fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,#2fbf71,#7dffb0);box-shadow:0 0 8px rgba(125,255,176,.6)}
     .g-mark{position:absolute;top:-5px;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:#0b0f17;border:2px solid rgba(255,255,255,.3)}
@@ -855,6 +871,13 @@
         if (g.days) common.push(`Gravity ${fmtNum(g.gravity)}×: ${g.days} training days in the last 28.`);
         if (power.next_mark) common.push(`Next signature move at power ${fmtNum(power.next_mark.power)}. ${fmtNum(Math.max(0, power.next_mark.power - pl))} to go.`);
         if (power.week && power.week.senzu) rare.push('Six hours this week. The Senzu bean is yours.');
+        const FORM_READING = {
+          Rusty: 'Short-term load is low. Time to build.',
+          Steady: 'Holding steady. A harder week turns this into growth.',
+          Building: 'Building block in progress. The power level is climbing.',
+          Overreaching: 'Overreaching. An easier day lets the gains land.'
+        };
+        if (FORM_READING[power.form_state]) common.push(FORM_READING[power.form_state]);
       }
       rare.push('Reading unstable… the scouter just cracked.', 'The only one you need to beat is the you from yesterday.', 'Power comes in response to a need, not a desire.', 'A Saiyan never stops at their limit.', 'Somewhere, Vegeta just clenched his fist.');
       return { common: common, rare: rare };
@@ -953,12 +976,70 @@
       return v.map((y, i) => (i ? 'L' : 'M') + Math.round((i / (v.length - 1)) * 240) + ' ' + Math.round(hi === lo ? 18 : 33 - ((y - lo) / span) * 28)).join(' ');
     }
 
-    // Scouter tab: power level, its 12 weeks and the move marks inside the
-    // scouter box; gravity and this week as two tiles under it.
+    // The load chart (Roy, 2 Oct 2026): 84 days of long-term load (fitness x 100,
+    // the power level) and short-term load (fatigue x 100), the move marks as
+    // dashed lines and a strip with each day's form. A finger on it reads a day.
+    const LD_W = 246, LD_H = 150;
+    let loadKey = '';
+    function loadChart(load, moves) {
+      const long = load.long.map(Number), short = load.short.map(Number), n = long.length;
+      // The marks already passed and the next one; the rest would only crowd the chart.
+      const all = moves.map(m => ({ p: Number(m.power), n: m.name || '???' })).filter(m => m.p > 0).sort((a, b) => a.p - b.p);
+      const now = long[n - 1] || 0;
+      const nextMark = all.find(m => m.p > now);
+      const marks = all.filter(m => m.p <= now || m === nextMark);
+      const yMax = Math.max(1, ...long, ...short) * 1.05;
+      const x = i => (i / Math.max(1, n - 1)) * LD_W;
+      const y = v => 8 + (1 - v / yMax) * (LD_H - 12);
+      const path = vals => vals.map((v, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ');
+      const lines = marks.filter(m => m.p <= yMax).map(m =>
+        `<line x1="0" x2="${LD_W}" y1="${y(m.p)}" y2="${y(m.p)}" stroke="rgba(255,214,92,.55)" stroke-dasharray="3 4" stroke-width="1" vector-effect="non-scaling-stroke"/>` +
+        `<text x="2" y="${y(m.p) - 3}" font-size="8" font-weight="800" fill="rgba(255,214,92,.8)">${esc(m.n)} · ${esc(fmtNum(m.p))}</text>`).join('');
+      const start = Date.parse(load.from + 'T12:00:00Z');
+      const dayOf = i => new Date(start + i * 86400000);
+      let months = '';
+      for (let i = 0; i < n; i++) { const d = dayOf(i); if (d.getUTCDate() === 1) months += `<span style="left:${(i / (n - 1)) * 100}%">${MONTHS[d.getUTCMonth()]}</span>`; }
+      const html =
+        `<div class="ld-wrap"><svg class="ld-chart" viewBox="0 0 ${LD_W} ${LD_H}" preserveAspectRatio="none" aria-label="Long-term and short-term load, last 12 weeks">` + lines +
+        `<path d="${path(long)} L${LD_W} ${LD_H} L0 ${LD_H}Z" fill="rgba(125,255,176,.14)"/>` +
+        `<path d="${path(short)}" fill="none" stroke="#ff8fa3" stroke-width="1.6" stroke-linejoin="round" opacity=".9" vector-effect="non-scaling-stroke"/>` +
+        `<path d="${path(long)}" fill="none" stroke="#7dffb0" stroke-width="2.4" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>` +
+        `<line class="ld-cur" x1="0" x2="0" y1="0" y2="${LD_H}" stroke="rgba(255,255,255,.5)" stroke-width="1" vector-effect="non-scaling-stroke" visibility="hidden"/>` +
+        `<circle class="ld-cf" r="3.5" fill="#7dffb0" visibility="hidden"/><circle class="ld-ca" r="3" fill="#ff8fa3" visibility="hidden"/></svg>` +
+        `<div class="ld-tip" hidden></div>` +
+        `<div class="ld-strip">${load.form.map(f => `<span class="fs-${esc(f)}"></span>`).join('')}</div>` +
+        `<div class="ld-x">${months}</div></div>`;
+      const bind = wrap => {
+        const svg = wrap.querySelector('svg'), tip = wrap.querySelector('.ld-tip');
+        const marks = svg.querySelectorAll('.ld-cur,.ld-cf,.ld-ca');
+        const show = i => {
+          const cx = x(i), d = dayOf(i);
+          svg.querySelector('.ld-cur').setAttribute('x1', cx); svg.querySelector('.ld-cur').setAttribute('x2', cx);
+          svg.querySelector('.ld-cf').setAttribute('cx', cx); svg.querySelector('.ld-cf').setAttribute('cy', y(long[i]));
+          svg.querySelector('.ld-ca').setAttribute('cx', cx); svg.querySelector('.ld-ca').setAttribute('cy', y(short[i]));
+          marks.forEach(m => m.setAttribute('visibility', 'visible'));
+          tip.innerHTML = `${WEEKDAYS[d.getUTCDay()]} ${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}<br><span class="f">Long-term ${esc(fmtNum(long[i]))}</span><br><span class="a">Short-term ${esc(fmtNum(short[i]))}</span><br><span class="form-chip fs-${esc(load.form[i])}">${esc(load.form[i])}</span>`;
+          tip.hidden = false;
+          const w = wrap.clientWidth, left = (cx / LD_W) * w;
+          tip.style.left = Math.max(0, Math.min(w - tip.offsetWidth, left + (left > w / 2 ? -tip.offsetWidth - 8 : 8))) + 'px';
+        };
+        const hide = () => { tip.hidden = true; marks.forEach(m => m.setAttribute('visibility', 'hidden')); };
+        const at = ev => { const r = wrap.getBoundingClientRect(); return Math.max(0, Math.min(n - 1, Math.round(((ev.clientX - r.left) / r.width) * (n - 1)))); };
+        wrap.addEventListener('pointerdown', ev => { ev.stopPropagation(); show(at(ev)); });
+        wrap.addEventListener('pointermove', ev => show(at(ev)));
+        wrap.addEventListener('pointerleave', hide);
+        wrap.addEventListener('pointercancel', hide);
+        wrap.addEventListener('click', ev => ev.stopPropagation());
+      };
+      return { html, bind };
+    }
+
+    // Scouter tab: power level and the load chart inside the scouter box;
+    // gravity and this week as two tiles under it.
     function renderScouterPower() {
       const box = document.getElementById('scPower');
       const cells = document.getElementById('powerCells');
-      if (!power) { box.hidden = true; cells.hidden = true; return; }
+      if (!power) { box.hidden = true; cells.hidden = true; loadKey = ''; return; }
       const pl = Number(power.power_level) || 0;
       const line = sparkPath(Array.isArray(power.trend) ? power.trend : []);
       const change = power.trend_change_pct;
@@ -973,9 +1054,23 @@
         return `<span class="g-mark${pl >= m ? ' on' : isNext ? ' next' : ''}" style="left:${left}%"></span>` +
           (isNext ? `<span class="g-lab next" style="left:${left}%">${esc(mv.name || '???')} · ${esc(fmtNum(m))}</span>` : '');
       }).join('');
-      box.innerHTML =
-        `<span class="label">Power level · fitness × 100</span>` +
-        `<div><span class="pl-big">${esc(fmtNum(pl))}</span>${change !== null && change !== undefined ? `<span class="pl-trend${change < 0 ? ' down' : ''}">${change < 0 ? '▼' : '▲'} ${esc(Math.abs(change))}% in 12 wk</span>` : ''}</div>` +
+      const load = power.load && Array.isArray(power.load.long) && power.load.long.length > 1 ? power.load : null;
+      const head =
+        `<span class="label">Power level · long-term load</span>` +
+        `<div><span class="pl-big">${esc(fmtNum(pl))}</span>${change !== null && change !== undefined ? `<span class="pl-trend${change < 0 ? ' down' : ''}">${change < 0 ? '▼' : '▲'} ${esc(Math.abs(change))}% in 12 wk</span>` : ''}</div>`;
+      if (load) {
+        // Redrawn only when the numbers change, so a finger on the chart is not interrupted.
+        const key = JSON.stringify([pl, change, load, moves.map(m => [m.power, m.name])]);
+        if (key !== loadKey) {
+          loadKey = key;
+          const last = load.long.length - 1;
+          const chart = loadChart(load, moves);
+          box.innerHTML = head +
+            `<div class="ld-legend"><span><i style="background:#7dffb0"></i>Long-term ${esc(fmtNum(load.long[last]))}</span><span><i style="background:#ff8fa3"></i>Short-term ${esc(fmtNum(load.short[last]))}</span><span class="form-chip fs-${esc(load.form[last])}">${esc(load.form[last])}</span></div>` +
+            chart.html;
+          chart.bind(box.querySelector('.ld-wrap'));
+        }
+      } else box.innerHTML = head +
         (line ? `<svg class="spark" viewBox="0 0 240 36" preserveAspectRatio="none" aria-hidden="true"><path d="${line} L240 36 L0 36Z" fill="rgba(125,255,176,.16)"/><path d="${line}" fill="none" stroke="#7dffb0" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>` : '') +
         (marks.length ? `<div class="gauge"><div class="gauge-fill" style="width:${Math.min(100, (pl / top) * 100)}%"></div>${gauge}</div>` : '');
       box.hidden = false;
