@@ -8,4 +8,15 @@ It reads its state from the Quest Engine (Cloudflare Worker,
 hero HP and heals come from `GET /boss`. How it works: `docs/quest-engine.md`
 in rdecaste/quest-engine.
 
+What the card shows:
+- **Front:** Goku's clip, level, HP (with the ki shield in blue after it) and
+  XP. During a 6-hour week the card glows Senzu green and shows the Senzu
+  banner once. Nothing else goes on the front (Roy: keep the animation clear).
+- **Back:** Scouter (a reading, the power level with the long-term and
+  short-term load chart, gravity, this week, records), Moves, Forms, Log, Lore.
+- **Moves are a surprise:** only unlocked moves show (tile, name, mark, the
+  dashed line on the chart). Moves still to come have no tile, name or mark
+  anywhere on the card; the Moves tab only says more are waiting. Don't
+  mention them in chat either.
+
 A push to `main` deploys it to Cloudflare (Workers Builds); by hand: `npx wrangler deploy`. Only the pages are published (`.assetsignore`). The old `rdecaste.github.io` address forwards here until GitHub Pages is switched off.

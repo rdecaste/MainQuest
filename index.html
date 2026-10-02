@@ -158,19 +158,20 @@
     .day-xp.pending{color:rgba(255,255,255,.35);font-weight:700;font-size:11px}
     /* Goku's power (quest-engine src/power.js, 2 Oct 2026). Each drives one thing:
        gravity -> XP, moves -> attack, ki shield -> shield, the 6-hour week -> HP. */
-    :root{--ki:#5ab8ff;--silver:#dfe8ff;--gravity:#ffcf8a}
+    :root{--ki:#5ab8ff;--senzu:#9be7a0;--gravity:#ffcf8a}
     .hp-track{position:relative}
     .hp-shield{position:absolute;top:0;bottom:0;width:0;border-radius:999px;background:linear-gradient(90deg,rgba(90,184,255,.6),rgba(170,225,255,.95));box-shadow:0 0 10px rgba(90,184,255,.85);animation:ki-pulse 2.4s ease-in-out infinite}
     .hp-row[data-shield="1"] .hp-track{box-shadow:0 0 0 1px rgba(90,184,255,.55),0 0 10px rgba(90,184,255,.45)}
     .hp-shield-num{color:var(--ki)}
     @keyframes ki-pulse{50%{box-shadow:0 0 16px rgba(90,184,255,1)}}
-    /* The 6-hour week: a silver Ultra Instinct glow until Sunday night, and a Senzu banner once. */
-    .ultra-glow{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity 2s ease;background:radial-gradient(ellipse 70% 50% at 50% 45%,rgba(223,232,255,.26),transparent 70%),linear-gradient(180deg,rgba(200,215,255,.12),transparent 40%);mix-blend-mode:screen}
-    .app[data-ultra="1"] .ultra-glow{opacity:1;animation:ultra 3.2s ease-in-out infinite}
-    @keyframes ultra{50%{opacity:.55}}
-    .senzu{position:absolute;left:calc(16px + var(--safe-left));right:calc(16px + var(--safe-right));top:40%;z-index:3;padding:13px 14px;border-radius:16px;background:rgba(10,14,24,.8);border:1px solid rgba(223,232,255,.45);box-shadow:0 0 30px rgba(200,215,255,.35);text-align:center;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+    /* The 6-hour week: a green Senzu glow until Sunday night, and a Senzu banner once.
+       (Was silver until 2 Oct 2026; Roy: silver looked like a form still to come.) */
+    .senzu-glow{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity 2s ease;background:radial-gradient(ellipse 70% 50% at 50% 45%,rgba(120,220,120,.34),transparent 70%),linear-gradient(180deg,rgba(110,210,110,.16),transparent 40%);mix-blend-mode:screen}
+    .app[data-senzu="1"] .senzu-glow{opacity:1;animation:senzu-glow 3.2s ease-in-out infinite}
+    @keyframes senzu-glow{50%{opacity:.55}}
+    .senzu{position:absolute;left:calc(16px + var(--safe-left));right:calc(16px + var(--safe-right));top:40%;z-index:3;padding:13px 14px;border-radius:16px;background:rgba(10,14,24,.8);border:1px solid rgba(155,231,160,.5);box-shadow:0 0 30px rgba(120,220,120,.35);text-align:center;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
     .senzu[hidden]{display:none}
-    .senzu-big{font-size:19px;font-weight:900;color:var(--silver)}
+    .senzu-big{font-size:19px;font-weight:900;color:var(--senzu)}
     .senzu-sm{margin-top:4px;font-size:12px;font-weight:700;color:rgba(255,255,255,.75)}
     .senzu-heal{display:inline-block;margin-top:8px;padding:3px 9px;border-radius:999px;background:rgba(125,255,176,.15);color:var(--scouter);font-size:12px;font-weight:900}
     /* Back: power on the Scouter tab, moves on their own tab. */
@@ -184,7 +185,7 @@
     .pcell-num{font-size:20px;font-weight:850;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
     .pcell.gv{background:rgba(255,180,90,.07);border-color:rgba(255,180,90,.22)}
     .pcell.gv .pcell-num,.pcell.gv .label{color:var(--gravity)}
-    .pcell.wk .pcell-num,.pcell.wk .label{color:var(--silver)}
+    .pcell.wk .pcell-num,.pcell.wk .label{color:var(--senzu)}
     .pl-big{margin-top:2px;font-size:30px;font-weight:900;letter-spacing:-.03em;color:var(--scouter);text-shadow:0 0 14px rgba(125,255,176,.45);font-variant-numeric:tabular-nums}
     .pl-trend{margin-left:6px;font-size:12px;font-weight:800;color:var(--scouter);opacity:.8}
     .pl-trend.down{color:#ff9f9f}
@@ -205,13 +206,6 @@
     .fs-Rusty{background:#5b6472}.fs-Steady{background:#3ddc84}.fs-Building{background:#ffd65c}.fs-Overreaching{background:#ff5f5f}
     .form-chip.fs-Rusty{background:rgba(91,100,114,.35);color:#c9d1dc}.form-chip.fs-Steady{background:rgba(61,220,132,.18);color:#7dffb0}
     .form-chip.fs-Building{background:rgba(255,214,92,.2);color:#ffd65c}.form-chip.fs-Overreaching{background:rgba(255,95,95,.2);color:#ff9f9f}
-    .gauge{position:relative;height:6px;border-radius:999px;background:rgba(255,255,255,.12);margin:16px 4px 26px}
-    .gauge-fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,#2fbf71,#7dffb0);box-shadow:0 0 8px rgba(125,255,176,.6)}
-    .g-mark{position:absolute;top:-5px;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:#0b0f17;border:2px solid rgba(255,255,255,.3)}
-    .g-mark.on{background:var(--scouter);border-color:var(--scouter);box-shadow:0 0 8px var(--scouter)}
-    .g-mark.next{border-color:var(--gold)}
-    .g-lab{position:absolute;top:16px;transform:translateX(-50%);font-size:9px;font-weight:800;color:rgba(255,255,255,.5);white-space:nowrap}
-    .g-lab.next{color:var(--gold)}
     .cal{display:grid;grid-template-columns:repeat(14,1fr);gap:2px;margin-top:7px}
     .cal span{aspect-ratio:1;border-radius:2px;background:rgba(255,255,255,.07)}
     .cal span.t{background:linear-gradient(135deg,#ffb45a,#ffcf8a);box-shadow:0 0 6px rgba(255,180,90,.45)}
@@ -220,12 +214,10 @@
     .move{position:relative;overflow:hidden;aspect-ratio:3/4;border-radius:13px;border:1px solid rgba(255,255,255,.09);background:#0b0f17 center/cover no-repeat;cursor:pointer}
     .move video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s linear}
     .move video.ready{opacity:1}
-    .move.locked{cursor:default;background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.07),transparent 65%),#080b12}
     .move.dormant{filter:grayscale(.85) brightness(.55)}
     .move-cap{position:absolute;left:0;right:0;bottom:0;padding:20px 9px 8px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.88))}
     .move-name{font-size:13px;font-weight:850;line-height:1.15}
     .move-meta{margin-top:2px;font-size:10px;font-weight:700;color:var(--muted)}
-    .move-lock{position:absolute;inset:0;display:grid;place-items:center;font-size:26px;opacity:.55}
     .move-badge{position:absolute;top:7px;left:7px;padding:3px 7px;border-radius:999px;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
     .move-badge.charged{background:var(--gold);color:#111}
     .move-badge.used{background:rgba(255,255,255,.2);color:#fff}
@@ -233,7 +225,7 @@
     .move-badge.awake{background:rgba(125,255,176,.2);color:var(--scouter)}
     .move-badge.making{background:rgba(255,255,255,.12);color:rgba(255,255,255,.7)}
     .power-note{margin-top:10px;font-size:11px;line-height:1.5;color:rgba(255,255,255,.5)}
-    @media(prefers-reduced-motion:reduce){.hp-shield,.app[data-ultra="1"] .ultra-glow{animation:none}}
+    @media(prefers-reduced-motion:reduce){.hp-shield,.app[data-senzu="1"] .senzu-glow{animation:none}}
     @media(prefers-reduced-motion:reduce){.flipper{transition:none}.reading.typing::after{animation:none}}
   </style>
 </head>
@@ -245,7 +237,7 @@
     <video id="heroVideoB" class="hero-video" muted playsinline preload="auto"></video>
     <div class="hero-glow" aria-hidden="true"></div>
     <div class="hero-shade" aria-hidden="true"></div>
-    <div class="ultra-glow" aria-hidden="true"></div>
+    <div class="senzu-glow" aria-hidden="true"></div>
     <div class="senzu" id="senzu" role="status" hidden><div class="senzu-big">🫘 Senzu bean</div><div class="senzu-sm" id="senzuText"></div><span class="senzu-heal">HP fully restored</span></div>
 
     <div class="hud-top">
@@ -869,7 +861,6 @@
         const pl = Number(power.power_level) || 0, ch = power.trend_change_pct, g = power.gravity || {};
         if (pl) common.push(pl > 9000 ? `Power level ${fmtNum(pl)}. It's over 9000!` : `Power level ${fmtNum(pl)}${ch > 0 ? `, up ${ch}% in twelve weeks` : ''}.`);
         if (g.days) common.push(`Gravity ${fmtNum(g.gravity)}×: ${g.days} training days in the last 28.`);
-        if (power.next_mark) common.push(`Next signature move at power ${fmtNum(power.next_mark.power)}. ${fmtNum(Math.max(0, power.next_mark.power - pl))} to go.`);
         if (power.week && power.week.senzu) rare.push('Six hours this week. The Senzu bean is yours.');
         const FORM_READING = {
           Rusty: 'Short-term load is low. Time to build.',
@@ -929,7 +920,7 @@
       if (!power) {
         shieldEl.style.width = '0';
         hpHudEl.dataset.shield = '0';
-        progressHudEl.dataset.ultra = '0';
+        progressHudEl.dataset.senzu = '0';
         renderScouterPower();
         return;
       }
@@ -946,9 +937,9 @@
         shieldEl.style.width = '0';
       }
 
-      // 🫘 The 6-hour week: silver until Sunday night, and the Senzu banner once.
+      // 🫘 The 6-hour week: Senzu green until Sunday night, and the Senzu banner once.
       const week = power.week || {};
-      progressHudEl.dataset.ultra = week.senzu ? '1' : '0';
+      progressHudEl.dataset.senzu = week.senzu ? '1' : '0';
       let seen = '';
       try { seen = localStorage.getItem(SENZU_SEEN_KEY) || ''; } catch (_) {}
       if (week.senzu && week.monday && seen !== week.monday && senzuEl.hidden) {
@@ -983,18 +974,22 @@
     let loadKey = '';
     function loadChart(load, moves) {
       const long = load.long.map(Number), short = load.short.map(Number), n = long.length;
-      // The marks already passed and the next one; the rest would only crowd the chart.
-      const all = moves.map(m => ({ p: Number(m.power), n: m.name || '???' })).filter(m => m.p > 0).sort((a, b) => a.p - b.p);
-      const now = long[n - 1] || 0;
-      const nextMark = all.find(m => m.p > now);
-      const marks = all.filter(m => m.p <= now || m === nextMark);
+      // Only the marks of moves already unlocked: moves still to come are a
+      // surprise, so neither their names nor their marks are shown (Roy).
+      const marks = moves.filter(m => m.name && m.state !== 'locked').map(m => ({ p: Number(m.power), n: m.name })).filter(m => m.p > 0);
       const yMax = Math.max(1, ...long, ...short) * 1.05;
       const x = i => (i / Math.max(1, n - 1)) * LD_W;
       const y = v => 8 + (1 - v / yMax) * (LD_H - 12);
       const path = vals => vals.map((v, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ');
-      const lines = marks.filter(m => m.p <= yMax).map(m =>
-        `<line x1="0" x2="${LD_W}" y1="${y(m.p)}" y2="${y(m.p)}" stroke="rgba(255,214,92,.55)" stroke-dasharray="3 4" stroke-width="1" vector-effect="non-scaling-stroke"/>` +
-        `<text x="2" y="${y(m.p) - 3}" font-size="8" font-weight="800" fill="rgba(255,214,92,.8)">${esc(m.n)} · ${esc(fmtNum(m.p))}</text>`).join('');
+      // Two marks close together: the second label goes to the right, so they never overlap.
+      let prevY = null, right = false;
+      const lines = marks.filter(m => m.p <= yMax).sort((a, b) => a.p - b.p).map(m => {
+        const my = y(m.p);
+        right = prevY !== null && Math.abs(prevY - my) < 18 ? !right : false;
+        prevY = my;
+        return `<line x1="0" x2="${LD_W}" y1="${my}" y2="${my}" stroke="rgba(255,214,92,.55)" stroke-dasharray="3 4" stroke-width="1" vector-effect="non-scaling-stroke"/>` +
+          `<text x="${right ? LD_W - 2 : 2}" y="${my - 3}" text-anchor="${right ? 'end' : 'start'}" font-size="8" font-weight="800" fill="rgba(255,214,92,.8)">${esc(m.n)} · ${esc(fmtNum(m.p))}</text>`;
+      }).join('');
       const start = Date.parse(load.from + 'T12:00:00Z');
       const dayOf = i => new Date(start + i * 86400000);
       let months = '';
@@ -1043,17 +1038,7 @@
       const pl = Number(power.power_level) || 0;
       const line = sparkPath(Array.isArray(power.trend) ? power.trend : []);
       const change = power.trend_change_pct;
-      const marks = (Array.isArray(power.marks) ? power.marks : []).map(Number).filter(m => m > 0);
-      const top = marks.length ? Math.max(...marks) * 1.08 : Math.max(pl, 1);
-      const next = power.next_mark;
       const moves = Array.isArray(power.moves) ? power.moves : [];
-      const gauge = marks.map(m => {
-        const mv = moves.find(x => Number(x.power) === m) || {};
-        const isNext = next && Number(next.power) === m;
-        const left = Math.min(100, (m / top) * 100);
-        return `<span class="g-mark${pl >= m ? ' on' : isNext ? ' next' : ''}" style="left:${left}%"></span>` +
-          (isNext ? `<span class="g-lab next" style="left:${left}%">${esc(mv.name || '???')} · ${esc(fmtNum(m))}</span>` : '');
-      }).join('');
       const load = power.load && Array.isArray(power.load.long) && power.load.long.length > 1 ? power.load : null;
       const head =
         `<span class="label">Power level · long-term load</span>` +
@@ -1071,8 +1056,7 @@
           chart.bind(box.querySelector('.ld-wrap'));
         }
       } else box.innerHTML = head +
-        (line ? `<svg class="spark" viewBox="0 0 240 36" preserveAspectRatio="none" aria-hidden="true"><path d="${line} L240 36 L0 36Z" fill="rgba(125,255,176,.16)"/><path d="${line}" fill="none" stroke="#7dffb0" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>` : '') +
-        (marks.length ? `<div class="gauge"><div class="gauge-fill" style="width:${Math.min(100, (pl / top) * 100)}%"></div>${gauge}</div>` : '');
+        (line ? `<svg class="spark" viewBox="0 0 240 36" preserveAspectRatio="none" aria-hidden="true"><path d="${line} L240 36 L0 36Z" fill="rgba(125,255,176,.16)"/><path d="${line}" fill="none" stroke="#7dffb0" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>` : '');
       box.hidden = false;
 
       const g = power.gravity || {};
@@ -1085,7 +1069,8 @@
       cells.hidden = false;
     }
 
-    // Moves tab: the four signature moves.
+    // Moves tab: only the moves already unlocked. Moves still to come are a
+    // complete surprise: no tile, name or mark (Roy, 2 Oct 2026).
     function renderMoves() {
       const el = document.getElementById('moves');
       if (!power) { el.innerHTML = '<div class="empty">No power reading yet.</div>'; powerKey = ''; return; }
@@ -1093,17 +1078,16 @@
       const key = JSON.stringify(moves);
       if (key === powerKey) return; // keeps a playing move clip running
       powerKey = key;
-      const tiles = moves.map(m => {
-        if (m.state === 'locked') {
-          return `<div class="move locked"><div class="move-lock">🔒</div><div class="move-cap"><div class="move-name">???</div><div class="move-meta">Power ${esc(fmtNum(m.power))}</div></div></div>`;
-        }
+      const tiles = moves.filter(m => m.state !== 'locked').map(m => {
         const making = !m.image_url && !m.video_url;
         const bg = m.image_url ? ` style="background-image:url('${esc(smallImage(m.image_url))}')"` : '';
         const badge = making ? '<span class="move-badge making">Being drawn</span>' : MOVE_BADGE[m.state] ? `<span class="move-badge ${esc(m.state)}">${MOVE_BADGE[m.state]}</span>` : '';
         return `<div class="move ${esc(m.state)}" data-key="${esc(m.key)}" role="button" tabindex="0" aria-label="${esc(m.name)}"${bg}>${badge}<div class="move-cap"><div class="move-name">${esc(m.name)}</div><div class="move-meta">${esc(fmtNum(m.power))} · ×${esc(m.mult)} on a workout</div></div></div>`;
       }).join('');
-      el.innerHTML = `<div class="moves">${tiles}</div>` +
-        `<div class="power-note">A move unlocks when your power level reaches its mark. The strongest awake move charges every Monday and fires by itself on your next Strava workout. If your power drops below a move's mark it sleeps until you train back up. Tap a move to play it.</div>`;
+      const waiting = moves.some(m => m.state === 'locked');
+      el.innerHTML = (tiles ? `<div class="moves">${tiles}</div>` : '<div class="empty">No signature move yet. Train, and one will come.</div>') +
+        (waiting ? '<div class="power-note">More moves are waiting. Keep training.</div>' : '') +
+        `<div class="power-note">The strongest awake move charges every Monday and fires by itself on your next Strava workout. If your power drops below a move's mark it sleeps until you train back up. Tap a move to play it.</div>`;
     }
 
     function toggleMoveClip(tile) {
