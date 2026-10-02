@@ -133,11 +133,10 @@
     .form-name{font-size:13px;font-weight:850;line-height:1.15}
     .form-meta{margin-top:2px;font-size:10px;font-weight:700;color:var(--muted)}
     .form-now{position:absolute;top:8px;left:8px;padding:3px 7px;border-radius:999px;background:rgba(255,159,28,.9);color:#111;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
-    /* Lore: the story of each form reached so far, newest first; the boss card has the same tab. */
-    .chapters{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
-    .chapters::-webkit-scrollbar{display:none}
-    .chapter{flex:0 0 auto;border:1px solid rgba(255,255,255,.12);margin:0;padding:5px 10px;border-radius:999px;background:transparent;color:rgba(255,255,255,.55);font:inherit;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;cursor:pointer}
-    .chapter[aria-pressed="true"]{border-color:rgba(255,159,28,.7);background:rgba(255,159,28,.16);color:#fff}
+    /* Lore: the current form's story on the Lore tab (like the boss card); an earlier form's from its tile on Forms. */
+    .forms[hidden],.form-detail[hidden]{display:none}
+    .form-back{border:1px solid rgba(255,255,255,.12);margin:0;padding:5px 10px;border-radius:999px;background:transparent;color:rgba(255,255,255,.7);font:inherit;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+    .form-big{width:62%;margin:12px auto 0}
     .lore{padding:14px 4px 12px}
     .lore-epithet{font-size:10px;font-weight:850;letter-spacing:.24em;text-transform:uppercase;color:#ffb547}
     .lore-name{margin-top:6px;font-size:clamp(22px,7vw,28px);font-weight:900;letter-spacing:-.02em;line-height:1.1}
@@ -222,10 +221,9 @@
       <div class="scouter" id="scouter"><div class="label" id="scouterLabel">Scouter reading</div><div class="reading" id="reading" aria-live="polite"></div></div>
       <div class="records" id="records"></div>
     </div>
-    <div class="panel" id="panelForms" role="tabpanel" aria-labelledby="tabForms" hidden><div class="forms" id="forms"></div></div>
+    <div class="panel" id="panelForms" role="tabpanel" aria-labelledby="tabForms" hidden><div class="forms" id="forms"></div><div class="form-detail" id="formDetail" hidden></div></div>
     <div class="panel" id="panelLog" role="tabpanel" aria-labelledby="tabLog" hidden><ul class="days" id="days"></ul></div>
     <div class="panel" id="panelLore" role="tabpanel" aria-labelledby="tabLore" hidden>
-      <div class="chapters" id="chapters"></div>
       <div class="lore"><div class="lore-epithet" id="loreEpithet"></div><div class="lore-name" id="loreName">Goku</div><p class="lore-text" id="loreText"></p><div class="lore-facts" id="loreFacts"></div></div>
     </div>
     <div class="hint" id="hbHint">Tap here to flip back</div>
@@ -665,7 +663,7 @@
       formsKey = key;
       if (!forms.length) { el.innerHTML = '<div class="empty">Your forms appear here after tonight’s run.</div>'; return; }
       el.innerHTML = forms.slice().reverse().map((f, i) => `
-        <div class="form" data-level="${esc(f.level)}" style="background-image:url('${esc(still(f))}')" role="button" tabindex="0" aria-label="${esc(f.form)}, reached ${esc(fmtDay(f.reached))}. Tap to replay.">
+        <div class="form" data-level="${esc(f.level)}" style="background-image:url('${esc(still(f))}')" role="button" tabindex="0" aria-label="${esc(f.form)}, reached ${esc(fmtDay(f.reached))}. Tap for its story.">
           ${i === 0 ? '<span class="form-now">Now</span>' : ''}
           <div class="form-cap"><div class="form-name">${esc(f.form)}</div><div class="form-meta">Level ${esc(f.level)}${f.reached ? ' · ' + esc(fmtDay(f.reached)) : ''}</div></div>
         </div>`).join('');
@@ -710,26 +708,54 @@
       }).join('');
     }
 
-    // ---- Lore: one chapter per form reached, the current one first ----
+    // ---- Lore: the current form's story on the Lore tab; any reached form's from its tile ----
     // The story is the form's Lore in D1 (goku.lore), carried in hero.json only
     // once the form is reached, so nothing here gives away what comes next.
-    let loreLevel = null;
+    const loreFacts = f => [f.reached ? 'Reached ' + fmtDay(f.reached) : '', f.move || ''].filter(Boolean);
+    const loreHtml = (f, now) => `
+      <div class="lore-epithet">Chapter ${esc(f.level)}${now ? ' · Now' : ''}</div>
+      <div class="lore-name">Goku · ${esc(f.form)}</div>
+      <p class="lore-text">${esc(f.lore || 'No lore recorded for this form yet.')}</p>
+      <div class="lore-facts">${loreFacts(f).map(x => `<span>${esc(x)}</span>`).join('')}</div>`;
+
     function renderLore(forms) {
-      const chapters = forms.slice().reverse();
-      const f = chapters.find(x => String(x.level) === loreLevel) || chapters[0];
-      document.getElementById('chapters').innerHTML = chapters.length > 1 ? chapters.map((x, i) =>
-        `<button class="chapter" type="button" data-level="${esc(x.level)}" aria-pressed="${x === f}">${i === 0 ? 'Now · ' : ''}${esc(x.form)}</button>`).join('') : '';
-      document.getElementById('loreEpithet').textContent = f ? 'Chapter ' + f.level + (f === chapters[0] ? ' · Now' : '') : '';
+      const f = forms[forms.length - 1];
+      document.getElementById('loreEpithet').textContent = f ? 'Chapter ' + f.level + ' · Now' : '';
       document.getElementById('loreName').textContent = f && f.form ? 'Goku · ' + f.form : 'Goku';
       document.getElementById('loreText').textContent = (f && f.lore) || (f ? 'No lore recorded for this form yet.' : 'Your story appears here after tonight’s run.');
-      const facts = [];
-      if (f && f.reached) facts.push('Reached ' + fmtDay(f.reached));
-      if (f && f.move) facts.push(f.move);
-      document.getElementById('loreFacts').replaceChildren(...facts.map(fact => {
+      document.getElementById('loreFacts').replaceChildren(...(f ? loreFacts(f) : []).map(fact => {
         const span = document.createElement('span');
         span.textContent = fact;
         return span;
       }));
+    }
+
+    // A form's tile opens its story: the clip plays above it. Back returns to the grid.
+    function openForm(level) {
+      const forms = (hero && Array.isArray(hero.forms)) ? hero.forms : [];
+      const f = forms.find(x => String(x.level) === String(level));
+      if (!f) return;
+      const now = f === forms[forms.length - 1];
+      document.querySelectorAll('.form video').forEach(v => v.remove());
+      const detail = document.getElementById('formDetail');
+      detail.innerHTML = `<button class="form-back" type="button" id="formBack">← All forms</button>
+        <div class="form form-big" data-level="${esc(f.level)}" style="background-image:url('${esc(still(f))}')" role="button" tabindex="0" aria-label="${esc(f.form)}. Tap to replay.">
+          ${now ? '<span class="form-now">Now</span>' : ''}
+        </div>
+        <div class="lore">${loreHtml(f, now)}</div>`;
+      document.getElementById('forms').hidden = true;
+      detail.hidden = false;
+      document.getElementById('panelForms').scrollTop = 0;
+      toggleFormClip(detail.querySelector('.form'));
+    }
+
+    function closeForm() {
+      document.querySelectorAll('.form video').forEach(v => v.remove());
+      const detail = document.getElementById('formDetail');
+      if (detail.hidden) return;
+      detail.hidden = true;
+      detail.innerHTML = '';
+      document.getElementById('forms').hidden = false;
     }
 
     // One reading per flip, never one of the last few. Now and then a rare one.
@@ -794,7 +820,7 @@
         tab.setAttribute('aria-selected', String(on));
         document.getElementById(tab.getAttribute('aria-controls')).hidden = !on;
       });
-      if (id !== 'tabForms') document.querySelectorAll('.form video').forEach(v => v.remove());
+      if (id !== 'tabForms') closeForm();
     }
 
     function setFlipped(flipped) {
@@ -811,7 +837,7 @@
         document.querySelectorAll('.panel').forEach(p => { p.scrollTop = 0; });
         setTimeout(() => videos.forEach(v => v.pause()), flipMs);
       } else {
-        document.querySelectorAll('.form video').forEach(v => v.remove());
+        closeForm();
         videos[activeVideoIndex].play().catch(() => {});
       }
     }
@@ -823,20 +849,14 @@
     backEl.addEventListener('click', event => {
       const tab = event.target.closest('.tab');
       if (tab) { selectTab(tab.id); return; }
-      const chapter = event.target.closest('.chapter');
-      if (chapter) {
-        loreLevel = chapter.dataset.level;
-        renderLore((hero && Array.isArray(hero.forms)) ? hero.forms : []);
-        document.getElementById('panelLore').scrollTop = 0;
-        return;
-      }
+      if (event.target.closest('#formBack')) { closeForm(); return; }
       const tile = event.target.closest('.form');
-      if (tile) { toggleFormClip(tile); return; }
+      if (tile) { if (tile.classList.contains('form-big')) toggleFormClip(tile); else openForm(tile.dataset.level); return; }
       if (event.target.closest('#hbHead, #hbHint')) setFlipped(false);
     });
     backEl.addEventListener('keydown', event => {
       const tile = event.target.closest('.form');
-      if (tile && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); toggleFormClip(tile); }
+      if (tile && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); if (tile.classList.contains('form-big')) toggleFormClip(tile); else openForm(tile.dataset.level); }
       if (event.key === 'Escape') setFlipped(false);
     });
     // Browsers pause muted video in a hidden tab; pick the front back up.
