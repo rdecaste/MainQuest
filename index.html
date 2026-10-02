@@ -159,22 +159,6 @@
     /* Goku's power (quest-engine src/power.js, 2 Oct 2026). Each drives one thing:
        gravity -> XP, moves -> attack, ki shield -> shield, the 6-hour week -> HP. */
     :root{--ki:#5ab8ff;--silver:#dfe8ff;--gravity:#ffcf8a}
-    .power-hud[hidden],.power-mini[hidden],.pchip[hidden]{display:none}
-    .chips{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-    .pchip{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:rgba(5,7,11,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
-    .pchip.pl{color:var(--scouter);border-color:rgba(125,255,176,.35)}
-    .pchip.gv{color:var(--gravity);border-color:rgba(255,180,90,.35)}
-    .pchip.sh{color:var(--ki);border-color:rgba(90,184,255,.4)}
-    .pchip.ui{color:var(--silver);border-color:rgba(223,232,255,.5)}
-    .pchip .soft{opacity:.65;font-weight:700}
-    .power-mini{margin-bottom:11px}
-    .pm-head{display:flex;justify-content:space-between;margin-bottom:6px;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--scouter-dim);text-shadow:0 1px 4px rgba(0,0,0,.85)}
-    .pm-head b{color:var(--gold);font-weight:850}
-    .pm-track{position:relative;height:4px;border-radius:999px;background:rgba(255,255,255,.14)}
-    .pm-fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,#2fbf71,#7dffb0);box-shadow:0 0 8px rgba(125,255,176,.6);transition:width 300ms ease}
-    .pm-mark{position:absolute;top:-4px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#0b0f17;border:2px solid rgba(255,255,255,.35)}
-    .pm-mark.on{background:var(--scouter);border-color:var(--scouter);box-shadow:0 0 8px var(--scouter)}
-    .pm-mark.next{border-color:var(--gold)}
     .hp-track{position:relative}
     .hp-shield{position:absolute;top:0;bottom:0;width:0;border-radius:999px;background:linear-gradient(90deg,rgba(90,184,255,.6),rgba(170,225,255,.95));box-shadow:0 0 10px rgba(90,184,255,.85);animation:ki-pulse 2.4s ease-in-out infinite}
     .hp-row[data-shield="1"] .hp-track{box-shadow:0 0 0 1px rgba(90,184,255,.55),0 0 10px rgba(90,184,255,.45)}
@@ -189,38 +173,33 @@
     .senzu-big{font-size:19px;font-weight:900;color:var(--silver)}
     .senzu-sm{margin-top:4px;font-size:12px;font-weight:700;color:rgba(255,255,255,.75)}
     .senzu-heal{display:inline-block;margin-top:8px;padding:3px 9px;border-radius:999px;background:rgba(125,255,176,.15);color:var(--scouter);font-size:12px;font-weight:900}
-    /* Back: the Power tab. */
-    .pl-box{position:relative;overflow:hidden;padding:14px 14px 4px;border-radius:16px;border:1px solid rgba(125,255,176,.28);background:radial-gradient(120% 90% at 85% 10%,rgba(125,255,176,.18),transparent 55%),rgba(10,30,20,.55)}
-    .pl-box::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(125,255,176,.05) 0 1px,transparent 1px 4px);pointer-events:none}
-    .pl-box .label,.gv-box .label,.mv-head .label{text-shadow:none}
-    .pl-box .label{color:var(--scouter-dim)}
-    .pl-big{margin-top:4px;font-size:34px;font-weight:900;letter-spacing:-.03em;color:var(--scouter);text-shadow:0 0 14px rgba(125,255,176,.45);font-variant-numeric:tabular-nums}
+    /* Back: power on the Scouter tab, moves on their own tab. */
+    .sc-power{position:relative;margin-top:12px;padding-top:11px;border-top:1px solid rgba(125,255,176,.18)}
+    .sc-power[hidden],.power-cells[hidden]{display:none}
+    .sc-power .label{color:var(--scouter-dim)}
+    .scouter.rare .sc-power{border-top-color:rgba(255,214,92,.25)}
+    .power-cells{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+    .pcell{padding:11px 12px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07)}
+    .pcell .label{display:block;margin-top:3px;text-shadow:none}
+    .pcell-num{font-size:20px;font-weight:850;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+    .pcell.gv{background:rgba(255,180,90,.07);border-color:rgba(255,180,90,.22)}
+    .pcell.gv .pcell-num,.pcell.gv .label{color:var(--gravity)}
+    .pcell.wk .pcell-num,.pcell.wk .label{color:var(--silver)}
+    .pl-big{margin-top:2px;font-size:30px;font-weight:900;letter-spacing:-.03em;color:var(--scouter);text-shadow:0 0 14px rgba(125,255,176,.45);font-variant-numeric:tabular-nums}
     .pl-trend{margin-left:6px;font-size:12px;font-weight:800;color:var(--scouter);opacity:.8}
     .pl-trend.down{color:#ff9f9f}
-    .spark{display:block;width:100%;height:42px;margin-top:4px}
-    .gauge{position:relative;height:6px;border-radius:999px;background:rgba(255,255,255,.12);margin:22px 4px 30px}
+    .spark{display:block;width:100%;height:36px;margin-top:2px}
+    .gauge{position:relative;height:6px;border-radius:999px;background:rgba(255,255,255,.12);margin:16px 4px 26px}
     .gauge-fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,#2fbf71,#7dffb0);box-shadow:0 0 8px rgba(125,255,176,.6)}
     .g-mark{position:absolute;top:-5px;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:#0b0f17;border:2px solid rgba(255,255,255,.3)}
     .g-mark.on{background:var(--scouter);border-color:var(--scouter);box-shadow:0 0 8px var(--scouter)}
     .g-mark.next{border-color:var(--gold)}
     .g-lab{position:absolute;top:16px;transform:translateX(-50%);font-size:9px;font-weight:800;color:rgba(255,255,255,.5);white-space:nowrap}
     .g-lab.next{color:var(--gold)}
-    .gv-box{margin-top:10px;padding:12px;border-radius:14px;background:rgba(255,180,90,.07);border:1px solid rgba(255,180,90,.22)}
-    .gv-head{display:flex;justify-content:space-between;align-items:baseline}
-    .gv-box .label{color:var(--gravity)}
-    .gv-num{font-size:24px;font-weight:900;color:var(--gravity);letter-spacing:-.02em}
-    .gv-xp{font-size:11px;font-weight:800;color:var(--gold)}
-    .cal{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;margin-top:9px}
-    .cal span{aspect-ratio:1;border-radius:3px;background:rgba(255,255,255,.07)}
+    .cal{display:grid;grid-template-columns:repeat(14,1fr);gap:2px;margin-top:7px}
+    .cal span{aspect-ratio:1;border-radius:2px;background:rgba(255,255,255,.07)}
     .cal span.t{background:linear-gradient(135deg,#ffb45a,#ffcf8a);box-shadow:0 0 6px rgba(255,180,90,.45)}
     .cal span.today{outline:1px solid rgba(255,255,255,.6)}
-    .gv-foot{margin-top:7px;font-size:10px;font-weight:700;color:rgba(255,255,255,.5)}
-    .wk-box{margin-top:10px;padding:12px;border-radius:14px;background:rgba(223,232,255,.05);border:1px solid rgba(223,232,255,.16)}
-    .wk-box .label{color:var(--silver);text-shadow:none}
-    .wk-line{display:flex;justify-content:space-between;align-items:baseline;margin-top:4px;font-size:13px;font-weight:800}
-    .wk-track{position:relative;height:5px;margin-top:8px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden}
-    .wk-fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,#9fb0d8,#eef3ff)}
-    .mv-head{display:flex;justify-content:space-between;align-items:baseline;margin-top:14px}
     .moves{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
     .move{position:relative;overflow:hidden;aspect-ratio:3/4;border-radius:13px;border:1px solid rgba(255,255,255,.09);background:#0b0f17 center/cover no-repeat;cursor:pointer}
     .move video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s linear}
@@ -281,18 +260,6 @@
     </div>
 
     <div class="hud-bottom">
-      <div class="power-hud" id="powerHud" hidden>
-        <div class="chips">
-          <span class="pchip pl" id="chipPower" title="Power level: fitness × 100"></span>
-          <span class="pchip gv" id="chipGravity" title="Gravity: training days in the last 28, each +1.5% XP"></span>
-          <span class="pchip sh" id="chipShield" title="Ki shield from last night's recovery" hidden></span>
-          <span class="pchip ui" id="chipUltra" title="6 hours trained this week" hidden></span>
-        </div>
-        <div class="power-mini" id="powerMini" hidden>
-          <div class="pm-head"><span>Power level</span><span id="pmNext"></span></div>
-          <div class="pm-track" id="pmTrack"><div class="pm-fill" id="pmFill"></div></div>
-        </div>
-      </div>
       <div class="bar-row hp-row" id="hpHud" hidden>
         <div class="bar-head"><span class="label">HP</span><span class="bar-num" id="hpNum">—</span></div>
         <div class="hp-track" id="hpTrack" role="progressbar" aria-label="Hero HP" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="hp-fill" id="hpFill"></div><div class="hp-shield" id="hpShield"></div></div>
@@ -310,13 +277,14 @@
     </div>
     <div class="tabs" role="tablist">
       <button class="tab" type="button" role="tab" id="tabScouter" aria-controls="panelScouter" aria-selected="true">Scouter</button>
+      <button class="tab" type="button" role="tab" id="tabMoves" aria-controls="panelMoves" aria-selected="false">Moves</button>
       <button class="tab" type="button" role="tab" id="tabForms" aria-controls="panelForms" aria-selected="false">Forms</button>
       <button class="tab" type="button" role="tab" id="tabLog" aria-controls="panelLog" aria-selected="false">Log</button>
       <button class="tab" type="button" role="tab" id="tabLore" aria-controls="panelLore" aria-selected="false">Lore</button>
-      <button class="tab" type="button" role="tab" id="tabPower" aria-controls="panelPower" aria-selected="false">Power</button>
     </div>
     <div class="panel" id="panelScouter" role="tabpanel" aria-labelledby="tabScouter">
-      <div class="scouter" id="scouter"><div class="label" id="scouterLabel">Scouter reading</div><div class="reading" id="reading" aria-live="polite"></div></div>
+      <div class="scouter" id="scouter"><div class="label" id="scouterLabel">Scouter reading</div><div class="reading" id="reading" aria-live="polite"></div><div class="sc-power" id="scPower" hidden></div></div>
+      <div class="power-cells" id="powerCells" hidden></div>
       <div class="records" id="records"></div>
     </div>
     <div class="panel" id="panelForms" role="tabpanel" aria-labelledby="tabForms" hidden><div class="forms" id="forms"></div><div class="form-detail" id="formDetail" hidden></div></div>
@@ -324,7 +292,7 @@
     <div class="panel" id="panelLore" role="tabpanel" aria-labelledby="tabLore" hidden>
       <div class="lore"><div class="lore-epithet" id="loreEpithet"></div><div class="lore-name" id="loreName">Goku</div><p class="lore-text" id="loreText"></p><div class="lore-facts" id="loreFacts"></div></div>
     </div>
-    <div class="panel" id="panelPower" role="tabpanel" aria-labelledby="tabPower" hidden><div id="power"></div></div>
+    <div class="panel" id="panelMoves" role="tabpanel" aria-labelledby="tabMoves" hidden><div id="moves"></div></div>
     <div class="hint" id="hbHint">Tap here to flip back</div>
   </section>
   </div>
@@ -880,6 +848,14 @@
       if (earned && earned.gain) common.push(`${fmtDay(earned.date, true)} earned you +${fmtNum(earned.gain)} XP.`);
       for (const f of forms.slice(0, -1)) if (f.reached) common.push(`Flashback: on ${fmtDay(f.reached)} you became ${f.form}.`);
       if (forms.length > 1 && forms[0].reached) rare.push(`Memory unlocked: ${fmtDay(forms[0].reached)}, the day it all started as ${forms[0].form}. Look at you now.`);
+      // Goku's power (from the Goku card's state).
+      if (power) {
+        const pl = Number(power.power_level) || 0, ch = power.trend_change_pct, g = power.gravity || {};
+        if (pl) common.push(pl > 9000 ? `Power level ${fmtNum(pl)}. It's over 9000!` : `Power level ${fmtNum(pl)}${ch > 0 ? `, up ${ch}% in twelve weeks` : ''}.`);
+        if (g.days) common.push(`Gravity ${fmtNum(g.gravity)}×: ${g.days} training days in the last 28.`);
+        if (power.next_mark) common.push(`Next signature move at power ${fmtNum(power.next_mark.power)}. ${fmtNum(Math.max(0, power.next_mark.power - pl))} to go.`);
+        if (power.week && power.week.senzu) rare.push('Six hours this week. The Senzu bean is yours.');
+      }
       rare.push('Reading unstable… the scouter just cracked.', 'The only one you need to beat is the you from yesterday.', 'Power comes in response to a need, not a desire.', 'A Saiyan never stops at their limit.', 'Somewhere, Vegeta just clenched his fist.');
       return { common: common, rare: rare };
     }
@@ -926,25 +902,18 @@
 
     function renderPower(p, curHp, maxHp, hpPct) {
       power = p && typeof p === 'object' ? p : null;
-      const hud = document.getElementById('powerHud');
       const shieldEl = document.getElementById('hpShield');
       if (!power) {
-        hud.hidden = true;
         shieldEl.style.width = '0';
         hpHudEl.dataset.shield = '0';
         progressHudEl.dataset.ultra = '0';
+        renderScouterPower();
         return;
       }
-      hud.hidden = false;
-      document.getElementById('chipPower').textContent = '⚡ ' + fmtNum(power.power_level);
-      const g = power.gravity || {};
-      document.getElementById('chipGravity').innerHTML = '🪨 ' + esc(fmtNum(g.gravity)) + '× <span class="soft">+' + esc(Math.round((Number(g.xp_bonus) || 0) * 1000) / 10) + '% XP</span>';
 
       // 🛡️ The ki shield sits on the HP bar after the HP, and bad habits hit it first.
+      // The front shows nothing else of the power (Roy: the animation stays clear).
       const amount = Math.max(0, Math.round(Number(power.shield && power.shield.amount) || 0));
-      const chipShield = document.getElementById('chipShield');
-      chipShield.hidden = amount <= 0;
-      chipShield.textContent = '🛡️ +' + fmtNum(amount);
       hpHudEl.dataset.shield = amount > 0 ? '1' : '0';
       if (amount > 0 && Number.isFinite(hpPct) && maxHp > 0) {
         shieldEl.style.left = hpPct + '%';
@@ -956,9 +925,6 @@
 
       // 🫘 The 6-hour week: silver until Sunday night, and the Senzu banner once.
       const week = power.week || {};
-      const chipUltra = document.getElementById('chipUltra');
-      chipUltra.hidden = !week.ultra;
-      chipUltra.textContent = '✨ ' + (Number(week.hours) || 0) + ' h';
       progressHudEl.dataset.ultra = week.senzu ? '1' : '0';
       let seen = '';
       try { seen = localStorage.getItem(SENZU_SEEN_KEY) || ''; } catch (_) {}
@@ -969,29 +935,8 @@
         clearTimeout(senzuTimer);
         senzuTimer = setTimeout(() => { senzuEl.hidden = true; }, 9000);
       }
-
-      // ⚡ The scouter bar: power level against the move marks.
-      const marks = (Array.isArray(power.marks) ? power.marks : []).map(Number).filter(m => m > 0);
-      const mini = document.getElementById('powerMini');
-      mini.hidden = !marks.length;
-      if (marks.length) {
-        const top = Math.max(...marks) * 1.08;
-        const pl = Number(power.power_level) || 0;
-        const next = power.next_mark;
-        document.getElementById('pmFill').style.width = Math.min(100, (pl / top) * 100) + '%';
-        document.getElementById('pmNext').innerHTML = next
-          ? (next.name ? esc(next.name) : 'Next move') + ' at <b>' + esc(fmtNum(next.power)) + '</b>'
-          : '<b>Every move unlocked</b>';
-        const track = document.getElementById('pmTrack');
-        track.querySelectorAll('.pm-mark').forEach(n => n.remove());
-        for (const m of marks) {
-          const dot = document.createElement('span');
-          dot.className = 'pm-mark' + (pl >= m ? ' on' : next && Number(next.power) === m ? ' next' : '');
-          dot.style.left = Math.min(100, (m / top) * 100) + '%';
-          track.appendChild(dot);
-        }
-      }
-      if (!document.getElementById('panelPower').hidden) renderPowerPanel();
+      renderScouterPower();
+      if (!document.getElementById('panelMoves').hidden) renderMoves();
     }
 
     senzuEl.addEventListener('click', event => { event.stopPropagation(); senzuEl.hidden = true; });
@@ -1005,20 +950,19 @@
       if (v.length < 2) return '';
       // Scaled to its own range, so a few weeks of progress show as a climb.
       const lo = Math.min(...v), hi = Math.max(...v), span = hi - lo || 1;
-      return v.map((y, i) => (i ? 'L' : 'M') + Math.round((i / (v.length - 1)) * 240) + ' ' + Math.round(hi === lo ? 22 : 38 - ((y - lo) / span) * 32)).join(' ');
+      return v.map((y, i) => (i ? 'L' : 'M') + Math.round((i / (v.length - 1)) * 240) + ' ' + Math.round(hi === lo ? 18 : 33 - ((y - lo) / span) * 28)).join(' ');
     }
 
-    function renderPowerPanel() {
-      const el = document.getElementById('power');
-      if (!power) { el.innerHTML = '<div class="empty">No power reading yet.</div>'; powerKey = ''; return; }
-      const key = JSON.stringify(power);
-      if (key === powerKey) return; // keeps a playing move clip running
-      powerKey = key;
+    // Scouter tab: power level, its 12 weeks and the move marks inside the
+    // scouter box; gravity and this week as two tiles under it.
+    function renderScouterPower() {
+      const box = document.getElementById('scPower');
+      const cells = document.getElementById('powerCells');
+      if (!power) { box.hidden = true; cells.hidden = true; return; }
       const pl = Number(power.power_level) || 0;
-      const trend = Array.isArray(power.trend) ? power.trend : [];
-      const line = sparkPath(trend);
+      const line = sparkPath(Array.isArray(power.trend) ? power.trend : []);
       const change = power.trend_change_pct;
-      const marks = (Array.isArray(power.marks) ? power.marks : []).map(Number);
+      const marks = (Array.isArray(power.marks) ? power.marks : []).map(Number).filter(m => m > 0);
       const top = marks.length ? Math.max(...marks) * 1.08 : Math.max(pl, 1);
       const next = power.next_mark;
       const moves = Array.isArray(power.moves) ? power.moves : [];
@@ -1029,10 +973,31 @@
         return `<span class="g-mark${pl >= m ? ' on' : isNext ? ' next' : ''}" style="left:${left}%"></span>` +
           (isNext ? `<span class="g-lab next" style="left:${left}%">${esc(mv.name || '???')} · ${esc(fmtNum(m))}</span>` : '');
       }).join('');
+      box.innerHTML =
+        `<span class="label">Power level · fitness × 100</span>` +
+        `<div><span class="pl-big">${esc(fmtNum(pl))}</span>${change !== null && change !== undefined ? `<span class="pl-trend${change < 0 ? ' down' : ''}">${change < 0 ? '▼' : '▲'} ${esc(Math.abs(change))}% in 12 wk</span>` : ''}</div>` +
+        (line ? `<svg class="spark" viewBox="0 0 240 36" preserveAspectRatio="none" aria-hidden="true"><path d="${line} L240 36 L0 36Z" fill="rgba(125,255,176,.16)"/><path d="${line}" fill="none" stroke="#7dffb0" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>` : '') +
+        (marks.length ? `<div class="gauge"><div class="gauge-fill" style="width:${Math.min(100, (pl / top) * 100)}%"></div>${gauge}</div>` : '');
+      box.hidden = false;
+
       const g = power.gravity || {};
       const cal = (Array.isArray(g.calendar) ? g.calendar : []).map((d, i, all) => `<span class="${d ? 't' : ''}${i === all.length - 1 ? ' today' : ''}"></span>`).join('');
       const week = power.week || {};
       const hrs = Math.floor((Number(week.minutes) || 0) / 60), mins = (Number(week.minutes) || 0) % 60;
+      cells.innerHTML =
+        `<div class="pcell gv"><div class="pcell-num">${esc(fmtNum(g.gravity))}×</div><span class="label">Gravity · +${esc(Math.round((Number(g.xp_bonus) || 0) * 1000) / 10)}% XP</span><div class="cal" title="${esc(g.days || 0)} training days in the last 28">${cal}</div></div>` +
+        `<div class="pcell wk"><div class="pcell-num">${hrs} h ${String(mins).padStart(2, '0')}</div><span class="label">This week · ${week.senzu ? '🫘 Senzu earned' : '🫘 at 6 h'}</span></div>`;
+      cells.hidden = false;
+    }
+
+    // Moves tab: the four signature moves.
+    function renderMoves() {
+      const el = document.getElementById('moves');
+      if (!power) { el.innerHTML = '<div class="empty">No power reading yet.</div>'; powerKey = ''; return; }
+      const moves = Array.isArray(power.moves) ? power.moves : [];
+      const key = JSON.stringify(moves);
+      if (key === powerKey) return; // keeps a playing move clip running
+      powerKey = key;
       const tiles = moves.map(m => {
         if (m.state === 'locked') {
           return `<div class="move locked"><div class="move-lock">🔒</div><div class="move-cap"><div class="move-name">???</div><div class="move-meta">Power ${esc(fmtNum(m.power))}</div></div></div>`;
@@ -1042,19 +1007,8 @@
         const badge = making ? '<span class="move-badge making">Being drawn</span>' : MOVE_BADGE[m.state] ? `<span class="move-badge ${esc(m.state)}">${MOVE_BADGE[m.state]}</span>` : '';
         return `<div class="move ${esc(m.state)}" data-key="${esc(m.key)}" role="button" tabindex="0" aria-label="${esc(m.name)}"${bg}>${badge}<div class="move-cap"><div class="move-name">${esc(m.name)}</div><div class="move-meta">${esc(fmtNum(m.power))} · ×${esc(m.mult)} on a workout</div></div></div>`;
       }).join('');
-      el.innerHTML =
-        `<div class="pl-box"><span class="label">Power level · fitness × 100</span>` +
-        `<div><span class="pl-big">${esc(fmtNum(pl))}</span>${change !== null && change !== undefined ? `<span class="pl-trend${change < 0 ? ' down' : ''}">${change < 0 ? '▼' : '▲'} ${esc(Math.abs(change))}% in 12 wk</span>` : ''}</div>` +
-        (line ? `<svg class="spark" viewBox="0 0 240 42" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(125,255,176,.35)"/><stop offset="1" stop-color="rgba(125,255,176,0)"/></linearGradient></defs><path d="${line} L240 42 L0 42Z" fill="url(#sparkFill)"/><path d="${line}" fill="none" stroke="#7dffb0" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>` : '') +
-        (marks.length ? `<div class="gauge"><div class="gauge-fill" style="width:${Math.min(100, (pl / top) * 100)}%"></div>${gauge}</div>` : '') +
-        `</div>` +
-        `<div class="gv-box"><div class="gv-head"><span class="label">🪨 Gravity chamber</span><span class="gv-xp">+${esc(Math.round((Number(g.xp_bonus) || 0) * 1000) / 10)}% XP tonight</span></div>` +
-        `<div class="gv-num">${esc(fmtNum(g.gravity))}×</div><div class="cal">${cal}</div>` +
-        `<div class="gv-foot">${esc(g.days || 0)} training ${g.days === 1 ? 'day' : 'days'} in the last 28 · each one adds 10× and +1.5% XP</div></div>` +
-        `<div class="wk-box"><span class="label">✨ This week</span><div class="wk-line"><span>${hrs} h ${String(mins).padStart(2, '0')} min trained</span><span>${week.senzu ? '🫘 Senzu bean earned' : '🫘 at 6 h: full heal'}</span></div></div>` +
-        `<div class="mv-head"><span class="label">Signature moves</span></div>` +
-        `<div class="moves">${tiles}</div>` +
-        `<div class="power-note">The strongest awake move charges every Monday and fires by itself on your next Strava workout. If your power drops below a move's mark it sleeps until you train back up. Tap a move to play it.</div>`;
+      el.innerHTML = `<div class="moves">${tiles}</div>` +
+        `<div class="power-note">A move unlocks when your power level reaches its mark. The strongest awake move charges every Monday and fires by itself on your next Strava workout. If your power drops below a move's mark it sleeps until you train back up. Tap a move to play it.</div>`;
     }
 
     function toggleMoveClip(tile) {
@@ -1077,7 +1031,7 @@
         document.getElementById(tab.getAttribute('aria-controls')).hidden = !on;
       });
       if (id !== 'tabForms') closeForm();
-      if (id === 'tabPower') renderPowerPanel();
+      if (id === 'tabMoves') renderMoves();
       else document.querySelectorAll('.move video').forEach(v => v.remove());
     }
 
