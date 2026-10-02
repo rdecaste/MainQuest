@@ -103,8 +103,8 @@
     .hb-level{text-align:right}
     .hb-level .value{font-size:clamp(20px,6vw,26px)}
     .hero-back .label{text-shadow:none}
-    .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:12px;padding:3px;border-radius:11px;background:rgba(255,255,255,.06)}
-    .tab{border:0;margin:0;padding:7px 0;border-radius:8px;background:transparent;color:rgba(255,255,255,.5);font:inherit;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+    .tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:12px;padding:3px;border-radius:11px;background:rgba(255,255,255,.06)}
+    .tab{border:0;margin:0;padding:7px 0;border-radius:8px;background:transparent;color:rgba(255,255,255,.5);font:inherit;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
     .tab[aria-selected="true"]{background:rgba(255,255,255,.12);color:#fff}
     .panel{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:12px 0}
     .panel[hidden]{display:none}
@@ -156,6 +156,89 @@
     .pill.dmg{background:rgba(255,92,92,.12);color:#ff8a8a}
     .day-xp{font-size:13px;font-weight:850;color:var(--accent-b);font-variant-numeric:tabular-nums;white-space:nowrap}
     .day-xp.pending{color:rgba(255,255,255,.35);font-weight:700;font-size:11px}
+    /* Goku's power (quest-engine src/power.js, 2 Oct 2026). Each drives one thing:
+       gravity -> XP, moves -> attack, ki shield -> shield, the 6-hour week -> HP. */
+    :root{--ki:#5ab8ff;--silver:#dfe8ff;--gravity:#ffcf8a}
+    .power-hud[hidden],.power-mini[hidden],.pchip[hidden]{display:none}
+    .chips{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+    .pchip{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:rgba(5,7,11,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+    .pchip.pl{color:var(--scouter);border-color:rgba(125,255,176,.35)}
+    .pchip.gv{color:var(--gravity);border-color:rgba(255,180,90,.35)}
+    .pchip.sh{color:var(--ki);border-color:rgba(90,184,255,.4)}
+    .pchip.ui{color:var(--silver);border-color:rgba(223,232,255,.5)}
+    .pchip .soft{opacity:.65;font-weight:700}
+    .power-mini{margin-bottom:11px}
+    .pm-head{display:flex;justify-content:space-between;margin-bottom:6px;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--scouter-dim);text-shadow:0 1px 4px rgba(0,0,0,.85)}
+    .pm-head b{color:var(--gold);font-weight:850}
+    .pm-track{position:relative;height:4px;border-radius:999px;background:rgba(255,255,255,.14)}
+    .pm-fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,#2fbf71,#7dffb0);box-shadow:0 0 8px rgba(125,255,176,.6);transition:width 300ms ease}
+    .pm-mark{position:absolute;top:-4px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#0b0f17;border:2px solid rgba(255,255,255,.35)}
+    .pm-mark.on{background:var(--scouter);border-color:var(--scouter);box-shadow:0 0 8px var(--scouter)}
+    .pm-mark.next{border-color:var(--gold)}
+    .hp-track{position:relative}
+    .hp-shield{position:absolute;top:0;bottom:0;width:0;border-radius:999px;background:linear-gradient(90deg,rgba(90,184,255,.6),rgba(170,225,255,.95));box-shadow:0 0 10px rgba(90,184,255,.85);animation:ki-pulse 2.4s ease-in-out infinite}
+    .hp-row[data-shield="1"] .hp-track{box-shadow:0 0 0 1px rgba(90,184,255,.55),0 0 10px rgba(90,184,255,.45)}
+    .hp-shield-num{color:var(--ki)}
+    @keyframes ki-pulse{50%{box-shadow:0 0 16px rgba(90,184,255,1)}}
+    /* The 6-hour week: a silver Ultra Instinct glow until Sunday night, and a Senzu banner once. */
+    .ultra-glow{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity 2s ease;background:radial-gradient(ellipse 70% 50% at 50% 45%,rgba(223,232,255,.26),transparent 70%),linear-gradient(180deg,rgba(200,215,255,.12),transparent 40%);mix-blend-mode:screen}
+    .app[data-ultra="1"] .ultra-glow{opacity:1;animation:ultra 3.2s ease-in-out infinite}
+    @keyframes ultra{50%{opacity:.55}}
+    .senzu{position:absolute;left:calc(16px + var(--safe-left));right:calc(16px + var(--safe-right));top:40%;z-index:3;padding:13px 14px;border-radius:16px;background:rgba(10,14,24,.8);border:1px solid rgba(223,232,255,.45);box-shadow:0 0 30px rgba(200,215,255,.35);text-align:center;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+    .senzu[hidden]{display:none}
+    .senzu-big{font-size:19px;font-weight:900;color:var(--silver)}
+    .senzu-sm{margin-top:4px;font-size:12px;font-weight:700;color:rgba(255,255,255,.75)}
+    .senzu-heal{display:inline-block;margin-top:8px;padding:3px 9px;border-radius:999px;background:rgba(125,255,176,.15);color:var(--scouter);font-size:12px;font-weight:900}
+    /* Back: the Power tab. */
+    .pl-box{position:relative;overflow:hidden;padding:14px 14px 4px;border-radius:16px;border:1px solid rgba(125,255,176,.28);background:radial-gradient(120% 90% at 85% 10%,rgba(125,255,176,.18),transparent 55%),rgba(10,30,20,.55)}
+    .pl-box::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(125,255,176,.05) 0 1px,transparent 1px 4px);pointer-events:none}
+    .pl-box .label,.gv-box .label,.mv-head .label{text-shadow:none}
+    .pl-box .label{color:var(--scouter-dim)}
+    .pl-big{margin-top:4px;font-size:34px;font-weight:900;letter-spacing:-.03em;color:var(--scouter);text-shadow:0 0 14px rgba(125,255,176,.45);font-variant-numeric:tabular-nums}
+    .pl-trend{margin-left:6px;font-size:12px;font-weight:800;color:var(--scouter);opacity:.8}
+    .pl-trend.down{color:#ff9f9f}
+    .spark{display:block;width:100%;height:42px;margin-top:4px}
+    .gauge{position:relative;height:6px;border-radius:999px;background:rgba(255,255,255,.12);margin:22px 4px 30px}
+    .gauge-fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,#2fbf71,#7dffb0);box-shadow:0 0 8px rgba(125,255,176,.6)}
+    .g-mark{position:absolute;top:-5px;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:#0b0f17;border:2px solid rgba(255,255,255,.3)}
+    .g-mark.on{background:var(--scouter);border-color:var(--scouter);box-shadow:0 0 8px var(--scouter)}
+    .g-mark.next{border-color:var(--gold)}
+    .g-lab{position:absolute;top:16px;transform:translateX(-50%);font-size:9px;font-weight:800;color:rgba(255,255,255,.5);white-space:nowrap}
+    .g-lab.next{color:var(--gold)}
+    .gv-box{margin-top:10px;padding:12px;border-radius:14px;background:rgba(255,180,90,.07);border:1px solid rgba(255,180,90,.22)}
+    .gv-head{display:flex;justify-content:space-between;align-items:baseline}
+    .gv-box .label{color:var(--gravity)}
+    .gv-num{font-size:24px;font-weight:900;color:var(--gravity);letter-spacing:-.02em}
+    .gv-xp{font-size:11px;font-weight:800;color:var(--gold)}
+    .cal{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;margin-top:9px}
+    .cal span{aspect-ratio:1;border-radius:3px;background:rgba(255,255,255,.07)}
+    .cal span.t{background:linear-gradient(135deg,#ffb45a,#ffcf8a);box-shadow:0 0 6px rgba(255,180,90,.45)}
+    .cal span.today{outline:1px solid rgba(255,255,255,.6)}
+    .gv-foot{margin-top:7px;font-size:10px;font-weight:700;color:rgba(255,255,255,.5)}
+    .wk-box{margin-top:10px;padding:12px;border-radius:14px;background:rgba(223,232,255,.05);border:1px solid rgba(223,232,255,.16)}
+    .wk-box .label{color:var(--silver);text-shadow:none}
+    .wk-line{display:flex;justify-content:space-between;align-items:baseline;margin-top:4px;font-size:13px;font-weight:800}
+    .wk-track{position:relative;height:5px;margin-top:8px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden}
+    .wk-fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,#9fb0d8,#eef3ff)}
+    .mv-head{display:flex;justify-content:space-between;align-items:baseline;margin-top:14px}
+    .moves{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+    .move{position:relative;overflow:hidden;aspect-ratio:3/4;border-radius:13px;border:1px solid rgba(255,255,255,.09);background:#0b0f17 center/cover no-repeat;cursor:pointer}
+    .move video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s linear}
+    .move video.ready{opacity:1}
+    .move.locked{cursor:default;background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.07),transparent 65%),#080b12}
+    .move.dormant{filter:grayscale(.85) brightness(.55)}
+    .move-cap{position:absolute;left:0;right:0;bottom:0;padding:20px 9px 8px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.88))}
+    .move-name{font-size:13px;font-weight:850;line-height:1.15}
+    .move-meta{margin-top:2px;font-size:10px;font-weight:700;color:var(--muted)}
+    .move-lock{position:absolute;inset:0;display:grid;place-items:center;font-size:26px;opacity:.55}
+    .move-badge{position:absolute;top:7px;left:7px;padding:3px 7px;border-radius:999px;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+    .move-badge.charged{background:var(--gold);color:#111}
+    .move-badge.used{background:rgba(255,255,255,.2);color:#fff}
+    .move-badge.dormant{background:rgba(120,130,150,.6);color:#fff}
+    .move-badge.awake{background:rgba(125,255,176,.2);color:var(--scouter)}
+    .move-badge.making{background:rgba(255,255,255,.12);color:rgba(255,255,255,.7)}
+    .power-note{margin-top:10px;font-size:11px;line-height:1.5;color:rgba(255,255,255,.5)}
+    @media(prefers-reduced-motion:reduce){.hp-shield,.app[data-ultra="1"] .ultra-glow{animation:none}}
     @media(prefers-reduced-motion:reduce){.flipper{transition:none}.reading.typing::after{animation:none}}
   </style>
 </head>
@@ -167,6 +250,8 @@
     <video id="heroVideoB" class="hero-video" muted playsinline preload="auto"></video>
     <div class="hero-glow" aria-hidden="true"></div>
     <div class="hero-shade" aria-hidden="true"></div>
+    <div class="ultra-glow" aria-hidden="true"></div>
+    <div class="senzu" id="senzu" role="status" hidden><div class="senzu-big">🫘 Senzu bean</div><div class="senzu-sm" id="senzuText"></div><span class="senzu-heal">HP fully restored</span></div>
 
     <div class="hud-top">
       <div class="motivation-line" aria-hidden="true">
@@ -196,9 +281,21 @@
     </div>
 
     <div class="hud-bottom">
+      <div class="power-hud" id="powerHud" hidden>
+        <div class="chips">
+          <span class="pchip pl" id="chipPower" title="Power level: fitness × 100"></span>
+          <span class="pchip gv" id="chipGravity" title="Gravity: training days in the last 28, each +1.5% XP"></span>
+          <span class="pchip sh" id="chipShield" title="Ki shield from last night's recovery" hidden></span>
+          <span class="pchip ui" id="chipUltra" title="6 hours trained this week" hidden></span>
+        </div>
+        <div class="power-mini" id="powerMini" hidden>
+          <div class="pm-head"><span>Power level</span><span id="pmNext"></span></div>
+          <div class="pm-track" id="pmTrack"><div class="pm-fill" id="pmFill"></div></div>
+        </div>
+      </div>
       <div class="bar-row hp-row" id="hpHud" hidden>
         <div class="bar-head"><span class="label">HP</span><span class="bar-num" id="hpNum">—</span></div>
-        <div class="hp-track" id="hpTrack" role="progressbar" aria-label="Hero HP" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="hp-fill" id="hpFill"></div></div>
+        <div class="hp-track" id="hpTrack" role="progressbar" aria-label="Hero HP" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="hp-fill" id="hpFill"></div><div class="hp-shield" id="hpShield"></div></div>
       </div>
       <div class="bar-row">
         <div class="bar-head"><span class="bar-title"><span class="label">XP</span><span class="rate-dots" id="rateDots" role="img" aria-label="Success days"><span class="rate-dot"></span><span class="rate-dot"></span><span class="rate-dot"></span></span><span class="stage-tag" id="stageTag" hidden></span></span><span class="xp-num-wrap"><span class="bar-num" id="xpNum">—</span><span class="xp-gain" id="xpGain" role="status" aria-live="polite" hidden></span></span></div>
@@ -216,6 +313,7 @@
       <button class="tab" type="button" role="tab" id="tabForms" aria-controls="panelForms" aria-selected="false">Forms</button>
       <button class="tab" type="button" role="tab" id="tabLog" aria-controls="panelLog" aria-selected="false">Log</button>
       <button class="tab" type="button" role="tab" id="tabLore" aria-controls="panelLore" aria-selected="false">Lore</button>
+      <button class="tab" type="button" role="tab" id="tabPower" aria-controls="panelPower" aria-selected="false">Power</button>
     </div>
     <div class="panel" id="panelScouter" role="tabpanel" aria-labelledby="tabScouter">
       <div class="scouter" id="scouter"><div class="label" id="scouterLabel">Scouter reading</div><div class="reading" id="reading" aria-live="polite"></div></div>
@@ -226,6 +324,7 @@
     <div class="panel" id="panelLore" role="tabpanel" aria-labelledby="tabLore" hidden>
       <div class="lore"><div class="lore-epithet" id="loreEpithet"></div><div class="lore-name" id="loreName">Goku</div><p class="lore-text" id="loreText"></p><div class="lore-facts" id="loreFacts"></div></div>
     </div>
+    <div class="panel" id="panelPower" role="tabpanel" aria-labelledby="tabPower" hidden><div id="power"></div></div>
     <div class="hint" id="hbHint">Tap here to flip back</div>
   </section>
   </div>
@@ -443,6 +542,8 @@
       const used = Number.isFinite(usedRaw) && usedRaw > 0 ? Math.min(3, usedRaw) : 3;
       Array.from(rateDotsEl.children).forEach((dot, i) => dot.classList.toggle('is-on', i < done));
       rateDotsEl.setAttribute('aria-label', 'Success on ' + done + ' of the last ' + used + ' days');
+
+      renderPower(state.power, curHp, maxHp, hpPct);
 
       const tier = performanceTier(state);
       progressHudEl.dataset.tier = String(tier);
@@ -814,6 +915,161 @@
       }, 28);
     }
 
+    // ---- Goku's power (quest-engine src/power.js, 2 Oct 2026) ----
+    // Each part drives one thing: gravity -> XP, signature moves -> attack,
+    // the ki shield -> shield, the 6-hour week's Senzu bean -> HP.
+    const SENZU_SEEN_KEY = 'mainQuest.senzuSeen.v1';
+    const senzuEl = document.getElementById('senzu');
+    let power = null;
+    let powerKey = '';
+    let senzuTimer = null;
+
+    function renderPower(p, curHp, maxHp, hpPct) {
+      power = p && typeof p === 'object' ? p : null;
+      const hud = document.getElementById('powerHud');
+      const shieldEl = document.getElementById('hpShield');
+      if (!power) {
+        hud.hidden = true;
+        shieldEl.style.width = '0';
+        hpHudEl.dataset.shield = '0';
+        progressHudEl.dataset.ultra = '0';
+        return;
+      }
+      hud.hidden = false;
+      document.getElementById('chipPower').textContent = '⚡ ' + fmtNum(power.power_level);
+      const g = power.gravity || {};
+      document.getElementById('chipGravity').innerHTML = '🪨 ' + esc(fmtNum(g.gravity)) + '× <span class="soft">+' + esc(Math.round((Number(g.xp_bonus) || 0) * 1000) / 10) + '% XP</span>';
+
+      // 🛡️ The ki shield sits on the HP bar after the HP, and bad habits hit it first.
+      const amount = Math.max(0, Math.round(Number(power.shield && power.shield.amount) || 0));
+      const chipShield = document.getElementById('chipShield');
+      chipShield.hidden = amount <= 0;
+      chipShield.textContent = '🛡️ +' + fmtNum(amount);
+      hpHudEl.dataset.shield = amount > 0 ? '1' : '0';
+      if (amount > 0 && Number.isFinite(hpPct) && maxHp > 0) {
+        shieldEl.style.left = hpPct + '%';
+        shieldEl.style.width = Math.min((amount / maxHp) * 100, 100 - hpPct) + '%';
+        hpNumEl.innerHTML = esc(hpNumEl.textContent) + ' <span class="hp-shield-num">+' + esc(fmtNum(amount)) + '</span>';
+      } else {
+        shieldEl.style.width = '0';
+      }
+
+      // 🫘 The 6-hour week: silver until Sunday night, and the Senzu banner once.
+      const week = power.week || {};
+      const chipUltra = document.getElementById('chipUltra');
+      chipUltra.hidden = !week.ultra;
+      chipUltra.textContent = '✨ ' + (Number(week.hours) || 0) + ' h';
+      progressHudEl.dataset.ultra = week.senzu ? '1' : '0';
+      let seen = '';
+      try { seen = localStorage.getItem(SENZU_SEEN_KEY) || ''; } catch (_) {}
+      if (week.senzu && week.monday && seen !== week.monday && senzuEl.hidden) {
+        document.getElementById('senzuText').textContent = (Number(week.hours) || 0) + ' h trained this week';
+        senzuEl.hidden = false;
+        try { localStorage.setItem(SENZU_SEEN_KEY, week.monday); } catch (_) {}
+        clearTimeout(senzuTimer);
+        senzuTimer = setTimeout(() => { senzuEl.hidden = true; }, 9000);
+      }
+
+      // ⚡ The scouter bar: power level against the move marks.
+      const marks = (Array.isArray(power.marks) ? power.marks : []).map(Number).filter(m => m > 0);
+      const mini = document.getElementById('powerMini');
+      mini.hidden = !marks.length;
+      if (marks.length) {
+        const top = Math.max(...marks) * 1.08;
+        const pl = Number(power.power_level) || 0;
+        const next = power.next_mark;
+        document.getElementById('pmFill').style.width = Math.min(100, (pl / top) * 100) + '%';
+        document.getElementById('pmNext').innerHTML = next
+          ? (next.name ? esc(next.name) : 'Next move') + ' at <b>' + esc(fmtNum(next.power)) + '</b>'
+          : '<b>Every move unlocked</b>';
+        const track = document.getElementById('pmTrack');
+        track.querySelectorAll('.pm-mark').forEach(n => n.remove());
+        for (const m of marks) {
+          const dot = document.createElement('span');
+          dot.className = 'pm-mark' + (pl >= m ? ' on' : next && Number(next.power) === m ? ' next' : '');
+          dot.style.left = Math.min(100, (m / top) * 100) + '%';
+          track.appendChild(dot);
+        }
+      }
+      if (!document.getElementById('panelPower').hidden) renderPowerPanel();
+    }
+
+    senzuEl.addEventListener('click', event => { event.stopPropagation(); senzuEl.hidden = true; });
+
+    const smallImage = url => String(url || '').replace('/image/upload/', '/image/upload/w_360,h_480,c_fill,g_north,f_auto/');
+    const smallClip = url => String(url || '').replace(/\/video\/upload\/(ac_none,so_1\.0\/)?/, '/video/upload/ac_none,w_540,h_720,c_fill,g_north/');
+    const MOVE_BADGE = { charged: 'Charged', used: 'Used this week', dormant: 'Dormant', awake: 'Awake' };
+
+    function sparkPath(values) {
+      const v = values.map(x => Number(x) || 0);
+      if (v.length < 2) return '';
+      // Scaled to its own range, so a few weeks of progress show as a climb.
+      const lo = Math.min(...v), hi = Math.max(...v), span = hi - lo || 1;
+      return v.map((y, i) => (i ? 'L' : 'M') + Math.round((i / (v.length - 1)) * 240) + ' ' + Math.round(hi === lo ? 22 : 38 - ((y - lo) / span) * 32)).join(' ');
+    }
+
+    function renderPowerPanel() {
+      const el = document.getElementById('power');
+      if (!power) { el.innerHTML = '<div class="empty">No power reading yet.</div>'; powerKey = ''; return; }
+      const key = JSON.stringify(power);
+      if (key === powerKey) return; // keeps a playing move clip running
+      powerKey = key;
+      const pl = Number(power.power_level) || 0;
+      const trend = Array.isArray(power.trend) ? power.trend : [];
+      const line = sparkPath(trend);
+      const change = power.trend_change_pct;
+      const marks = (Array.isArray(power.marks) ? power.marks : []).map(Number);
+      const top = marks.length ? Math.max(...marks) * 1.08 : Math.max(pl, 1);
+      const next = power.next_mark;
+      const moves = Array.isArray(power.moves) ? power.moves : [];
+      const gauge = marks.map(m => {
+        const mv = moves.find(x => Number(x.power) === m) || {};
+        const isNext = next && Number(next.power) === m;
+        const left = Math.min(100, (m / top) * 100);
+        return `<span class="g-mark${pl >= m ? ' on' : isNext ? ' next' : ''}" style="left:${left}%"></span>` +
+          (isNext ? `<span class="g-lab next" style="left:${left}%">${esc(mv.name || '???')} · ${esc(fmtNum(m))}</span>` : '');
+      }).join('');
+      const g = power.gravity || {};
+      const cal = (Array.isArray(g.calendar) ? g.calendar : []).map((d, i, all) => `<span class="${d ? 't' : ''}${i === all.length - 1 ? ' today' : ''}"></span>`).join('');
+      const week = power.week || {};
+      const hrs = Math.floor((Number(week.minutes) || 0) / 60), mins = (Number(week.minutes) || 0) % 60;
+      const tiles = moves.map(m => {
+        if (m.state === 'locked') {
+          return `<div class="move locked"><div class="move-lock">🔒</div><div class="move-cap"><div class="move-name">???</div><div class="move-meta">Power ${esc(fmtNum(m.power))}</div></div></div>`;
+        }
+        const making = !m.image_url && !m.video_url;
+        const bg = m.image_url ? ` style="background-image:url('${esc(smallImage(m.image_url))}')"` : '';
+        const badge = making ? '<span class="move-badge making">Being drawn</span>' : MOVE_BADGE[m.state] ? `<span class="move-badge ${esc(m.state)}">${MOVE_BADGE[m.state]}</span>` : '';
+        return `<div class="move ${esc(m.state)}" data-key="${esc(m.key)}" role="button" tabindex="0" aria-label="${esc(m.name)}"${bg}>${badge}<div class="move-cap"><div class="move-name">${esc(m.name)}</div><div class="move-meta">${esc(fmtNum(m.power))} · ×${esc(m.mult)} on a workout</div></div></div>`;
+      }).join('');
+      el.innerHTML =
+        `<div class="pl-box"><span class="label">Power level · fitness × 100</span>` +
+        `<div><span class="pl-big">${esc(fmtNum(pl))}</span>${change !== null && change !== undefined ? `<span class="pl-trend${change < 0 ? ' down' : ''}">${change < 0 ? '▼' : '▲'} ${esc(Math.abs(change))}% in 12 wk</span>` : ''}</div>` +
+        (line ? `<svg class="spark" viewBox="0 0 240 42" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(125,255,176,.35)"/><stop offset="1" stop-color="rgba(125,255,176,0)"/></linearGradient></defs><path d="${line} L240 42 L0 42Z" fill="url(#sparkFill)"/><path d="${line}" fill="none" stroke="#7dffb0" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>` : '') +
+        (marks.length ? `<div class="gauge"><div class="gauge-fill" style="width:${Math.min(100, (pl / top) * 100)}%"></div>${gauge}</div>` : '') +
+        `</div>` +
+        `<div class="gv-box"><div class="gv-head"><span class="label">🪨 Gravity chamber</span><span class="gv-xp">+${esc(Math.round((Number(g.xp_bonus) || 0) * 1000) / 10)}% XP tonight</span></div>` +
+        `<div class="gv-num">${esc(fmtNum(g.gravity))}×</div><div class="cal">${cal}</div>` +
+        `<div class="gv-foot">${esc(g.days || 0)} training ${g.days === 1 ? 'day' : 'days'} in the last 28 · each one adds 10× and +1.5% XP</div></div>` +
+        `<div class="wk-box"><span class="label">✨ This week</span><div class="wk-line"><span>${hrs} h ${String(mins).padStart(2, '0')} min trained</span><span>${week.senzu ? '🫘 Senzu bean earned' : '🫘 at 6 h: full heal'}</span></div></div>` +
+        `<div class="mv-head"><span class="label">Signature moves</span></div>` +
+        `<div class="moves">${tiles}</div>` +
+        `<div class="power-note">The strongest awake move charges every Monday and fires by itself on your next Strava workout. If your power drops below a move's mark it sleeps until you train back up. Tap a move to play it.</div>`;
+    }
+
+    function toggleMoveClip(tile) {
+      const m = (power && Array.isArray(power.moves) ? power.moves : []).find(x => x.key === tile.dataset.key);
+      const playing = tile.querySelector('video');
+      document.querySelectorAll('.move video').forEach(v => v.remove());
+      if (playing || !m || !m.video_url) return;
+      const video = document.createElement('video');
+      Object.assign(video, { src: smallClip(m.video_url), muted: true, loop: true, playsInline: true, autoplay: true });
+      video.setAttribute('playsinline', '');
+      video.addEventListener('playing', () => video.classList.add('ready'), { once: true });
+      tile.insertBefore(video, tile.firstChild);
+      video.play().catch(() => {});
+    }
+
     function selectTab(id) {
       document.querySelectorAll('.tab').forEach(tab => {
         const on = tab.id === id;
@@ -821,6 +1077,8 @@
         document.getElementById(tab.getAttribute('aria-controls')).hidden = !on;
       });
       if (id !== 'tabForms') closeForm();
+      if (id === 'tabPower') renderPowerPanel();
+      else document.querySelectorAll('.move video').forEach(v => v.remove());
     }
 
     function setFlipped(flipped) {
@@ -850,11 +1108,15 @@
       const tab = event.target.closest('.tab');
       if (tab) { selectTab(tab.id); return; }
       if (event.target.closest('#formBack')) { closeForm(); return; }
+      const move = event.target.closest('.move[data-key]');
+      if (move) { toggleMoveClip(move); return; }
       const tile = event.target.closest('.form');
       if (tile) { if (tile.classList.contains('form-big')) toggleFormClip(tile); else openForm(tile.dataset.level); return; }
       if (event.target.closest('#hbHead, #hbHint')) setFlipped(false);
     });
     backEl.addEventListener('keydown', event => {
+      const move = event.target.closest('.move[data-key]');
+      if (move && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); toggleMoveClip(move); return; }
       const tile = event.target.closest('.form');
       if (tile && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); if (tile.classList.contains('form-big')) toggleFormClip(tile); else openForm(tile.dataset.level); }
       if (event.key === 'Escape') setFlipped(false);
