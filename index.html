@@ -103,7 +103,7 @@
     .hb-level{text-align:right}
     .hb-level .value{font-size:clamp(20px,6vw,26px)}
     .hero-back .label{text-shadow:none}
-    .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:12px;padding:3px;border-radius:11px;background:rgba(255,255,255,.06)}
+    .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:12px;padding:3px;border-radius:11px;background:rgba(255,255,255,.06)}
     .tab{border:0;margin:0;padding:7px 0;border-radius:8px;background:transparent;color:rgba(255,255,255,.5);font:inherit;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
     .tab[aria-selected="true"]{background:rgba(255,255,255,.12);color:#fff}
     .panel{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:12px 0}
@@ -133,6 +133,17 @@
     .form-name{font-size:13px;font-weight:850;line-height:1.15}
     .form-meta{margin-top:2px;font-size:10px;font-weight:700;color:var(--muted)}
     .form-now{position:absolute;top:8px;left:8px;padding:3px 7px;border-radius:999px;background:rgba(255,159,28,.9);color:#111;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+    /* Lore: the story of each form reached so far, newest first; the boss card has the same tab. */
+    .chapters{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+    .chapters::-webkit-scrollbar{display:none}
+    .chapter{flex:0 0 auto;border:1px solid rgba(255,255,255,.12);margin:0;padding:5px 10px;border-radius:999px;background:transparent;color:rgba(255,255,255,.55);font:inherit;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;cursor:pointer}
+    .chapter[aria-pressed="true"]{border-color:rgba(255,159,28,.7);background:rgba(255,159,28,.16);color:#fff}
+    .lore{padding:14px 4px 12px}
+    .lore-epithet{font-size:10px;font-weight:850;letter-spacing:.24em;text-transform:uppercase;color:#ffb547}
+    .lore-name{margin-top:6px;font-size:clamp(22px,7vw,28px);font-weight:900;letter-spacing:-.02em;line-height:1.1}
+    .lore-text{margin:14px 0 0;font-size:15px;font-weight:500;line-height:1.6;color:var(--muted);white-space:pre-line}
+    .lore-facts{display:flex;flex-wrap:wrap;gap:6px;margin-top:18px}
+    .lore-facts span{padding:5px 9px;border:1px solid rgba(255,255,255,.12);border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.5)}
     /* Log: the last 14 journal days. */
     .days{list-style:none;margin:0;padding:0}
     .day{display:grid;grid-template-columns:74px 1fr auto;align-items:center;gap:8px;padding:10px 2px;border-bottom:1px solid rgba(255,255,255,.07)}
@@ -205,6 +216,7 @@
       <button class="tab" type="button" role="tab" id="tabScouter" aria-controls="panelScouter" aria-selected="true">Scouter</button>
       <button class="tab" type="button" role="tab" id="tabForms" aria-controls="panelForms" aria-selected="false">Forms</button>
       <button class="tab" type="button" role="tab" id="tabLog" aria-controls="panelLog" aria-selected="false">Log</button>
+      <button class="tab" type="button" role="tab" id="tabLore" aria-controls="panelLore" aria-selected="false">Lore</button>
     </div>
     <div class="panel" id="panelScouter" role="tabpanel" aria-labelledby="tabScouter">
       <div class="scouter" id="scouter"><div class="label" id="scouterLabel">Scouter reading</div><div class="reading" id="reading" aria-live="polite"></div></div>
@@ -212,6 +224,10 @@
     </div>
     <div class="panel" id="panelForms" role="tabpanel" aria-labelledby="tabForms" hidden><div class="forms" id="forms"></div></div>
     <div class="panel" id="panelLog" role="tabpanel" aria-labelledby="tabLog" hidden><ul class="days" id="days"></ul></div>
+    <div class="panel" id="panelLore" role="tabpanel" aria-labelledby="tabLore" hidden>
+      <div class="chapters" id="chapters"></div>
+      <div class="lore"><div class="lore-epithet" id="loreEpithet"></div><div class="lore-name" id="loreName">Goku</div><p class="lore-text" id="loreText"></p><div class="lore-facts" id="loreFacts"></div></div>
+    </div>
     <div class="hint" id="hbHint">Tap here to flip back</div>
   </section>
   </div>
@@ -625,6 +641,7 @@
       renderRecords();
       renderForms(forms);
       renderDays();
+      renderLore(forms);
     }
 
     function renderRecords() {
@@ -691,6 +708,28 @@
         const xp = d.gain == null ? '<span class="day-xp pending">counts at 04:00</span>' : `<span class="day-xp">+${fmtNum(d.gain)} XP</span>`;
         return `<li class="day"><span class="day-date">${esc(fmtDay(d.date, true))}</span><span class="day-what">${pills.join('')}</span>${xp}</li>`;
       }).join('');
+    }
+
+    // ---- Lore: one chapter per form reached, the current one first ----
+    // The story is the form's Lore in D1 (goku.lore), carried in hero.json only
+    // once the form is reached, so nothing here gives away what comes next.
+    let loreLevel = null;
+    function renderLore(forms) {
+      const chapters = forms.slice().reverse();
+      const f = chapters.find(x => String(x.level) === loreLevel) || chapters[0];
+      document.getElementById('chapters').innerHTML = chapters.length > 1 ? chapters.map((x, i) =>
+        `<button class="chapter" type="button" data-level="${esc(x.level)}" aria-pressed="${x === f}">${i === 0 ? 'Now · ' : ''}${esc(x.form)}</button>`).join('') : '';
+      document.getElementById('loreEpithet').textContent = f ? 'Chapter ' + f.level + (f === chapters[0] ? ' · Now' : '') : '';
+      document.getElementById('loreName').textContent = f && f.form ? 'Goku · ' + f.form : 'Goku';
+      document.getElementById('loreText').textContent = (f && f.lore) || (f ? 'No lore recorded for this form yet.' : 'Your story appears here after tonight’s run.');
+      const facts = [];
+      if (f && f.reached) facts.push('Reached ' + fmtDay(f.reached));
+      if (f && f.move) facts.push(f.move);
+      document.getElementById('loreFacts').replaceChildren(...facts.map(fact => {
+        const span = document.createElement('span');
+        span.textContent = fact;
+        return span;
+      }));
     }
 
     // One reading per flip, never one of the last few. Now and then a rare one.
@@ -784,6 +823,13 @@
     backEl.addEventListener('click', event => {
       const tab = event.target.closest('.tab');
       if (tab) { selectTab(tab.id); return; }
+      const chapter = event.target.closest('.chapter');
+      if (chapter) {
+        loreLevel = chapter.dataset.level;
+        renderLore((hero && Array.isArray(hero.forms)) ? hero.forms : []);
+        document.getElementById('panelLore').scrollTop = 0;
+        return;
+      }
       const tile = event.target.closest('.form');
       if (tile) { toggleFormClip(tile); return; }
       if (event.target.closest('#hbHead, #hbHint')) setFlipped(false);
