@@ -17,6 +17,10 @@ What the card shows:
 - **Log:** the last 14 days, one row each (Success, workouts, HP, XP). Tap a
   day to see what happened: every habit, heal and hit with its time and
   effect (`events` per day in `GET /hero`; today's taps come live from `GET /boss`).
+- **Tap a metric for its meaning:** Level, HP and XP on the front, and the
+  power level, loads, form, gravity, this week and records on the Scouter tab
+  open a short explanation (`INFO` in `index.html`). The rest of the front
+  still flips the card.
 - **Moves are a surprise:** only unlocked moves show (tile, name, mark, the
   dashed line on the chart). Moves still to come have no tile, name or mark
   anywhere on the card; the Moves tab only says more are waiting. Don't

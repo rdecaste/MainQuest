@@ -240,6 +240,18 @@
     .power-note{margin-top:10px;font-size:11px;line-height:1.5;color:rgba(255,255,255,.5)}
     @media(prefers-reduced-motion:reduce){.hp-shield,.app[data-senzu="1"] .senzu-glow{animation:none}}
     @media(prefers-reduced-motion:reduce){.flipper{transition:none}.reading.typing::after{animation:none}}
+    /* Tap a metric to see what it means (Roy, 3 Oct 2026: "I forget stuff a lot"). */
+    [data-info]{cursor:help}
+    .hud-top [data-info],.hud-bottom [data-info]{pointer-events:auto}
+    .info{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;padding:16px calc(16px + var(--safe-right)) calc(16px + var(--safe-bottom)) calc(16px + var(--safe-left));background:rgba(0,0,0,.45)}
+    .info[hidden]{display:none}
+    .info-card{width:100%;max-width:440px;padding:16px 16px 14px;border-radius:16px;background:#121826;border:1px solid rgba(255,255,255,.14);box-shadow:0 10px 40px rgba(0,0,0,.6);animation:info-in .2s ease-out}
+    .info-title{font-size:16px;font-weight:900}
+    .info-now{margin-top:6px;font-size:13px;font-weight:800;color:var(--accent-b)}
+    .info-text{white-space:pre-line;margin:8px 0 0;font-size:14px;font-weight:500;line-height:1.55;color:rgba(255,255,255,.82)}
+    .info-close{margin-top:12px;font-size:10px;font-weight:700;letter-spacing:.08em;color:rgba(255,255,255,.4);text-align:center}
+    @keyframes info-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+    @media(prefers-reduced-motion:reduce){.info-card{animation:none}}
   </style>
 </head>
 <body>
@@ -277,15 +289,15 @@
         </svg>
       </div>
       <span class="sr-only" id="progressLabel">Keep going</span>
-      <div class="metric right"><div class="label">Level</div><div class="value" id="level">—</div></div>
+      <div class="metric right" data-info="level"><div class="label">Level</div><div class="value" id="level">—</div></div>
     </div>
 
     <div class="hud-bottom">
-      <div class="bar-row hp-row" id="hpHud" hidden>
+      <div class="bar-row hp-row" id="hpHud" data-info="hp" hidden>
         <div class="bar-head"><span class="label">HP</span><span class="bar-num" id="hpNum">—</span></div>
         <div class="hp-track" id="hpTrack" role="progressbar" aria-label="Hero HP" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="hp-fill" id="hpFill"></div><div class="hp-shield" id="hpShield"></div></div>
       </div>
-      <div class="bar-row">
+      <div class="bar-row" data-info="xp">
         <div class="bar-head"><span class="bar-title"><span class="label">XP</span><span class="rate-dots" id="rateDots" role="img" aria-label="Success days"><span class="rate-dot"></span><span class="rate-dot"></span><span class="rate-dot"></span></span><span class="stage-tag" id="stageTag" hidden></span></span><span class="xp-num-wrap"><span class="bar-num" id="xpNum">—</span><span class="xp-gain" id="xpGain" role="status" aria-live="polite" hidden></span></span></div>
         <div class="progress-track" id="levelProgress" role="progressbar" aria-label="Level progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-fill" id="progressFill"></div></div>
       </div>
@@ -294,7 +306,7 @@
   <section class="hero-back" id="heroBack" aria-hidden="true">
     <div class="hb-head" id="hbHead">
       <div><div class="label">Hero</div><div class="hb-title" id="hbForm">Goku</div><div class="hb-sub" id="hbSub"></div></div>
-      <div class="hb-level"><div class="label">Level</div><div class="value" id="hbLevel">—</div></div>
+      <div class="hb-level" data-info="level"><div class="label">Level</div><div class="value" id="hbLevel">—</div></div>
     </div>
     <div class="tabs" role="tablist">
       <button class="tab" type="button" role="tab" id="tabScouter" aria-controls="panelScouter" aria-selected="true">Scouter</button>
@@ -318,6 +330,7 @@
   </section>
   </div>
   </div>
+  <div class="info" id="info" role="dialog" aria-modal="true" aria-labelledby="infoTitle" hidden><div class="info-card"><div class="info-title" id="infoTitle"></div><div class="info-now" id="infoNow" hidden></div><p class="info-text" id="infoText"></p><div class="info-close">Tap anywhere to close</div></div></div>
 
   <script>
     // The Quest Engine Worker (~/code/quest-engine) runs the nightly progression
@@ -737,12 +750,12 @@
       const r = hero && hero.records;
       if (!r) { el.innerHTML = ''; return; }
       const cells = [
-        [r.current_run, r.current_run === 1 ? 'Day of success' : 'Success days in a row'],
-        [r.best_gain ? '+' + fmtNum(r.best_gain.gain) : '—', 'Best day' + (r.best_gain ? ' · ' + fmtDay(r.best_gain.date) : '')],
-        [r.movement_days, 'Success days'],
-        [r.longest_run, 'Longest run']
+        [r.current_run, r.current_run === 1 ? 'Day of success' : 'Success days in a row', 'run'],
+        [r.best_gain ? '+' + fmtNum(r.best_gain.gain) : '—', 'Best day' + (r.best_gain ? ' · ' + fmtDay(r.best_gain.date) : ''), 'best'],
+        [r.movement_days, 'Success days', 'successDays'],
+        [r.longest_run, 'Longest run', 'longest']
       ];
-      el.innerHTML = cells.map(([n, label]) => `<div class="record"><div class="record-num">${esc(n)}</div><span class="label">${esc(label)}</span></div>`).join('');
+      el.innerHTML = cells.map(([n, label, info]) => `<div class="record" data-info="${info}"><div class="record-num">${esc(n)}</div><span class="label">${esc(label)}</span></div>`).join('');
     }
 
     let formsKey = '';
@@ -1096,8 +1109,8 @@
       const moves = Array.isArray(power.moves) ? power.moves : [];
       const load = power.load && Array.isArray(power.load.long) && power.load.long.length > 1 ? power.load : null;
       const head =
-        `<span class="label">Power level · long-term load</span>` +
-        `<div><span class="pl-big">${esc(fmtNum(pl))}</span>${change !== null && change !== undefined ? `<span class="pl-trend${change < 0 ? ' down' : ''}">${change < 0 ? '▼' : '▲'} ${esc(Math.abs(change))}% in 12 wk</span>` : ''}</div>`;
+        `<div data-info="power"><span class="label">Power level · long-term load</span>` +
+        `<div><span class="pl-big">${esc(fmtNum(pl))}</span>${change !== null && change !== undefined ? `<span class="pl-trend${change < 0 ? ' down' : ''}">${change < 0 ? '▼' : '▲'} ${esc(Math.abs(change))}% in 12 wk</span>` : ''}</div></div>`;
       if (load) {
         // Redrawn only when the numbers change, so a finger on the chart is not interrupted.
         const key = JSON.stringify([pl, change, load, moves.map(m => [m.power, m.name])]);
@@ -1106,7 +1119,7 @@
           const last = load.long.length - 1;
           const chart = loadChart(load, moves);
           box.innerHTML = head +
-            `<div class="ld-legend"><span><i style="background:#7dffb0"></i>Long-term ${esc(fmtNum(load.long[last]))}</span><span><i style="background:#ff8fa3"></i>Short-term ${esc(fmtNum(load.short[last]))}</span><span class="form-chip fs-${esc(load.form[last])}">${esc(load.form[last])}</span></div>` +
+            `<div class="ld-legend"><span data-info="long"><i style="background:#7dffb0"></i>Long-term ${esc(fmtNum(load.long[last]))}</span><span data-info="short"><i style="background:#ff8fa3"></i>Short-term ${esc(fmtNum(load.short[last]))}</span><span class="form-chip fs-${esc(load.form[last])}" data-info="form">${esc(load.form[last])}</span></div>` +
             chart.html;
           chart.bind(box.querySelector('.ld-wrap'));
         }
@@ -1119,8 +1132,8 @@
       const week = power.week || {};
       const hrs = Math.floor((Number(week.minutes) || 0) / 60), mins = (Number(week.minutes) || 0) % 60;
       cells.innerHTML =
-        `<div class="pcell gv"><div class="pcell-num">${esc(fmtNum(g.gravity))}×</div><span class="label">Gravity · +${esc(Math.round((Number(g.xp_bonus) || 0) * 1000) / 10)}% XP</span><div class="cal" title="${esc(g.days || 0)} training days in the last 28">${cal}</div></div>` +
-        `<div class="pcell wk"><div class="pcell-num">${hrs} h ${String(mins).padStart(2, '0')}</div><span class="label">This week · ${week.senzu ? '🫘 Senzu earned' : '🫘 at 6 h'}</span></div>`;
+        `<div class="pcell gv" data-info="gravity"><div class="pcell-num">${esc(fmtNum(g.gravity))}×</div><span class="label">Gravity · +${esc(Math.round((Number(g.xp_bonus) || 0) * 1000) / 10)}% XP</span><div class="cal" title="${esc(g.days || 0)} training days in the last 28">${cal}</div></div>` +
+        `<div class="pcell wk" data-info="week"><div class="pcell-num">${hrs} h ${String(mins).padStart(2, '0')}</div><span class="label">This week · ${week.senzu ? '🫘 Senzu earned' : '🫘 at 6 h'}</span></div>`;
       cells.hidden = false;
     }
 
@@ -1188,11 +1201,56 @@
       }
     }
 
-    progressHudEl.addEventListener('click', () => setFlipped(true));
+    // ---- Tap a metric for what it means (Roy, 3 Oct 2026) ----
+    // Rules from quest-engine (src/power.js, src/rules/mainquest.js, hero-card.js).
+    // Never name a form, level, move or mark still to come here.
+    const INFO = {
+      level: { title: 'Level', text: 'Goku\'s level. Each level has 4 stages, the notches on the XP bar. When the XP bar is full, Goku goes up a level.' },
+      hp: { title: 'HP · Goku\'s health', text: 'Bad habits and the boss\'s strikes take HP away. Healing habits and the nightly recovery at 04:00 give it back. At 0 HP Goku can\'t attack until he is healed.\nA blue +number after the HP is today\'s ki shield, from last night\'s sleep recovery: bad habits\' hits take the shield first, and it is gone at 04:00.' },
+      xp: { title: 'XP · progress through this level', text: 'XP grows every night at 04:00. The three dots are your Success days among the last 3 journal days (the Success box in your journal): the more dots, the faster XP grows and the brighter the bar. Gravity adds a bonus on top. The notches are the stages of this level.' },
+      power: { title: 'Power level', text: 'Your long-term fitness from your Strava workouts, × 100. It builds over about 6 weeks of training and fades slowly when you rest. The ▲/▼ is the change over the last 12 weeks. Reaching certain power levels unlocks signature moves.' },
+      long: { title: 'Long-term load (green line)', text: 'Your fitness: the training of roughly the last 6 weeks. It is the same number as your power level. It rises slowly and falls slowly.' },
+      short: { title: 'Short-term load (pink line)', text: 'Your fatigue: the training of roughly the last week. It jumps after a hard workout and drops within days when you rest.' },
+      form: { title: 'Form', text: 'Short-term load compared with long-term load.\nRusty: training less than your fitness can take, or hardly any fitness yet.\nSteady: keeping your fitness where it is.\nBuilding: training more than usual, so your fitness grows.\nOverreaching: a lot more than usual. Watch for too much fatigue.\nThe colour strip under the chart shows your form on each day.' },
+      gravity: { title: '🪨 Gravity', text: 'Each day you trained in the last 28 days adds 10× (max 280×). Walks and hikes don\'t count, e-bike commutes do, and two workouts on one day count once. Each training day adds 1.5% to the XP Goku gains at 04:00. A day drops out again after 4 weeks, so there is no streak to lose. Each square is a day, today outlined.' },
+      week: { title: '🫘 This week', text: 'Your training time this week, Monday to Sunday. The first time it passes 6 hours you get a Senzu bean: Goku\'s HP is fully healed, once a week, and the card glows green until Sunday night.' },
+      run: { title: 'Success days in a row', text: 'Journal days in a row with Success ticked, up to today. Today doesn\'t break the run while it isn\'t ticked yet.' },
+      best: { title: 'Best day', text: 'The most XP Goku gained in one night, and the day it was for.' },
+      successDays: { title: 'Success days', text: 'How many of your journal days had Success ticked (over the last 100 days).' },
+      longest: { title: 'Longest run', text: 'The most Success days in a row so far (over the last 100 days).' }
+    };
+    const infoEl = document.getElementById('info');
+
+    function infoNow(key) {
+      const p = power || {};
+      if (key === 'gravity' && p.gravity) return `${fmtNum(p.gravity.days || 0)} training days → ${fmtNum(p.gravity.gravity || 0)}×, +${Math.round((Number(p.gravity.xp_bonus) || 0) * 1000) / 10}% XP`;
+      if (key === 'week' && p.week) { const m = Number(p.week.minutes) || 0; return `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')} this week · ${p.week.senzu ? 'Senzu earned' : 'Senzu at 6 h'}`; }
+      if (key === 'form' && p.form_state) return 'Now: ' + p.form_state;
+      return '';
+    }
+
+    function showInfo(key) {
+      const info = INFO[key];
+      if (!info) return false;
+      document.getElementById('infoTitle').textContent = info.title;
+      const now = infoNow(key), nowEl = document.getElementById('infoNow');
+      nowEl.textContent = now;
+      nowEl.hidden = !now;
+      document.getElementById('infoText').textContent = info.text;
+      infoEl.hidden = false;
+      return true;
+    }
+
+    infoEl.addEventListener('click', event => { event.stopPropagation(); infoEl.hidden = true; });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape' && !infoEl.hidden) { event.stopPropagation(); infoEl.hidden = true; } }, true);
+    const infoTarget = event => { const t = event.target.closest('[data-info]'); return !!t && showInfo(t.dataset.info); };
+
+    progressHudEl.addEventListener('click', event => { if (!infoTarget(event)) setFlipped(true); });
     progressHudEl.addEventListener('keydown', event => {
       if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setFlipped(true); }
     });
     backEl.addEventListener('click', event => {
+      if (infoTarget(event)) return;
       const tab = event.target.closest('.tab');
       if (tab) { selectTab(tab.id); return; }
       if (event.target.closest('#formBack')) { closeForm(); return; }
