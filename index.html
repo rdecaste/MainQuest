@@ -156,6 +156,19 @@
     .pill.dmg{background:rgba(255,92,92,.12);color:#ff8a8a}
     .day-xp{font-size:13px;font-weight:850;color:var(--accent-b);font-variant-numeric:tabular-nums;white-space:nowrap}
     .day-xp.pending{color:rgba(255,255,255,.35);font-weight:700;font-size:11px}
+    /* A tapped day opens what happened that day: every habit, heal and hit, oldest first. */
+    .day{cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .day[aria-expanded="true"]{background:rgba(255,255,255,.03)}
+    .day-more{grid-column:1/-1;list-style:none;margin:2px 0 0;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.25);font-size:12px;font-weight:700}
+    .day-more li{display:grid;grid-template-columns:42px 1fr auto;gap:8px;align-items:baseline;padding:4px 0}
+    .day-more li + li{border-top:1px solid rgba(255,255,255,.05)}
+    .ev-time{color:rgba(255,255,255,.4);font-variant-numeric:tabular-nums}
+    .ev-fx{white-space:nowrap;text-align:right;color:var(--accent-b)}
+    .ev-fx.heal{color:var(--scouter)}
+    .ev-fx.hurt{color:#ff8a8a}
+    .ev-fx.shield{color:var(--ki)}
+    .ev-fx.none{color:rgba(255,255,255,.4)}
+    .day-more .ev-empty{display:block;color:rgba(255,255,255,.45)}
     /* Goku's power (quest-engine src/power.js, 2 Oct 2026). Each drives one thing:
        gravity -> XP, moves -> attack, ki shield -> shield, the 6-hour week -> HP. */
     :root{--ki:#5ab8ff;--senzu:#9be7a0;--gravity:#ffcf8a}
@@ -683,7 +696,7 @@
     // hero.json is built at 04:00, so today's heals and hits come live from the boss card's
     // log (BOSS_URL above), summed per game day (04:00 Amsterdam rollover).
     const gameDay = ms => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(ms - 4 * 3600000));
-    let liveHeal = { day: '', hp: 0, damage: 0 };
+    let liveHeal = { day: '', hp: 0, damage: 0, events: [] };
 
     async function loadLiveHeal() {
       try {
@@ -694,7 +707,7 @@
         const today = (Array.isArray(boss.log) ? boss.log : []).filter(e => { const at = Date.parse(e && e.at); return !isNaN(at) && gameDay(at) === day; });
         const hp = today.reduce((sum, e) => sum + Math.max(0, Number(e.heal) || 0), 0);
         const damage = today.reduce((sum, e) => sum + (e.kind === 'hero' ? Math.max(0, Number(e.damage) || 0) : 0), 0);
-        liveHeal = { day: day, hp: hp, damage: damage };
+        liveHeal = { day: day, hp: hp, damage: damage, events: today };
       } catch (error) { /* the boss card is optional here */ }
     }
 
@@ -781,8 +794,49 @@
         const hurt = Math.max(Number(d.damaged) || 0, d.date === liveHeal.day ? liveHeal.damage : 0);
         if (hurt > 0) pills.push(`<span class="pill dmg" title="Damage taken from bad habits">💢 −${fmtNum(hurt)} HP</span>`);
         const xp = d.gain == null ? '<span class="day-xp pending">counts at 04:00</span>' : `<span class="day-xp">+${fmtNum(d.gain)} XP</span>`;
-        return `<li class="day"><span class="day-date">${esc(fmtDay(d.date, true))}</span><span class="day-what">${pills.join('')}</span>${xp}</li>`;
+        const open = openDays.has(d.date);
+        return `<li class="day" data-date="${esc(d.date)}" role="button" tabindex="0" aria-expanded="${open}"><span class="day-date">${esc(fmtDay(d.date, true))}</span><span class="day-what">${pills.join('')}</span>${xp}${open ? dayDetails(d) : ''}</li>`;
       }).join('');
+    }
+
+    // ---- Log day details (Roy, 3 Oct 2026): tap a day to see what happened ----
+    // hero.json carries each day's battle events (rebuilt every hour); today's
+    // also come live from the boss card's log, so a tap shows up right away.
+    const openDays = new Set();
+    const evTime = at => { const t = Date.parse(at); return isNaN(t) ? '' : new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Amsterdam', hour: '2-digit', minute: '2-digit' }).format(new Date(t)); };
+    function dayEvents(d) {
+      const byId = new Map();
+      for (const e of Array.isArray(d.events) ? d.events : []) byId.set(String(e.id || Math.random()), e);
+      if (d.date === liveHeal.day) for (const e of liveHeal.events) if (e && e.id && !byId.has(String(e.id))) byId.set(String(e.id), e);
+      return [...byId.values()].sort((a, b) => (Date.parse(a.at) || 0) - (Date.parse(b.at) || 0));
+    }
+    function eventFx(e) {
+      const dmg = Number(e.damage) || 0, heal = Number(e.heal) || 0, shield = Number(e.shield) || 0;
+      if (e.kind === 'hero') {
+        const fx = [];
+        if (dmg > 0) fx.push(`<span class="ev-fx hurt">💢 −${fmtNum(dmg)} HP</span>`);
+        if (shield > 0) fx.push(`<span class="ev-fx shield">🛡️ ${fmtNum(shield)} blocked</span>`);
+        return fx.join(' ') || '<span class="ev-fx none">no damage</span>';
+      }
+      if (e.wish) return '<span class="ev-fx">🐉 Wish</span>';
+      const fx = [];
+      if (dmg > 0) fx.push(`<span class="ev-fx">⚔️ ${fmtNum(dmg)}${e.crit ? ' crit' : ''}</span>`);
+      if (heal > 0) fx.push(`<span class="ev-fx heal">💚 +${fmtNum(heal)} HP</span>`);
+      // A heal habit after the day's heal cap is full gives nothing back.
+      return fx.join(' ') || '<span class="ev-fx none">+0 HP · heal cap full</span>';
+    }
+    function dayDetails(d) {
+      const list = dayEvents(d);
+      const rows = [];
+      if (Number(d.restored) > 0) rows.push(`<li><span class="ev-time">04:00</span><span>Overnight recovery</span><span class="ev-fx heal">💚 +${fmtNum(d.restored)} HP</span></li>`);
+      for (const e of list) rows.push(`<li><span class="ev-time">${esc(evTime(e.at))}</span><span>${esc(e.habit || 'Hit')}</span>${eventFx(e)}</li>`);
+      if (!rows.length) rows.push('<li><span class="ev-empty">Nothing logged this day.</span></li>');
+      return `<ul class="day-more">${rows.join('')}</ul>`;
+    }
+    function toggleDay(li) {
+      const date = li.dataset.date;
+      if (openDays.has(date)) openDays.delete(date); else openDays.add(date);
+      renderDays();
     }
 
     // ---- Lore: the current form's story on the Lore tab; any reached form's from its tile ----
@@ -1145,6 +1199,8 @@
       if (move) { toggleMoveClip(move); return; }
       const tile = event.target.closest('.form');
       if (tile) { if (tile.classList.contains('form-big')) toggleFormClip(tile); else openForm(tile.dataset.level); return; }
+      const day = event.target.closest('.day[data-date]');
+      if (day) { toggleDay(day); return; }
       if (event.target.closest('#hbHead, #hbHint')) setFlipped(false);
     });
     backEl.addEventListener('keydown', event => {
@@ -1152,6 +1208,8 @@
       if (move && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); toggleMoveClip(move); return; }
       const tile = event.target.closest('.form');
       if (tile && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); if (tile.classList.contains('form-big')) toggleFormClip(tile); else openForm(tile.dataset.level); }
+      const day = event.target.closest('.day[data-date]');
+      if (day && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); toggleDay(day); return; }
       if (event.key === 'Escape') setFlipped(false);
     });
     // Browsers pause muted video in a hidden tab; pick the front back up.
