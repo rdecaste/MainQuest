@@ -25,5 +25,8 @@ What the card shows:
   dashed line on the chart). Moves still to come have no tile, name or mark
   anywhere on the card; the Moves tab only says more are waiting. Don't
   mention them in chat either.
+- **Move tiles:** tap to play the clip. The tile's picture is the clip's first
+  frame, cropped the same way, so the clip starts without a jump (the move
+  image is 2:3, the clip 9:16 with its sides cut off).
 
 A push to `main` deploys it to Cloudflare (Workers Builds); by hand: `npx wrangler deploy`. Only the pages are published (`.assetsignore`). The old `rdecaste.github.io` address forwards here until GitHub Pages is switched off.

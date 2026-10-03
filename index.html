@@ -1025,6 +1025,10 @@
 
     const smallImage = url => String(url || '').replace('/image/upload/', '/image/upload/w_360,h_480,c_fill,g_north,f_auto/');
     const smallClip = url => String(url || '').replace(/\/video\/upload\/(ac_none,so_1\.0\/)?/, '/video/upload/ac_none,w_540,h_720,c_fill,g_north/');
+    // The tile's picture is the clip's first frame, cropped like the clip: the
+    // move image is 2:3 but the clip is 9:16 (its sides cut off), so the image
+    // looked zoomed in as soon as the clip started (Roy, 3 Oct 2026).
+    const clipStill = url => smallClip(url).replace('/ac_none,', '/so_0,').replace(/\.mp4$/, '.jpg');
     const MOVE_BADGE = { charged: 'Charged', used: 'Used this week', dormant: 'Dormant', awake: 'Awake' };
 
     function sparkPath(values) {
@@ -1148,7 +1152,8 @@
       powerKey = key;
       const tiles = moves.filter(m => m.state !== 'locked').map(m => {
         const making = !m.image_url && !m.video_url;
-        const bg = m.image_url ? ` style="background-image:url('${esc(smallImage(m.image_url))}')"` : '';
+        const pic = m.video_url ? clipStill(m.video_url) : m.image_url ? smallImage(m.image_url) : '';
+        const bg = pic ? ` style="background-image:url('${esc(pic)}')"` : '';
         const badge = making ? '<span class="move-badge making">Being drawn</span>' : MOVE_BADGE[m.state] ? `<span class="move-badge ${esc(m.state)}">${MOVE_BADGE[m.state]}</span>` : '';
         return `<div class="move ${esc(m.state)}" data-key="${esc(m.key)}" role="button" tabindex="0" aria-label="${esc(m.name)}"${bg}>${badge}<div class="move-cap"><div class="move-name">${esc(m.name)}</div><div class="move-meta">${esc(fmtNum(m.power))} · ×${esc(m.mult)} on a workout</div></div></div>`;
       }).join('');
