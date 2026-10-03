@@ -14,6 +14,9 @@ What the card shows:
   banner once. Nothing else goes on the front (Roy: keep the animation clear).
 - **Back:** Scouter (a reading, the power level with the long-term and
   short-term load chart, gravity, this week, records), Moves, Forms, Log, Lore.
+- **Log:** the last 14 days, one row each (Success, workouts, HP, XP). Tap a
+  day to see what happened: every habit, heal and hit with its time and
+  effect (`events` per day in `GET /hero`; today's taps come live from `GET /boss`).
 - **Moves are a surprise:** only unlocked moves show (tile, name, mark, the
   dashed line on the chart). Moves still to come have no tile, name or mark
   anywhere on the card; the Moves tab only says more are waiting. Don't
