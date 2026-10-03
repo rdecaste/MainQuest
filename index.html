@@ -816,7 +816,8 @@
         const fx = [];
         if (dmg > 0) fx.push(`<span class="ev-fx hurt">💢 −${fmtNum(dmg)} HP</span>`);
         if (shield > 0) fx.push(`<span class="ev-fx shield">🛡️ ${fmtNum(shield)} blocked</span>`);
-        return fx.join(' ') || '<span class="ev-fx none">no damage</span>';
+        // A bad habit that did no damage was taken by the ki shield.
+        return fx.join(' ') || '<span class="ev-fx shield">🛡️ blocked</span>';
       }
       if (e.wish) return '<span class="ev-fx">🐉 Wish</span>';
       const fx = [];
