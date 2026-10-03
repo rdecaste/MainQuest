@@ -227,7 +227,7 @@
     .move{position:relative;overflow:hidden;aspect-ratio:3/4;border-radius:13px;border:1px solid rgba(255,255,255,.09);background:#0b0f17 center/cover no-repeat;cursor:pointer}
     .move video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s linear}
     .move video.ready{opacity:1}
-    .move.dormant{filter:grayscale(.85) brightness(.55)}
+    .move.dormant{filter:grayscale(.85) brightness(.55);cursor:default}
     .move-cap{position:absolute;left:0;right:0;bottom:0;padding:20px 9px 8px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.88))}
     .move-name{font-size:13px;font-weight:850;line-height:1.15}
     .move-meta{margin-top:2px;font-size:10px;font-weight:700;color:var(--muted)}
@@ -1160,14 +1160,15 @@
       const waiting = moves.some(m => m.state === 'locked');
       el.innerHTML = (tiles ? `<div class="moves">${tiles}</div>` : '<div class="empty">No signature move yet. Train, and one will come.</div>') +
         (waiting ? '<div class="power-note">More moves are waiting. Keep training.</div>' : '') +
-        `<div class="power-note">The strongest awake move charges every Monday and fires by itself on your next Strava workout. If your power drops below a move's mark it sleeps until you train back up. Tap a move to play it.</div>`;
+        `<div class="power-note">The strongest awake move charges every Monday and fires by itself on your next Strava workout. If your power drops below a move's mark it sleeps until you train back up. Tap an awake move to play it; a dormant one stays still.</div>`;
     }
 
     function toggleMoveClip(tile) {
       const m = (power && Array.isArray(power.moves) ? power.moves : []).find(x => x.key === tile.dataset.key);
       const playing = tile.querySelector('video');
       document.querySelectorAll('.move video').forEach(v => v.remove());
-      if (playing || !m || !m.video_url) return;
+      // A dormant move stays a still, greyed-out picture (Roy, 3 Oct 2026).
+      if (playing || !m || !m.video_url || m.state === 'dormant') return;
       const video = document.createElement('video');
       Object.assign(video, { src: smallClip(m.video_url), muted: true, loop: true, playsInline: true, autoplay: true });
       video.setAttribute('playsinline', '');

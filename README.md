@@ -25,7 +25,8 @@ What the card shows:
   dashed line on the chart). Moves still to come have no tile, name or mark
   anywhere on the card; the Moves tab only says more are waiting. Don't
   mention them in chat either.
-- **Move tiles:** tap to play the clip. The tile's picture is the clip's first
+- **Move tiles:** tap to play the clip. A dormant move doesn't play: it stays
+  a still, greyed-out picture. The tile's picture is the clip's first
   frame, cropped the same way, so the clip starts without a jump (the move
   image is 2:3, the clip 9:16 with its sides cut off).
 
