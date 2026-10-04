@@ -13,12 +13,18 @@ What the card shows:
   XP. During a 6-hour week the card glows Senzu green and shows the Senzu
   banner once. Nothing else goes on the front (Roy: keep the animation clear).
 - **Back:** Scouter (a reading, the power level with the long-term and
-  short-term load chart, gravity, this week, records), Moves, Forms, Log, Lore.
+  short-term load chart, gravity, this week, the Ki box, records), Moves,
+  Forms, Log, Lore.
+- **🔥 Ki box** (Scouter tab, since 4 Oct 2026): the ki charge from
+  `power.ki` in `GET /mainquest` (quest-engine `src/ki.js`). The charge now as
+  5 bars with today's healing cap, and the last 28 days as a graph: one bar
+  per day at its charge (peak glows, an empty charge is blue) and a blue ball
+  per Fap tap. Drag on the graph to read a day; tap the header for the rules.
 - **Log:** the last 14 days, one row each (Success, workouts, HP, XP). Tap a
   day to see what happened: every habit, heal and hit with its time and
   effect (`events` per day in `GET /hero`; today's taps come live from `GET /boss`).
 - **Tap a metric for its meaning:** Level, HP and XP on the front, and the
-  power level, loads, form, gravity, this week and records on the Scouter tab
+  power level, loads, form, gravity, this week, the ki charge and records on the Scouter tab
   open a short explanation (`INFO` in `index.html`). The rest of the front
   still flips the card.
 - **Moves are a surprise:** only unlocked moves show (tile, name, mark, the
