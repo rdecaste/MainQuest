@@ -16,7 +16,10 @@ What the card shows:
   short-term load chart, gravity, this week, the Ki box, records), Moves,
   Forms, Log, Lore.
 - **📡 Transmissions** (Scouter tab, since 8 Oct 2026): the reading on top is
-  often a message from Goku, Vegeta and friends about today's data (recovery,
+  often a message from Goku's allies about today's data. The cast follows the
+  story: each character speaks only once Goku's level reaches the part of the
+  story they join (`from` in `CAST`), with "First contact" the first time
+  (recovery,
   form, load ratio, ki, this week, days off, bad habits, the hour). Gold =
   rare, purple = the scouter overloads (very rare). Tap the reading to rescan;
   three rescans in a minute and it overheats for 45 s. A first catch shows NEW;
