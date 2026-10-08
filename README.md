@@ -15,6 +15,13 @@ What the card shows:
 - **Back:** Scouter (a reading, the power level with the long-term and
   short-term load chart, gravity, this week, the Ki box, records), Moves,
   Forms, Log, Lore.
+- **📡 Transmissions** (Scouter tab, since 8 Oct 2026): the reading on top is
+  often a message from Goku, Vegeta and friends about today's data (recovery,
+  form, load ratio, ki, this week, days off, bad habits, the hour). Gold =
+  rare, purple = the scouter overloads (very rare). Tap the reading to rescan;
+  three rescans in a minute and it overheats for 45 s. A first catch shows NEW;
+  caught lines are counted in the browser. Only allies talk, and never about a
+  form, move or boss still to come (`transmissions()` in `index.html`).
 - **Load chart rows** (Scouter tab, since 5 Oct 2026): under the form strip,
   the load ratio (short ÷ long, `power.load.ratio`, with the optimal band
   0.8–1.3 in green and 1.5+ in red) and a recovery strip, one block per morning

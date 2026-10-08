@@ -120,6 +120,24 @@
     .scouter.rare{border-color:rgba(255,214,92,.55);background:radial-gradient(120% 90% at 85% 10%,rgba(255,214,92,.25),transparent 55%),rgba(40,28,6,.6);box-shadow:inset 0 0 28px rgba(255,214,92,.15),0 0 22px rgba(255,214,92,.18)}
     .scouter.rare .label{color:rgba(255,214,92,.8)}
     .scouter.rare .reading{color:var(--gold);text-shadow:0 0 12px rgba(255,214,92,.45)}
+    /* 📡 Transmissions: who's talking, NEW for a first catch, purple overload, red overheat. */
+    #scouterLabel{display:flex;justify-content:space-between;gap:8px;align-items:baseline;cursor:pointer}
+    .tx-who{font-weight:900;text-shadow:none}
+    .tx-new{display:inline-block;margin-left:4px;padding:1px 6px;border-radius:999px;background:var(--gold);color:#241a00;font-size:9px;font-weight:900;letter-spacing:.08em;vertical-align:1px}
+    .tx-count{flex:0 0 auto;font-size:9px;opacity:.6;letter-spacing:.04em;text-transform:none}
+    .reading{cursor:pointer}
+    .scouter.legend{border-color:rgba(201,182,255,.6);background:radial-gradient(120% 90% at 85% 10%,rgba(201,182,255,.28),transparent 55%),rgba(24,12,40,.7);box-shadow:inset 0 0 28px rgba(201,182,255,.18),0 0 26px rgba(201,182,255,.25)}
+    .scouter.legend .label{color:rgba(221,206,255,.85)}
+    .scouter.legend .reading{color:#e6dcff;text-shadow:0 0 12px rgba(201,182,255,.6)}
+    .scouter.hot{border-color:rgba(255,120,90,.6);background:radial-gradient(120% 90% at 85% 10%,rgba(255,120,90,.25),transparent 55%),rgba(40,12,6,.6)}
+    .scouter.hot .label{color:rgba(255,160,130,.85)}
+    .scouter.hot .reading{color:#ffb09a;text-shadow:0 0 10px rgba(255,120,90,.45)}
+    .scouter.boom{animation:sc-boom .7s ease-out}
+    .scouter.boom::after{content:"";position:absolute;inset:0;background:#fff;pointer-events:none;animation:sc-flash .7s ease-out forwards}
+    @keyframes sc-boom{0%,100%{transform:none}15%{transform:translate(-4px,2px) rotate(-1deg)}30%{transform:translate(4px,-2px) rotate(1deg)}45%{transform:translate(-3px,-1px)}60%{transform:translate(3px,1px)}75%{transform:translate(-1px,1px)}}
+    @keyframes sc-flash{0%{opacity:.85}100%{opacity:0}}
+    .reading.shake{animation:sc-shake .35s}
+    @keyframes sc-shake{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
     .records{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
     .record{padding:11px 12px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07)}
     .record-num{font-size:20px;font-weight:850;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
@@ -937,6 +955,201 @@
       document.getElementById('forms').hidden = false;
     }
 
+    // ---- 📡 Transmissions (Roy, 8 Oct 2026): Goku, Vegeta and friends react to today's data ----
+    // Each flip picks a scouter reading or a message from a character, mostly
+    // about what the data says right now (recovery, form, load ratio, ki, this
+    // week, days off, bad habits, the hour). Gold = rare, purple = the scouter
+    // overloads (very rare). Tap the reading to rescan; poke it too often and it
+    // overheats. Only allies talk, never a form, move or boss still to come.
+    const CAST = {
+      goku: { name: 'Goku', color: '#ffb347' },
+      vegeta: { name: 'Vegeta', color: '#7fb2ff' },
+      piccolo: { name: 'Piccolo', color: '#8fe38f' },
+      krillin: { name: 'Krillin', color: '#ffd0a8' },
+      bulma: { name: 'Bulma', color: '#66e0d9' },
+      roshi: { name: 'Master Roshi', color: '#ff9ec7' },
+      kingkai: { name: 'King Kai', color: '#9fd0ff' },
+      whis: { name: 'Whis', color: '#c9b6ff' },
+      beerus: { name: 'Beerus', color: '#d59cff' }
+    };
+    const CAUGHT_KEY = 'mainQuest.transmissions.v1';
+    const LEGEND_CHANCE = 0.03, TALK_CHANCE = 0.7;
+    const hourNow = () => Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Amsterdam', hour: '2-digit', hourCycle: 'h23' }).format(new Date()));
+    const weekdayNow = () => new Date(Date.parse(todayKey() + 'T12:00:00Z')).getUTCDay();
+    const hm = m => Math.floor(m / 60) + ' h' + (m % 60 ? ' ' + String(m % 60).padStart(2, '0') : '');
+
+    function transmissions() {
+      const talk = [], filler = [], rare = [], legend = [];
+      const say = (list, who, ...lines) => lines.forEach(text => list.push({ who: who, text: text }));
+      const p = power || {};
+      const load = p.load && Array.isArray(p.load.long) ? p.load : null;
+      const last = a => (Array.isArray(a) && a.length ? a[a.length - 1] : null);
+      const rec = load ? last(load.recovery) : null;
+      const ratio = load ? last(load.ratio) : null;
+      const bands = (load && load.ratio_bands) || { low: 0.8, optimal: 1.3, high: 1.5 };
+      const form = p.form_state || (load ? last(load.form) : null);
+      const ki = p.ki && Array.isArray(p.ki.days) && p.ki.days.length ? p.ki : null;
+      const week = p.week || {};
+      const cal = p.gravity && Array.isArray(p.gravity.calendar) ? p.gravity.calendar : [];
+      const hour = hourNow(), wd = weekdayNow();
+      const r = (hero && hero.records) || {};
+
+      // Recovery this morning.
+      if (rec === 'easy') {
+        say(talk, 'piccolo', 'Your body says rest. Sit down and meditate. Or at least sit down.');
+        say(talk, 'goku', 'Take it easy today! I once trained at 100× gravity and nearly blew myself up. Don’t be me.');
+        say(talk, 'vegeta', 'Rest, then. Even the Prince of all Saiyans sleeps. Briefly. Angrily.');
+        say(talk, 'bulma', '“Take it easy” is not a suggestion. It’s a diagnosis.');
+      } else if (rec === 'steady') {
+        say(talk, 'krillin', 'Go steady today. Trust me, I’ve died enough times to know when to pace myself.');
+        say(talk, 'goku', 'Go steady! A light session, then food. Mostly the food.');
+        say(talk, 'piccolo', 'Steady. Not soft. There’s a difference.');
+      } else if (rec === 'good') {
+        say(talk, 'goku', 'You’re good to go! Wanna spar? Come on, just a little!');
+        say(talk, 'vegeta', 'Fully recovered and you’re reading a scouter? Kakarot is already outside.');
+        say(talk, 'roshi', 'Good to go! In my day we trained with turtle shells on our backs. Get moving.');
+        say(talk, 'krillin', 'Recovery’s green. I checked twice. No excuses today, man.');
+      }
+
+      // Form, from the load chart.
+      if (form === 'Rusty') {
+        say(talk, 'vegeta', 'Rusty? A Saiyan who doesn’t train is just a guy with great hair.');
+        say(talk, 'goku', 'Hey, you’ve gone quiet! Wanna go for a run? I’ll race you!');
+        say(talk, 'piccolo', 'Your load is dropping. The gains are leaving. They didn’t say goodbye.');
+        say(talk, 'kingkai', 'Rusty! Heh. Rusty. Like my jokes. Get it? …Now go train.');
+      } else if (form === 'Steady') {
+        say(talk, 'piccolo', 'Steady. Comfortable. Comfortable is where power goes to nap.');
+        say(talk, 'goku', 'Steady is nice! But a harder week would be even nicer.');
+        say(talk, 'vegeta', 'Steady. How thrilling. Wake me when you actually push.');
+      } else if (form === 'Building') {
+        say(talk, 'goku', 'Ooh, you’re building! I can feel your power going up from here!');
+        say(talk, 'vegeta', 'Hmph. You’re actually working. Don’t let it go to your head.');
+        say(talk, 'krillin', 'Building block? Man, you’re starting to scare me a little.');
+        say(talk, 'piccolo', 'Tired legs are the price. Pay it.');
+      } else if (form === 'Overreaching') {
+        say(talk, 'bulma', 'Overreaching! Even my machines get a day off, and they’re machines.');
+        say(talk, 'krillin', 'Dude, slow down. You’ll end up in a healing tank like Vegeta.');
+        say(talk, 'vegeta', 'I did NOT end up in… fine. Rest a day. Then come back stronger.');
+        say(talk, 'roshi', 'Overreaching! Ho ho, the young never listen. Eat, sleep, then train.');
+        say(talk, 'goku', 'Whoa, that’s too much even for me! Rest so your power can catch up.');
+      }
+
+      // Load ratio today.
+      if (ratio !== null && ratio !== undefined) {
+        const rv = Number(ratio).toFixed(2);
+        if (ratio > bands.high) {
+          say(talk, 'bulma', `Load ratio ${rv}. That’s not training, that’s a stress test.`);
+          say(talk, 'piccolo', `Ratio ${rv}. You’re spending power faster than you build it.`);
+        } else if (ratio < bands.low) {
+          say(talk, 'vegeta', `Ratio ${rv}. My grandmother trains harder. Saiyans don’t even have grandmothers.`);
+          say(talk, 'kingkai', `Ratio ${rv}. Even Bubbles works harder than this, and he’s a monkey.`);
+        } else if (ratio <= bands.optimal) {
+          say(talk, 'goku', `Ratio ${rv}. Right in the sweet spot! Keep that up!`);
+          say(talk, 'piccolo', `Ratio ${rv}. Optimal. Don’t celebrate. Keep it there.`);
+        }
+      }
+
+      // 🔥 Ki charge.
+      if (ki) {
+        const now = Number(ki.level) || 0, peak = Number(ki.peak) || 5, tapped = Number((last(ki.days) || {}).faps) || 0;
+        if (now === 0 && tapped) {
+          say(talk, 'roshi', 'Ki empty? Ho ho… I know that look. I’ve worn that look.');
+          say(talk, 'vegeta', 'You spent your ki on THAT? Pathetic.');
+          say(talk, 'bulma', 'Your ki is empty, and honestly so is my patience.');
+        } else if (now === 0) {
+          say(talk, 'goku', 'Ki’s empty, but it fills back up. One clean day at a time!');
+        } else if (now >= peak) {
+          say(talk, 'goku', 'Whoa, your ki is at full power! I can feel it from here!');
+          say(talk, 'vegeta', 'Full ki. Finally, someone worth my time.');
+          say(talk, 'roshi', 'Full charge! Discipline. I respect it. I don’t have it, but I respect it.');
+        } else {
+          say(talk, 'piccolo', `Ki at ${now} of ${peak}. Keep your focus. And your hands to yourself.`);
+          say(talk, 'krillin', `Ki at ${now} of ${peak}. I’m not asking how. I’m just proud.`);
+        }
+      }
+
+      // This week and the Senzu bean.
+      const mins = Number(week.minutes) || 0;
+      if (week.senzu) {
+        say(talk, 'krillin', 'A Senzu bean! Can I have half? I’ll owe you.');
+        say(talk, 'goku', 'You earned a Senzu! I’d eat it right away. Then ask for another.');
+      } else if (mins >= 240 && (wd >= 5 || wd === 0)) {
+        say(talk, 'goku', `Only ${hm(360 - mins)} to the Senzu bean! Come on, come on!`);
+      } else if (wd === 0 && mins < 180) {
+        say(talk, 'vegeta', `${hm(mins)} this week. And it’s Sunday. Disgraceful.`);
+      } else if (wd === 1 && mins < 60) {
+        say(talk, 'goku', 'New week! Clean slate! Let’s gooo!');
+      }
+
+      // Days since the last workout (the gravity calendar, today last).
+      if (cal.length) {
+        let off = 0;
+        for (let i = cal.length - 1; i >= 0 && !cal[i]; i--) off++;
+        if (off === 0) {
+          say(talk, 'goku', 'You trained today! Now for the best part: eating.');
+          say(talk, 'vegeta', 'One workout. Don’t expect applause.');
+          say(talk, 'piccolo', 'Good session. Now recover. Properly.');
+        } else if (off >= 3 && off < cal.length) {
+          say(talk, 'vegeta', `${off} days without training. Kakarot trains in his sleep. Literally.`);
+          say(talk, 'krillin', `${off} days off? Should I send a search party?`);
+          say(talk, 'goku', `${off} days! I’m getting bored over here. Train with me!`);
+        }
+      }
+
+      // Today's habits, live from the boss card.
+      if (liveHeal.day === gameDay(Date.now())) {
+        if (liveHeal.damage > 0) {
+          say(talk, 'vegeta', `You took ${fmtNum(liveHeal.damage)} damage today from your OWN habits. You’re fighting yourself and losing.`);
+          say(talk, 'piccolo', `${fmtNum(liveHeal.damage)} HP lost today. Nobody hit you. Think about that.`);
+        }
+        if (liveHeal.hp > 0) say(talk, 'goku', `+${fmtNum(liveHeal.hp)} HP from good habits today. That’s like a mini Senzu!`);
+      }
+
+      // Power level and its trend.
+      const pl = Number(p.power_level) || 0, ch = Number(p.trend_change_pct);
+      if (pl > 9000) rare.push({ who: 'vegeta', text: `WHAT?! ${fmtNum(pl)}?! There’s no way that can be right!` });
+      if (ch > 0) {
+        say(talk, 'goku', `Your power’s up ${ch}% in twelve weeks! That’s awesome!`);
+        say(talk, 'vegeta', `Up ${ch}%. I noticed. I’m not impressed. …Slightly impressed.`);
+      } else if (ch < 0) {
+        say(talk, 'piccolo', `Power down ${Math.abs(ch)}% in twelve weeks. The fix is boring: show up.`);
+        say(talk, 'vegeta', `Down ${Math.abs(ch)}%. Did you think the power would maintain itself?`);
+      }
+      if (r.current_run >= 3) {
+        say(talk, 'goku', `${r.current_run} success days in a row! Don’t stop now!`);
+        say(talk, 'vegeta', `${r.current_run} days in a row. Ninety-nine more and we’ll talk.`);
+      }
+
+      // The hour.
+      if (hour >= 23 || hour < 4) {
+        say(talk, 'bulma', 'It’s the middle of the night. Sleep is recovery. Close the scouter.');
+        say(talk, 'goku', 'Can’t sleep either? I’m hungry. Is that why?');
+        say(talk, 'piccolo', 'Go to bed. I don’t even sleep and I think you should.');
+      } else if (hour >= 5 && hour < 8) {
+        say(talk, 'goku', 'Morning! Breakfast first, then training. Or both at once!');
+        say(talk, 'vegeta', 'Up early. …Acceptable.');
+      }
+
+      // Always on air.
+      say(filler, 'krillin', 'Hey, have you seen my scouter? …Oh. You’re wearing it.');
+      say(filler, 'goku', 'Is it lunch yet?');
+      say(filler, 'vegeta', 'Stop staring at the scouter. Be the number.');
+      say(filler, 'bulma', 'Please stop tapping the scouter. It’s a precision instrument.');
+      say(filler, 'kingkai', 'Why did the Saiyan cross the road? To train on the other side! …Tough crowd.');
+      say(filler, 'roshi', 'Lesson one: work hard. Lesson two: nap hard.');
+      say(filler, 'piccolo', 'I’m not here. I’m meditating. Go away.');
+      say(filler, 'goku', 'Hey, it’s me, Goku! …Okay, that’s all I had.');
+
+      say(rare, 'vegeta', 'Fine. I’ll say it once. You’re… not completely useless.');
+      say(rare, 'goku', 'You know what? You remind me of me. That’s a compliment!');
+      say(rare, 'kingkai', 'I just laughed at my own joke for ten minutes. You missed it. Train harder to make up for it.');
+
+      say(legend, 'whis', 'Oh my. Your scouter exploded. Do try to be less dramatic, it’s terribly messy.');
+      say(legend, 'beerus', 'You woke me for THIS reading? …Hm. Not bad. Now let me sleep.');
+      say(legend, 'vegeta', 'The scouter broke?! Bulma! BULMA! …Don’t tell Kakarot.');
+      return { talk: talk, filler: filler, rare: rare, legend: legend };
+    }
+
     // One reading per flip, never one of the last few. Now and then a rare one.
     function readings() {
       const r = (hero && hero.records) || {};
@@ -977,23 +1190,44 @@
     }
 
     function nextReading() {
-      const pool = readings();
-      if (!pool.common.length) return { text: 'Scouter calibrating… come back after tonight’s run.', rare: false };
+      const pool = readings(), tx = transmissions();
       let history = [];
       try { history = JSON.parse(localStorage.getItem(READING_HISTORY_KEY) || '[]'); } catch (_) {}
       if (!Array.isArray(history)) history = [];
-      const isRare = Math.random() < RARE_CHANCE;
-      const list = isRare ? pool.rare : pool.common;
-      const fresh = list.filter(t => !history.includes(t));
-      const text = pick(fresh.length ? fresh : list);
-      try { localStorage.setItem(READING_HISTORY_KEY, JSON.stringify([...history, text].slice(-6))); } catch (_) {}
-      return { text: text, rare: isRare };
+      const roll = Math.random();
+      let tier = 'common', list;
+      if (roll < LEGEND_CHANCE) { tier = 'legend'; list = tx.legend; }
+      else if (roll < LEGEND_CHANCE + RARE_CHANCE) { tier = 'rare'; list = pool.rare.map(text => ({ text: text })).concat(tx.rare); }
+      else if (Math.random() < TALK_CHANCE || !pool.common.length) list = tx.talk.length && Math.random() < 0.8 ? tx.talk : tx.filler;
+      else list = pool.common.map(text => ({ text: text }));
+      const fresh = list.filter(t => !history.includes(t.text));
+      const reading = Object.assign({ tier: tier }, pick(fresh.length ? fresh : list));
+      try { localStorage.setItem(READING_HISTORY_KEY, JSON.stringify([...history, reading.text].slice(-8))); } catch (_) {}
+      // Every message caught is remembered; a new one gets a NEW chip.
+      if (reading.who) {
+        const id = reading.who + '|' + reading.text.replace(/[\d.,%+×−-]+/g, '#');
+        let caught = [];
+        try { caught = JSON.parse(localStorage.getItem(CAUGHT_KEY) || '[]'); } catch (_) {}
+        if (!Array.isArray(caught)) caught = [];
+        reading.isNew = !caught.includes(id);
+        if (reading.isNew) { caught.push(id); try { localStorage.setItem(CAUGHT_KEY, JSON.stringify(caught)); } catch (_) {} }
+        reading.caught = caught.length;
+      }
+      return reading;
     }
 
-    function showReading() {
-      const reading = nextReading();
-      scouterEl.classList.toggle('rare', reading.rare);
-      document.getElementById('scouterLabel').textContent = reading.rare ? '⚡ Rare reading' : 'Scouter reading';
+    function showReading(reading) {
+      reading = reading || nextReading();
+      const label = document.getElementById('scouterLabel');
+      const who = reading.who && CAST[reading.who];
+      scouterEl.classList.toggle('rare', reading.tier === 'rare');
+      scouterEl.classList.toggle('legend', reading.tier === 'legend');
+      scouterEl.classList.toggle('hot', !!reading.hot);
+      scouterEl.classList.remove('boom');
+      if (reading.tier === 'legend' && !reduceMotion) { void scouterEl.offsetWidth; scouterEl.classList.add('boom'); }
+      const title = reading.hot ? '🔥 Scouter overheating' : reading.tier === 'legend' ? '💥 Scouter overload' : reading.tier === 'rare' ? '⚡ Rare reading' : who ? '📡 Incoming' : 'Scouter reading';
+      label.innerHTML = `<span>${esc(title)}${who ? ` · <b class="tx-who" style="color:${who.color}">${esc(who.name)}</b>` : ''}${reading.isNew ? ' <span class="tx-new">New</span>' : ''}</span>` +
+        `<span class="tx-count">${reading.hot ? 'cooling down' : (reading.caught ? esc(reading.caught) + ' caught · ' : '') + 'tap to rescan'}</span>`;
       clearInterval(typeTimer);
       if (reduceMotion) { readingEl.textContent = reading.text; return; }
       // Typed out like a scouter readout.
@@ -1005,6 +1239,27 @@
         readingEl.textContent = reading.text.slice(0, i);
         if (i >= reading.text.length) { clearInterval(typeTimer); readingEl.classList.remove('typing'); }
       }, 28);
+    }
+
+    // Tap the reading to rescan. Three quick rescans and it overheats for a bit.
+    const HOT_LINES = [
+      { who: 'bulma', text: 'Stop poking it! It’s overheating. Give it a minute.' },
+      { who: 'vegeta', text: 'You broke ANOTHER scouter? Wait. Like a warrior.' },
+      { who: 'krillin', text: 'Uh, it’s smoking. Is it supposed to smoke? Let it cool down.' },
+      { who: 'roshi', text: 'Patience, young one. The scouter needs a nap. So do I.' }
+    ];
+    let scans = [], hotUntil = 0;
+    function rescan() {
+      const now = Date.now();
+      if (now < hotUntil) { readingEl.classList.remove('shake'); void readingEl.offsetWidth; readingEl.classList.add('shake'); return; }
+      scans = scans.filter(t => now - t < 60000).concat(now);
+      if (scans.length > 3) {
+        scans = [];
+        hotUntil = now + 45000;
+        showReading(Object.assign({ tier: 'common', hot: true }, pick(HOT_LINES)));
+        return;
+      }
+      showReading();
     }
 
     // ---- Goku's power (quest-engine src/power.js, 2 Oct 2026) ----
@@ -1398,6 +1653,7 @@
       if (tile) { if (tile.classList.contains('form-big')) toggleFormClip(tile); else openForm(tile.dataset.level); return; }
       const day = event.target.closest('.day[data-date]');
       if (day) { toggleDay(day); return; }
+      if (event.target.closest('#reading, #scouterLabel')) { rescan(); return; }
       if (event.target.closest('#hbHead, #hbHint')) setFlipped(false);
     });
     backEl.addEventListener('keydown', event => {
