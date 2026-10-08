@@ -955,32 +955,58 @@
       document.getElementById('forms').hidden = false;
     }
 
-    // ---- 📡 Transmissions (Roy, 8 Oct 2026): Goku, Vegeta and friends react to today's data ----
-    // Each flip picks a scouter reading or a message from a character, mostly
-    // about what the data says right now (recovery, form, load ratio, ki, this
-    // week, days off, bad habits, the hour). Gold = rare, purple = the scouter
+    // ---- 📡 Transmissions (Roy, 8 Oct 2026): Goku's allies react to today's data ----
+    // Each flip picks a scouter reading or a message from someone on the good
+    // side, mostly about what the data says right now (recovery, form, load
+    // ratio, ki, this week, days off, bad habits, the hour). The cast follows
+    // the story: a character only speaks once Goku's level has reached the part
+    // of the story they join (`from`), so new voices turn up as he levels, with
+    // "First contact" the first time. Gold = rare, purple = the scouter
     // overloads (very rare). Tap the reading to rescan; poke it too often and it
-    // overheats. Only allies talk, never a form, move or boss still to come.
+    // overheats. Nobody names a form, move or boss still to come, and no
+    // character who is also a boss on the roster speaks.
     const CAST = {
-      goku: { name: 'Goku', color: '#ffb347' },
-      vegeta: { name: 'Vegeta', color: '#7fb2ff' },
-      piccolo: { name: 'Piccolo', color: '#8fe38f' },
-      krillin: { name: 'Krillin', color: '#ffd0a8' },
-      bulma: { name: 'Bulma', color: '#66e0d9' },
-      roshi: { name: 'Master Roshi', color: '#ff9ec7' },
-      kingkai: { name: 'King Kai', color: '#9fd0ff' },
-      whis: { name: 'Whis', color: '#c9b6ff' },
-      beerus: { name: 'Beerus', color: '#d59cff' }
+      goku: { name: 'Goku', color: '#ffb347', from: 1 },
+      krillin: { name: 'Krillin', color: '#ffd0a8', from: 1 },
+      roshi: { name: 'Master Roshi', color: '#ff9ec7', from: 1 },
+      bulma: { name: 'Bulma', color: '#66e0d9', from: 1 },
+      chichi: { name: 'Chi-Chi', color: '#ff8c8c', from: 1 },
+      yamcha: { name: 'Yamcha', color: '#ffbf80', from: 1 },
+      oolong: { name: 'Oolong', color: '#f5a6c8', from: 1 },
+      gohan: { name: 'Gohan', color: '#b48cff', from: 1 },
+      korin: { name: 'Korin', color: '#e6d3a3', from: 1 },
+      piccolo: { name: 'Piccolo', color: '#8fe38f', from: 2 },
+      kingkai: { name: 'King Kai', color: '#9fd0ff', from: 2 },
+      tien: { name: 'Tien', color: '#d9c7ff', from: 2 },
+      chiaotzu: { name: 'Chiaotzu', color: '#ffe0f0', from: 2 },
+      yajirobe: { name: 'Yajirobe', color: '#d8b48a', from: 2 },
+      popo: { name: 'Mr. Popo', color: '#b8c4ff', from: 2 },
+      vegeta: { name: 'Vegeta', color: '#7fb2ff', from: 3 },
+      dende: { name: 'Dende', color: '#a6f0a6', from: 3 },
+      trunks: { name: 'Trunks', color: '#c5a3ff', from: 4 },
+      eighteen: { name: 'Android 18', color: '#ffe48a', from: 5 },
+      hercule: { name: 'Mr. Satan', color: '#ffa07a', from: 5 },
+      videl: { name: 'Videl', color: '#9ec9ff', from: 5 },
+      goten: { name: 'Goten', color: '#ffc46b', from: 5 },
+      supremekai: { name: 'Supreme Kai', color: '#d6a8ff', from: 6 },
+      oldkai: { name: 'Old Kai', color: '#e0c3ff', from: 6 },
+      buu: { name: 'Mr. Buu', color: '#ffb3d9', from: 6 },
+      whis: { name: 'Whis', color: '#c9b6ff', from: 7 },
+      vados: { name: 'Vados', color: '#b9a6ff', from: 8 },
+      seventeen: { name: 'Android 17', color: '#9fe0ff', from: 9 }
     };
     const CAUGHT_KEY = 'mainQuest.transmissions.v1';
+    const VOICES_KEY = 'mainQuest.voices.v1';
     const LEGEND_CHANCE = 0.03, TALK_CHANCE = 0.7;
     const hourNow = () => Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Amsterdam', hour: '2-digit', hourCycle: 'h23' }).format(new Date()));
     const weekdayNow = () => new Date(Date.parse(todayKey() + 'T12:00:00Z')).getUTCDay();
     const hm = m => Math.floor(m / 60) + ' h' + (m % 60 ? ' ' + String(m % 60).padStart(2, '0') : '');
+    const gokuLevel = () => Math.trunc(Number(hero && hero.level) || Number(levelEl.textContent) || 1);
 
     function transmissions() {
       const talk = [], filler = [], rare = [], legend = [];
-      const say = (list, who, ...lines) => lines.forEach(text => list.push({ who: who, text: text }));
+      const lvl = gokuLevel();
+      const say = (list, who, ...lines) => { if (CAST[who] && CAST[who].from <= lvl) lines.forEach(text => list.push({ who: who, text: text })); };
       const p = power || {};
       const load = p.load && Array.isArray(p.load.long) ? p.load : null;
       const last = a => (Array.isArray(a) && a.length ? a[a.length - 1] : null);
@@ -1000,15 +1026,24 @@
         say(talk, 'goku', 'Take it easy today! I once trained at 100× gravity and nearly blew myself up. Don’t be me.');
         say(talk, 'vegeta', 'Rest, then. Even the Prince of all Saiyans sleeps. Briefly. Angrily.');
         say(talk, 'bulma', '“Take it easy” is not a suggestion. It’s a diagnosis.');
+        say(talk, 'chichi', 'You are resting today, and you are eating a proper meal. No arguments!');
+        say(talk, 'korin', 'No Senzu for tired legs. Sleep is the bean. Go.');
+        say(talk, 'dende', 'I could heal you, but honestly? Just sleep.');
+        say(talk, 'buu', 'Buu takes nap today. You take nap too. Is rule.');
       } else if (rec === 'steady') {
         say(talk, 'krillin', 'Go steady today. Trust me, I’ve died enough times to know when to pace myself.');
         say(talk, 'goku', 'Go steady! A light session, then food. Mostly the food.');
         say(talk, 'piccolo', 'Steady. Not soft. There’s a difference.');
+        say(talk, 'tien', 'Steady. Clear mind, easy breath. Leave the ego at home.');
+        say(talk, 'eighteen', 'Go steady. Nobody’s impressed by an injury.');
       } else if (rec === 'good') {
         say(talk, 'goku', 'You’re good to go! Wanna spar? Come on, just a little!');
         say(talk, 'vegeta', 'Fully recovered and you’re reading a scouter? Kakarot is already outside.');
         say(talk, 'roshi', 'Good to go! In my day we trained with turtle shells on our backs. Get moving.');
         say(talk, 'krillin', 'Recovery’s green. I checked twice. No excuses today, man.');
+        say(talk, 'goten', 'You’re all charged up! Can I come? Can I? Can I?');
+        say(talk, 'trunks', 'Green across the board. Days like this don’t come often. Use it.');
+        say(talk, 'hercule', 'Fully recovered! Just like me, the World Champion! Hahaha! Now go, I’ll… watch.');
       }
 
       // Form, from the load chart.
@@ -1017,21 +1052,28 @@
         say(talk, 'goku', 'Hey, you’ve gone quiet! Wanna go for a run? I’ll race you!');
         say(talk, 'piccolo', 'Your load is dropping. The gains are leaving. They didn’t say goodbye.');
         say(talk, 'kingkai', 'Rusty! Heh. Rusty. Like my jokes. Get it? …Now go train.');
+        say(talk, 'yamcha', 'Rusty, huh? Been there. It’s how I ended up in a crater. Don’t be me.');
+        say(talk, 'oolong', 'Rusty? Great, finally someone lazier than me. …Wait, that’s not a compliment.');
       } else if (form === 'Steady') {
         say(talk, 'piccolo', 'Steady. Comfortable. Comfortable is where power goes to nap.');
         say(talk, 'goku', 'Steady is nice! But a harder week would be even nicer.');
         say(talk, 'vegeta', 'Steady. How thrilling. Wake me when you actually push.');
+        say(talk, 'popo', 'Steady. Like sweeping the Lookout. Every day. Forever. Good.');
       } else if (form === 'Building') {
         say(talk, 'goku', 'Ooh, you’re building! I can feel your power going up from here!');
         say(talk, 'vegeta', 'Hmph. You’re actually working. Don’t let it go to your head.');
         say(talk, 'krillin', 'Building block? Man, you’re starting to scare me a little.');
         say(talk, 'piccolo', 'Tired legs are the price. Pay it.');
+        say(talk, 'gohan', 'Building! Mom says studying is important too, but this is cool.');
+        say(talk, 'supremekai', 'Remarkable. Your energy grows by the day. I felt it all the way from my world.');
       } else if (form === 'Overreaching') {
         say(talk, 'bulma', 'Overreaching! Even my machines get a day off, and they’re machines.');
-        say(talk, 'krillin', 'Dude, slow down. You’ll end up in a healing tank like Vegeta.');
-        say(talk, 'vegeta', 'I did NOT end up in… fine. Rest a day. Then come back stronger.');
+        say(talk, 'krillin', 'Dude, slow down. You’ll end up in a healing tank. Ask me how I know.');
+        say(talk, 'vegeta', 'Healing tanks are for the weak. …Fine. Rest a day. Then come back stronger.');
         say(talk, 'roshi', 'Overreaching! Ho ho, the young never listen. Eat, sleep, then train.');
         say(talk, 'goku', 'Whoa, that’s too much even for me! Rest so your power can catch up.');
+        say(talk, 'chichi', 'Overreaching?! Sit DOWN. I’m bringing soup.');
+        say(talk, 'oldkai', 'Overreaching, eh? Back in my day we rested for fifteen thousand years. Try one day.');
       }
 
       // Load ratio today.
@@ -1040,12 +1082,15 @@
         if (ratio > bands.high) {
           say(talk, 'bulma', `Load ratio ${rv}. That’s not training, that’s a stress test.`);
           say(talk, 'piccolo', `Ratio ${rv}. You’re spending power faster than you build it.`);
+          say(talk, 'trunks', `Ratio ${rv}. I’ve seen where this road leads. Ease off.`);
         } else if (ratio < bands.low) {
           say(talk, 'vegeta', `Ratio ${rv}. My grandmother trains harder. Saiyans don’t even have grandmothers.`);
           say(talk, 'kingkai', `Ratio ${rv}. Even Bubbles works harder than this, and he’s a monkey.`);
+          say(talk, 'yajirobe', `Ratio ${rv}? Respect. Lazy is a lifestyle. …Don’t tell Korin I said that.`);
         } else if (ratio <= bands.optimal) {
           say(talk, 'goku', `Ratio ${rv}. Right in the sweet spot! Keep that up!`);
           say(talk, 'piccolo', `Ratio ${rv}. Optimal. Don’t celebrate. Keep it there.`);
+          say(talk, 'bulma', `Ratio ${rv}. Textbook. I should put you in a paper.`);
         }
       }
 
@@ -1056,15 +1101,20 @@
           say(talk, 'roshi', 'Ki empty? Ho ho… I know that look. I’ve worn that look.');
           say(talk, 'vegeta', 'You spent your ki on THAT? Pathetic.');
           say(talk, 'bulma', 'Your ki is empty, and honestly so is my patience.');
+          say(talk, 'oolong', 'Hey, no judgement from me. …Okay, a little judgement.');
+          say(talk, 'oldkai', 'Hmph. Even I have more self-control, and I have a magazine collection.');
         } else if (now === 0) {
           say(talk, 'goku', 'Ki’s empty, but it fills back up. One clean day at a time!');
+          say(talk, 'tien', 'Empty ki. Then today you start again. Discipline is a daily choice.');
         } else if (now >= peak) {
           say(talk, 'goku', 'Whoa, your ki is at full power! I can feel it from here!');
           say(talk, 'vegeta', 'Full ki. Finally, someone worth my time.');
           say(talk, 'roshi', 'Full charge! Discipline. I respect it. I don’t have it, but I respect it.');
+          say(talk, 'kingkai', 'Full ki! I can sense it from my planet. My car antenna is buzzing.');
         } else {
           say(talk, 'piccolo', `Ki at ${now} of ${peak}. Keep your focus. And your hands to yourself.`);
           say(talk, 'krillin', `Ki at ${now} of ${peak}. I’m not asking how. I’m just proud.`);
+          say(talk, 'chiaotzu', `Ki at ${now} of ${peak}! Tien says keep going!`);
         }
       }
 
@@ -1073,12 +1123,17 @@
       if (week.senzu) {
         say(talk, 'krillin', 'A Senzu bean! Can I have half? I’ll owe you.');
         say(talk, 'goku', 'You earned a Senzu! I’d eat it right away. Then ask for another.');
+        say(talk, 'korin', 'Six hours. Fine. One bean. Don’t tell Yajirobe.');
+        say(talk, 'yajirobe', 'You got a Senzu? I’ve been here for years and he still counts mine.');
       } else if (mins >= 240 && (wd >= 5 || wd === 0)) {
         say(talk, 'goku', `Only ${hm(360 - mins)} to the Senzu bean! Come on, come on!`);
+        say(talk, 'korin', `${hm(360 - mins)} more and I open the jar. Not a minute less.`);
       } else if (wd === 0 && mins < 180) {
         say(talk, 'vegeta', `${hm(mins)} this week. And it’s Sunday. Disgraceful.`);
+        say(talk, 'chichi', `${hm(mins)} this week? Even Gohan trained more, and he was STUDYING.`);
       } else if (wd === 1 && mins < 60) {
         say(talk, 'goku', 'New week! Clean slate! Let’s gooo!');
+        say(talk, 'goten', 'It’s Monday! Monday means new training! Right? Right?!');
       }
 
       // Days since the last workout (the gravity calendar, today last).
@@ -1089,10 +1144,14 @@
           say(talk, 'goku', 'You trained today! Now for the best part: eating.');
           say(talk, 'vegeta', 'One workout. Don’t expect applause.');
           say(talk, 'piccolo', 'Good session. Now recover. Properly.');
+          say(talk, 'hercule', 'Great workout! You fought almost as well as me! Hahaha!');
+          say(talk, 'buu', 'You train today! Buu make you candy. Is reward.');
         } else if (off >= 3 && off < cal.length) {
           say(talk, 'vegeta', `${off} days without training. Kakarot trains in his sleep. Literally.`);
           say(talk, 'krillin', `${off} days off? Should I send a search party?`);
           say(talk, 'goku', `${off} days! I’m getting bored over here. Train with me!`);
+          say(talk, 'yamcha', `${off} days off. Trust me, the comeback hurts more the longer you wait.`);
+          say(talk, 'videl', `${off} days? I’d drag you out myself, but I’m busy actually training.`);
         }
       }
 
@@ -1101,16 +1160,21 @@
         if (liveHeal.damage > 0) {
           say(talk, 'vegeta', `You took ${fmtNum(liveHeal.damage)} damage today from your OWN habits. You’re fighting yourself and losing.`);
           say(talk, 'piccolo', `${fmtNum(liveHeal.damage)} HP lost today. Nobody hit you. Think about that.`);
+          say(talk, 'eighteen', `${fmtNum(liveHeal.damage)} damage. Self-inflicted. That’s almost impressive.`);
         }
-        if (liveHeal.hp > 0) say(talk, 'goku', `+${fmtNum(liveHeal.hp)} HP from good habits today. That’s like a mini Senzu!`);
+        if (liveHeal.hp > 0) {
+          say(talk, 'goku', `+${fmtNum(liveHeal.hp)} HP from good habits today. That’s like a mini Senzu!`);
+          say(talk, 'dende', `+${fmtNum(liveHeal.hp)} HP. See? You’re healing yourself. I’m almost out of a job.`);
+        }
       }
 
       // Power level and its trend.
       const pl = Number(p.power_level) || 0, ch = Number(p.trend_change_pct);
-      if (pl > 9000) rare.push({ who: 'vegeta', text: `WHAT?! ${fmtNum(pl)}?! There’s no way that can be right!` });
+      if (pl > 9000) say(rare, 'vegeta', `WHAT?! ${fmtNum(pl)}?! There’s no way that can be right!`);
       if (ch > 0) {
         say(talk, 'goku', `Your power’s up ${ch}% in twelve weeks! That’s awesome!`);
         say(talk, 'vegeta', `Up ${ch}%. I noticed. I’m not impressed. …Slightly impressed.`);
+        say(talk, 'gohan', `Up ${ch}%! I made a graph. Want to see the graph?`);
       } else if (ch < 0) {
         say(talk, 'piccolo', `Power down ${Math.abs(ch)}% in twelve weeks. The fix is boring: show up.`);
         say(talk, 'vegeta', `Down ${Math.abs(ch)}%. Did you think the power would maintain itself?`);
@@ -1118,6 +1182,7 @@
       if (r.current_run >= 3) {
         say(talk, 'goku', `${r.current_run} success days in a row! Don’t stop now!`);
         say(talk, 'vegeta', `${r.current_run} days in a row. Ninety-nine more and we’ll talk.`);
+        say(talk, 'popo', `${r.current_run} days. Mr. Popo approves. Mr. Popo rarely approves.`);
       }
 
       // The hour.
@@ -1125,28 +1190,58 @@
         say(talk, 'bulma', 'It’s the middle of the night. Sleep is recovery. Close the scouter.');
         say(talk, 'goku', 'Can’t sleep either? I’m hungry. Is that why?');
         say(talk, 'piccolo', 'Go to bed. I don’t even sleep and I think you should.');
+        say(talk, 'chichi', 'Bed. Now. I don’t care how strong you are.');
       } else if (hour >= 5 && hour < 8) {
         say(talk, 'goku', 'Morning! Breakfast first, then training. Or both at once!');
         say(talk, 'vegeta', 'Up early. …Acceptable.');
+        say(talk, 'roshi', 'Up with the sun! Milk delivery run, then we train. Like the old days.');
       }
 
       // Always on air.
       say(filler, 'krillin', 'Hey, have you seen my scouter? …Oh. You’re wearing it.');
       say(filler, 'goku', 'Is it lunch yet?');
-      say(filler, 'vegeta', 'Stop staring at the scouter. Be the number.');
-      say(filler, 'bulma', 'Please stop tapping the scouter. It’s a precision instrument.');
-      say(filler, 'kingkai', 'Why did the Saiyan cross the road? To train on the other side! …Tough crowd.');
-      say(filler, 'roshi', 'Lesson one: work hard. Lesson two: nap hard.');
-      say(filler, 'piccolo', 'I’m not here. I’m meditating. Go away.');
       say(filler, 'goku', 'Hey, it’s me, Goku! …Okay, that’s all I had.');
+      say(filler, 'bulma', 'Please stop tapping the scouter. It’s a precision instrument.');
+      say(filler, 'roshi', 'Lesson one: work hard. Lesson two: nap hard.');
+      say(filler, 'chichi', 'Did you eat a vegetable today? Don’t lie to the scouter.');
+      say(filler, 'yamcha', 'Hey! Yamcha here. Just checking in. Nobody ever checks on me.');
+      say(filler, 'oolong', 'Can I borrow the scouter? For, uh… science.');
+      say(filler, 'gohan', 'Dad says hi! Well, he said “food”, but I think he meant hi.');
+      say(filler, 'korin', 'Climb my tower and I’ll tell you a secret. The secret is: stairs.');
+      say(filler, 'kingkai', 'Why did the Saiyan cross the road? To train on the other side! …Tough crowd.');
+      say(filler, 'piccolo', 'I’m not here. I’m meditating. Go away.');
+      say(filler, 'tien', 'Three eyes, and none of them see you skipping training. Keep it that way.');
+      say(filler, 'chiaotzu', 'Hi! Tien is meditating so I’m on the scouter today!');
+      say(filler, 'yajirobe', 'Got any food? Asking for a samurai.');
+      say(filler, 'popo', 'Mr. Popo is watering the garden. Mr. Popo is always watering the garden.');
+      say(filler, 'vegeta', 'Stop staring at the scouter. Be the number.');
+      say(filler, 'vegeta', 'I am the Prince of all Saiyans, and I do NOT do check-ins. …This doesn’t count.');
+      say(filler, 'dende', 'Greetings from the Lookout! The view is great. The gym is better.');
+      say(filler, 'trunks', 'I came back in time to say: hydrate. Trust me on this.');
+      say(filler, 'eighteen', 'Krillin wanted me to say “good job”. So. Good job.');
+      say(filler, 'hercule', 'Mr. Satan here, World Champion! Remember: it was ME all along!');
+      say(filler, 'videl', 'Training tip: fly lower. Fewer bugs in the face.');
+      say(filler, 'goten', 'Trunks and I are playing hide and seek. Have you seen Trunks? Don’t tell him I asked!');
+      say(filler, 'supremekai', 'The universe is calm today. A good day to grow stronger.');
+      say(filler, 'oldkai', 'Bah, scouters. In my day we sensed power with our feelings. And our eyebrows.');
+      say(filler, 'buu', 'Buu happy. Buu want chocolate. Buu say train hard.');
+      say(filler, 'whis', 'Oh, hello! Do you happen to have any snacks? Earth snacks are the finest in the universe.');
+      say(filler, 'vados', 'My brother’s angel says you’re interesting. Prove him right.');
+      say(filler, 'seventeen', 'Ranger work keeps me fit. What’s your excuse?');
 
       say(rare, 'vegeta', 'Fine. I’ll say it once. You’re… not completely useless.');
       say(rare, 'goku', 'You know what? You remind me of me. That’s a compliment!');
       say(rare, 'kingkai', 'I just laughed at my own joke for ten minutes. You missed it. Train harder to make up for it.');
+      say(rare, 'roshi', 'Ho ho! You’ve come a long way from the turtle shell, kid. I’m proud of you.');
+      say(rare, 'piccolo', 'I don’t say this often. Good work.');
+      say(rare, 'gohan', 'When I grow up I want to train like you. Don’t tell Mom.');
+      say(rare, 'trunks', 'In my future, nobody trained like this. Maybe that’s why it went wrong.');
 
-      say(legend, 'whis', 'Oh my. Your scouter exploded. Do try to be less dramatic, it’s terribly messy.');
-      say(legend, 'beerus', 'You woke me for THIS reading? …Hm. Not bad. Now let me sleep.');
+      say(legend, 'kingkai', 'The scouter EXPLODED? From here?! I felt that on my planet! My car fell over!');
+      say(legend, 'popo', 'Mr. Popo saw the scouter break. Mr. Popo will not be sweeping that up.');
       say(legend, 'vegeta', 'The scouter broke?! Bulma! BULMA! …Don’t tell Kakarot.');
+      say(legend, 'oldkai', 'Ha! I haven’t seen power like that in seventy-five thousand years. Do it again.');
+      say(legend, 'whis', 'Oh my. Your scouter exploded. Do try to be less dramatic, it’s terribly messy.');
       return { talk: talk, filler: filler, rare: rare, legend: legend };
     }
 
@@ -1196,8 +1291,14 @@
       if (!Array.isArray(history)) history = [];
       const roll = Math.random();
       let tier = 'common', list;
-      if (roll < LEGEND_CHANCE) { tier = 'legend'; list = tx.legend; }
+      let voices = [];
+      try { voices = JSON.parse(localStorage.getItem(VOICES_KEY) || '[]'); } catch (_) {}
+      if (!Array.isArray(voices)) voices = [];
+      // Someone new joined the story: good odds they speak first.
+      const newcomers = tx.talk.concat(tx.filler).filter(t => !voices.includes(t.who));
+      if (roll < LEGEND_CHANCE && tx.legend.length) { tier = 'legend'; list = tx.legend; }
       else if (roll < LEGEND_CHANCE + RARE_CHANCE) { tier = 'rare'; list = pool.rare.map(text => ({ text: text })).concat(tx.rare); }
+      else if (newcomers.length && voices.length && Math.random() < 0.5) list = newcomers;
       else if (Math.random() < TALK_CHANCE || !pool.common.length) list = tx.talk.length && Math.random() < 0.8 ? tx.talk : tx.filler;
       else list = pool.common.map(text => ({ text: text }));
       const fresh = list.filter(t => !history.includes(t.text));
@@ -1212,6 +1313,8 @@
         reading.isNew = !caught.includes(id);
         if (reading.isNew) { caught.push(id); try { localStorage.setItem(CAUGHT_KEY, JSON.stringify(caught)); } catch (_) {} }
         reading.caught = caught.length;
+        reading.firstContact = !voices.includes(reading.who);
+        if (reading.firstContact) { voices.push(reading.who); try { localStorage.setItem(VOICES_KEY, JSON.stringify(voices)); } catch (_) {} }
       }
       return reading;
     }
@@ -1225,7 +1328,7 @@
       scouterEl.classList.toggle('hot', !!reading.hot);
       scouterEl.classList.remove('boom');
       if (reading.tier === 'legend' && !reduceMotion) { void scouterEl.offsetWidth; scouterEl.classList.add('boom'); }
-      const title = reading.hot ? '🔥 Scouter overheating' : reading.tier === 'legend' ? '💥 Scouter overload' : reading.tier === 'rare' ? '⚡ Rare reading' : who ? '📡 Incoming' : 'Scouter reading';
+      const title = reading.hot ? '🔥 Scouter overheating' : reading.tier === 'legend' ? '💥 Scouter overload' : reading.tier === 'rare' ? '⚡ Rare reading' : reading.firstContact ? '📡 First contact' : who ? '📡 Incoming' : 'Scouter reading';
       label.innerHTML = `<span>${esc(title)}${who ? ` · <b class="tx-who" style="color:${who.color}">${esc(who.name)}</b>` : ''}${reading.isNew ? ' <span class="tx-new">New</span>' : ''}</span>` +
         `<span class="tx-count">${reading.hot ? 'cooling down' : (reading.caught ? esc(reading.caught) + ' caught · ' : '') + 'tap to rescan'}</span>`;
       clearInterval(typeTimer);
