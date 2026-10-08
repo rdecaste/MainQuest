@@ -25,6 +25,8 @@ What the card shows:
   three rescans in a minute and it overheats for 45 s. A first catch shows NEW;
   caught lines are counted in the browser. Only allies talk, and never about a
   form, move or boss still to come (`transmissions()` in `index.html`).
+  Now and then (about 1 in 7) an ally talks about the boss in the fight right
+  now (`boss_name` from `GET /boss`), after that boss's episodes (`BOSS_TALK`).
 - **Load chart rows** (Scouter tab, since 5 Oct 2026): under the form strip,
   the load ratio (short ÷ long, `power.load.ratio`, with the optimal band
   0.8–1.3 in green and 1.5+ in red) and a recovery strip, one block per morning

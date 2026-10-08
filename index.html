@@ -773,6 +773,7 @@
         const hp = today.reduce((sum, e) => sum + Math.max(0, Number(e.heal) || 0), 0);
         const damage = today.reduce((sum, e) => sum + (e.kind === 'hero' ? Math.max(0, Number(e.damage) || 0) : 0), 0);
         liveHeal = { day: day, hp: hp, damage: damage, events: today };
+        currentBoss = boss.status === 'Active' ? String(boss.boss_name || '').split(' — ')[0].toLowerCase() : '';
       } catch (error) { /* the boss card is optional here */ }
     }
 
@@ -1003,8 +1004,43 @@
     const hm = m => Math.floor(m / 60) + ' h' + (m % 60 ? ' ' + String(m % 60).padStart(2, '0') : '');
     const gokuLevel = () => Math.trunc(Number(hero && hero.level) || Number(levelEl.textContent) || 1);
 
+    // Now and then (Roy, 8 Oct 2026) an ally talks about the boss you're fighting
+    // (from the boss card's GET /boss), after that boss's episodes. More specific
+    // keys first. No line names a boss other than the one in the fight.
+    const BOSS_TALK = [
+      ['tao', ['krillin', 'Mercenary Tao? The guy who rides his own thrown pillar? Watch the tongue thing. I’m serious.'], ['goku', 'Tao beat me once, so I climbed Korin’s tower and came back stronger. Same plan here!'], ['korin', 'The boy drank my sacred water to beat that assassin. You’ll have to make do with water water.'], ['roshi', 'Tao’s brother runs the Crane School. Terrible manners runs in the family.']],
+      ['raditz', ['piccolo', 'Raditz. The only time Goku and I teamed up willingly. Don’t make it a habit.'], ['goku', 'My big brother. Family reunions, huh?'], ['gohan', 'He locked me in his space pod! …I headbutted him though.'], ['krillin', 'His scouter read a farmer with a shotgun at 5. You’re way higher. Probably.']],
+      ['demon king', ['roshi', 'Demon King Piccolo. I tried the Evil Containment Wave on him once. Daily habits work better.'], ['tien', 'He took Chiaotzu from me. Hit him once for me.'], ['goku', 'I punched straight through him last time. Just saying.'], ['korin', 'Climb, drink, fight. It worked against that demon. It’ll work again.']],
+      ['jeice', ['krillin', 'The red one from the Ginyu Force. Brags a lot for a guy who runs away.'], ['vegeta', 'Jeice fled from me. Make him flee from you.'], ['gohan', 'Watch out for his Crusher Ball! It really hurts.']],
+      ['recoome', ['gohan', 'Recoome kicked me so hard I saw stars. Hit him back for me!'], ['vegeta', 'That posing oaf. One elbow to the gut ended it. Find his gut.'], ['krillin', 'Who does a full dance routine before punching? Hit him mid-pose.']],
+      ['nappa', ['krillin', 'Nappa. I still have nightmares about the Saibamen.'], ['piccolo', 'Nappa is the one I died protecting Gohan from. Make it count.'], ['tien', 'I lost an arm to Nappa. Don’t lose your streak.'], ['goku', 'I trained with King Kai just to beat that guy. You trained for this too!'], ['kingkai', 'Nappa? Ha! Goku came back from my planet and flattened him. Do the same.']],
+      ['zarbon', ['vegeta', 'Zarbon beat me once. Then I came back stronger. That’s the whole trick.'], ['krillin', 'Namek was a nightmare. Zarbon was the pretty part of it.'], ['dende', 'He hurt my people. Please be quick about it.']],
+      ['ginyu', ['goku', 'Ginyu swapped bodies with me once! He couldn’t even power me up. Ha!'], ['krillin', 'Don’t let him say “Body Change”. Seriously.'], ['bulma', 'The Ginyu Force poses more than my fashion shoots. Hit them during the pose.']],
+      ['majin vegeta', ['goku', 'He let the darkness in to fight me. We’ll get him back. Hit hard but fair.'], ['trunks', 'Dad… why did you let it in?'], ['krillin', 'Vegeta went evil again? Who saw that coming? …Everyone. Everyone saw that coming.'], ['bulma', 'If he wants a fight that badly, give him one. Then he’s sleeping on the couch.']],
+      ['vegeta', ['krillin', 'I had the sword. I could’ve ended it. Goku said let him go. Don’t make me regret that.'], ['yajirobe', 'I cut his tail off! Me! Nobody ever remembers that part.'], ['gohan', 'I turned into a giant ape and sat on him. True story.'], ['goku', 'He’s super strong. Beat him, but let him walk away. He’ll be back, as a friend. Probably.']],
+      ['slug', ['piccolo', 'Another Namekian gone bad. I’ll handle the shame. You handle the damage.'], ['gohan', 'He made the whole sky go dark. Bring the light.'], ['goku', 'Slug’s ears are his weak spot! Whistle at him. Seriously, it worked for Gohan.']],
+      ['cell', ['gohan', 'I’m done holding back.'], ['goku', 'The Cell Games! Ten days of training first. Use them!'], ['piccolo', 'He has my cells inside him. Literally. Wreck him.'], ['hercule', 'Cell? Light show tricks! Leave him to me! …Actually, you go first.'], ['eighteen', 'He absorbed me once. Hit him somewhere personal.']],
+      ['golden frieza', ['goku', 'He went gold after only four months of training! Imagine a whole year!'], ['whis', 'Four months of training. Impressive, for him. Please don’t let him keep that form.'], ['krillin', 'Gold or not, he’s still the guy from Namek. Hit him.']],
+      ['frieza', ['krillin', 'Watch out for the disc thing. Ask me how I know.'], ['vegeta', 'He enslaved my people. Make him pay.'], ['dende', 'Namek is falling apart! Hurry!'], ['piccolo', 'Five minutes until the planet blows. Make every rep count.'], ['goku', 'I won’t let him hurt anyone else. Let’s go!']],
+      ['android 13', ['trunks', 'Another android? This one’s not even from my timeline.'], ['goku', 'The guy in the trucker hat! He swallowed spare parts and turned blue. Weird day.'], ['krillin', 'Red Ribbon again? Those guys never take a day off. Neither should you, today.']],
+      ['bojack', ['gohan', 'Bojack’s crew crashed the tournament. I didn’t even get a snack.'], ['trunks', 'The Kais sealed him away for a reason. Don’t underestimate him.'], ['hercule', 'This is MY tournament! Pirates have no business here!']],
+      ['zamasu', ['supremekai', 'A Kai who fell. It shames us all.'], ['trunks', 'Zamasu destroyed my world. Don’t let him near yours.'], ['goku', 'He wants to erase all mortals. Including the gym. No way!'], ['oldkai', 'Bah, a young Kai with big ideas. Teach him some humility.']],
+      ['janemba', ['goku', 'Janemba broke the afterlife! Even Hell’s a mess.'], ['kingkai', 'Janemba? Not even my jokes can save us from that one.'], ['oldkai', 'Pure evil in a jester costume. Typical.']],
+      ['dabura', ['supremekai', 'Dabura’s spit turns you to stone. Krillin and Piccolo learned that the hard way.'], ['krillin', 'I was a statue for a while. Highly recommend not.'], ['piccolo', 'He turned me to stone. Hit him for both of us.'], ['goku', 'Demon King of the Demon Realm, huh? Sounds like a tough guy. Perfect!']],
+      ['dyspo', ['goku', 'Dyspo’s so fast! But fast isn’t everything.'], ['whis', 'Speed alone is but one trait. Do watch his ears.'], ['seventeen', 'Pride Troopers. All speeches, no rest days. Out-train them.']],
+      ['broly', ['goku', 'Broly isn’t bad, just angry. Like me before breakfast.'], ['vegeta', 'That brute again. Stay calm. Hit precisely.'], ['bulma', 'I just wanted to wish to be five years younger. Instead: Broly. Typical.']],
+      ['beerus', ['whis', 'Lord Beerus is cranky after his naps. Offer snacks. Then hit him.'], ['bulma', 'Don’t upset him. He nearly destroyed the planet at MY birthday party.'], ['goku', 'Lord Beerus is so strong! Can we spar after?'], ['buu', 'Buu ate his pudding once. Buu not sorry. Okay, a little sorry.']],
+      ['granolah', ['goku', 'Granolah used the Dragon Balls to get strong. You use habits. Way better.'], ['vegeta', 'He’s blinded by revenge. Use it.']],
+      ['hit', ['goku', 'Hit skips time! Land yours before he skips you.'], ['vados', 'A legendary assassin. Universe 6 is rather proud of him. Prove us wrong.'], ['whis', 'Half a second of skipped time. Don’t waste yours.']],
+      ['gas', ['goku', 'Gas wished to be the strongest in the universe. You did it the hard way.'], ['piccolo', 'Strength from a wish is borrowed. Yours is earned.']],
+      ['moro', ['goku', 'Moro eats the energy of whole planets. Don’t let him snack on yours.'], ['seventeen', 'Planet eater, huh? I protect wildlife. He’s on the list.']],
+      ['jiren', ['seventeen', 'I won the Tournament of Power. Just so you know who to ask for tips.'], ['goku', 'Jiren is the strongest guy I’ve ever faced. Isn’t that awesome?'], ['vegeta', 'Jiren. Even I struggled. That makes your hits count double. Not really. But hit him.']]
+    ];
+    const BOSS_TALK_CHANCE = 0.15;
+    let currentBoss = '';
+
     function transmissions() {
-      const talk = [], filler = [], rare = [], legend = [];
+      const talk = [], filler = [], rare = [], legend = [], boss = [];
       const lvl = gokuLevel();
       const say = (list, who, ...lines) => { if (CAST[who] && CAST[who].from <= lvl) lines.forEach(text => list.push({ who: who, text: text })); };
       const p = power || {};
@@ -1242,7 +1278,10 @@
       say(legend, 'vegeta', 'The scouter broke?! Bulma! BULMA! …Don’t tell Kakarot.');
       say(legend, 'oldkai', 'Ha! I haven’t seen power like that in seventy-five thousand years. Do it again.');
       say(legend, 'whis', 'Oh my. Your scouter exploded. Do try to be less dramatic, it’s terribly messy.');
-      return { talk: talk, filler: filler, rare: rare, legend: legend };
+      // The boss in the fight right now.
+      const fight = currentBoss && BOSS_TALK.find(([key]) => currentBoss.includes(key));
+      if (fight) for (const [who, text] of fight.slice(1)) say(boss, who, text);
+      return { talk: talk, filler: filler, rare: rare, legend: legend, boss: boss };
     }
 
     // One reading per flip, never one of the last few. Now and then a rare one.
@@ -1299,6 +1338,7 @@
       if (roll < LEGEND_CHANCE && tx.legend.length) { tier = 'legend'; list = tx.legend; }
       else if (roll < LEGEND_CHANCE + RARE_CHANCE) { tier = 'rare'; list = pool.rare.map(text => ({ text: text })).concat(tx.rare); }
       else if (newcomers.length && voices.length && Math.random() < 0.5) list = newcomers;
+      else if (tx.boss.length && Math.random() < BOSS_TALK_CHANCE) list = tx.boss;
       else if (Math.random() < TALK_CHANCE || !pool.common.length) list = tx.talk.length && Math.random() < 0.8 ? tx.talk : tx.filler;
       else list = pool.common.map(text => ({ text: text }));
       const fresh = list.filter(t => !history.includes(t.text));
