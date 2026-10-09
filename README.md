@@ -12,6 +12,9 @@ What the card shows:
 - **Front:** Goku's clip, level, HP (with the ki shield in blue after it) and
   XP. During a 6-hour week the card glows Senzu green and shows the Senzu
   banner once. Nothing else goes on the front (Roy: keep the animation clear).
+  If the browser refuses the clip's autoplay (a new clip swapped in while the
+  tab was hidden, power saving), the card retries every 2 s while the front
+  shows, and the first touch starts it (since 9 Oct 2026).
 - **Back:** Scouter (a reading, the power level with the long-term and
   short-term load chart, gravity, this week, the Ki box, records), Moves,
   Forms, Log, Lore.

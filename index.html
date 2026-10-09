@@ -683,12 +683,23 @@
       else incoming.addEventListener('canplay', beginFade, { once: true });
     }
 
-    function monitorVideoLoop() {
+    // A new clip swapped in while the tab was hidden (or power saving) can have its
+    // autoplay refused and then sit frozen; nudge the front clip every 2s while it shows.
+    let lastPlayNudge = 0;
+    function nudgeFrontVideo() {
+      const active = videos[activeVideoIndex];
+      if (crossfadeRunning || !active.paused || !active.currentSrc) return;
+      if (document.visibilityState !== 'visible' || flipperEl.classList.contains('is-flipped')) return;
+      active.play().catch(() => {});
+    }
+
+    function monitorVideoLoop(now = performance.now()) {
       const active = videos[activeVideoIndex];
       if (!crossfadeRunning && active.readyState >= 2 && Number.isFinite(active.duration) && active.duration > 0) {
         const remainingMs = (active.duration - active.currentTime) * 1000;
         if (active.currentTime > 0 && remainingMs <= CROSSFADE_MS + CROSSFADE_LEAD_MS) startCrossfade();
       }
+      if (now - lastPlayNudge > 2000) { lastPlayNudge = now; nudgeFrontVideo(); }
       requestAnimationFrame(monitorVideoLoop);
     }
 
@@ -1812,6 +1823,9 @@
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible' && !flipperEl.classList.contains('is-flipped')) videos[activeVideoIndex].play().catch(() => {});
     });
+
+    // Where autoplay is blocked outright (e.g. iPhone Low Power Mode), the first touch starts it.
+    document.addEventListener('pointerdown', () => videos.forEach(v => { if (v.paused && v.currentSrc && !flipperEl.classList.contains('is-flipped')) { v.play().then(() => { if (v !== videos[activeVideoIndex]) v.pause(); }).catch(() => {}); } }), { once: true, capture: true });
 
     monitorVideoLoop();
     loadHero();
